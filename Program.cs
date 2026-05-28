@@ -512,23 +512,43 @@ END"
             ALTER TABLE [dbo].[ChargingStations] ADD [last_maintenance_payment_id] INT NULL;",
         @"IF OBJECT_ID(N'[dbo].[ChargingStations]', N'U') IS NOT NULL
           AND COL_LENGTH('dbo.ChargingStations', 'MaintenancePaidUntil') IS NOT NULL
+          AND COL_LENGTH('dbo.ChargingStations', 'LastMaintenancePaidAt') IS NOT NULL
           AND COL_LENGTH('dbo.ChargingStations', 'maintenance_fee_due_date') IS NOT NULL
+          AND COL_LENGTH('dbo.ChargingStations', 'maintenance_fee_paid_at') IS NOT NULL
         BEGIN
             UPDATE [dbo].[ChargingStations]
-            SET [maintenance_fee_due_date] = ISNULL([maintenance_fee_due_date], [MaintenancePaidUntil]),
-                [maintenance_fee_paid_at] = ISNULL([maintenance_fee_paid_at], [LastMaintenancePaidAt]),
-                [maintenance_fee_status] = CASE
+            SET [MaintenancePaidUntil] = ISNULL([MaintenancePaidUntil], [maintenance_fee_due_date]),
+                [LastMaintenancePaidAt] = ISNULL([LastMaintenancePaidAt], [maintenance_fee_paid_at]),
+                [maintenance_fee_due_date] = ISNULL([maintenance_fee_due_date], [MaintenancePaidUntil]),
+                [maintenance_fee_paid_at] = ISNULL([maintenance_fee_paid_at], [LastMaintenancePaidAt])
+            WHERE [MaintenancePaidUntil] IS NULL
+               OR [LastMaintenancePaidAt] IS NULL
+               OR [maintenance_fee_due_date] IS NULL
+               OR [maintenance_fee_paid_at] IS NULL;
+        END",
+        @"IF OBJECT_ID(N'[dbo].[ChargingStations]', N'U') IS NOT NULL
+          AND COL_LENGTH('dbo.ChargingStations', 'MaintenancePaidUntil') IS NOT NULL
+          AND COL_LENGTH('dbo.ChargingStations', 'maintenance_fee_status') IS NOT NULL
+          AND COL_LENGTH('dbo.ChargingStations', 'maintenance_fee_due_date') IS NOT NULL
+          AND COL_LENGTH('dbo.ChargingStations', 'is_visible') IS NOT NULL
+        BEGIN
+            UPDATE [dbo].[ChargingStations]
+            SET [maintenance_fee_status] = CASE
                     WHEN [OwnerUserId] IS NULL THEN N'active'
-                    WHEN [maintenance_fee_due_date] IS NULL OR [maintenance_fee_due_date] <= GETDATE() THEN N'maintenance_unpaid'
-                    WHEN DATEDIFF(DAY, GETDATE(), [maintenance_fee_due_date]) <= 7 THEN N'expiring_soon'
+                    WHEN [maintenance_fee_status] = N'locked' THEN N'locked'
+                    WHEN [maintenance_fee_status] = N'hidden' THEN N'hidden'
+                    WHEN ISNULL([maintenance_fee_due_date], [MaintenancePaidUntil]) IS NULL THEN N'maintenance_unpaid'
+                    WHEN ISNULL([maintenance_fee_due_date], [MaintenancePaidUntil]) <= GETDATE() THEN N'maintenance_unpaid'
+                    WHEN DATEDIFF(DAY, GETDATE(), ISNULL([maintenance_fee_due_date], [MaintenancePaidUntil])) <= 7 THEN N'expiring_soon'
                     ELSE N'active'
                 END,
                 [is_visible] = CASE
                     WHEN [OwnerUserId] IS NULL THEN 1
                     WHEN [maintenance_fee_status] IN (N'hidden', N'locked') THEN 0
-                    ELSE [is_visible]
+                    WHEN ISNULL([maintenance_fee_due_date], [MaintenancePaidUntil]) IS NULL THEN 0
+                    WHEN ISNULL([maintenance_fee_due_date], [MaintenancePaidUntil]) <= GETDATE() THEN 0
+                    ELSE 1
                 END
-            WHERE [OwnerUserId] IS NULL OR [maintenance_fee_due_date] IS NULL OR [maintenance_fee_paid_at] IS NULL;
         END",
         @"IF OBJECT_ID(N'[dbo].[ChargingStations]', N'U') IS NOT NULL
           AND COL_LENGTH('dbo.ChargingStations', 'is_visible') IS NOT NULL
@@ -753,17 +773,20 @@ BEGIN
 END",
         @"IF COL_LENGTH('dbo.ChargingStations', 'MaintenancePaymentStatus') IS NOT NULL
           AND COL_LENGTH('dbo.ChargingStations', 'MaintenancePaidUntil') IS NOT NULL
+          AND COL_LENGTH('dbo.ChargingStations', 'maintenance_fee_due_date') IS NOT NULL
 BEGIN
     UPDATE [dbo].[ChargingStations]
     SET [MaintenancePaymentStatus] = CASE
         WHEN [OwnerUserId] IS NULL THEN N'Không áp dụng'
-        WHEN [MaintenancePaidUntil] IS NULL OR [MaintenancePaidUntil] <= GETDATE() THEN N'Chưa thanh toán phí duy trì'
+        WHEN ISNULL([MaintenancePaidUntil], [maintenance_fee_due_date]) IS NULL
+             OR ISNULL([MaintenancePaidUntil], [maintenance_fee_due_date]) <= GETDATE() THEN N'Chưa thanh toán phí duy trì'
         ELSE N'Đã thanh toán'
     END
     WHERE [MaintenancePaymentStatus] IS NULL
        OR [MaintenancePaymentStatus] <> CASE
             WHEN [OwnerUserId] IS NULL THEN N'Không áp dụng'
-            WHEN [MaintenancePaidUntil] IS NULL OR [MaintenancePaidUntil] <= GETDATE() THEN N'Chưa thanh toán phí duy trì'
+            WHEN ISNULL([MaintenancePaidUntil], [maintenance_fee_due_date]) IS NULL
+                 OR ISNULL([MaintenancePaidUntil], [maintenance_fee_due_date]) <= GETDATE() THEN N'Chưa thanh toán phí duy trì'
             ELSE N'Đã thanh toán'
         END;
 END"

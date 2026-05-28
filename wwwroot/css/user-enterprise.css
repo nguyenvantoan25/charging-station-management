@@ -2641,3 +2641,73 @@ body.user-site-shell {
             font-size: 12px !important;
         }
 }
+
+/* Why changed: add a cleaner glass header treatment so the user-facing pages feel more premium. */
+body.user-site-shell .user-header {
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    background: rgba(248, 252, 249, 0.82) !important;
+}
+
+body.user-site-shell .user-header .user-menu-dropdown,
+body.user-site-shell .user-header .user-navbar-collapse {
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+@media (min-width: 992px) {
+    body.user-site-shell .user-header > .container,
+    body.user-site-shell .user-header .container {
+        width: min(1400px, calc(100% - 56px)) !important;
+    }
+
+    body.user-site-shell .user-header .user-navbar,
+    body.user-site-shell .user-header .navbar {
+        min-height: 70px !important;
+        height: 70px !important;
+        margin: 10px 0 !important;
+        padding: 10px 18px !important;
+        border-radius: 26px !important;
+        border: 1px solid rgba(20, 136, 88, 0.12) !important;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(244, 250, 246, 0.88)) !important;
+        box-shadow: 0 18px 38px rgba(15, 35, 24, 0.08) !important;
+    }
+
+    body.user-site-shell .user-header .user-nav-list .nav-link,
+    body.user-site-shell .user-header .user-nav-list .nav-link:visited,
+    body.user-site-shell .user-header .user-nav-list .nav-link:focus {
+        padding: 10px 12px 12px !important;
+        border-radius: 999px !important;
+    }
+
+    body.user-site-shell .user-header .user-nav-list .nav-link:hover,
+    body.user-site-shell .user-header .user-nav-list .nav-link:focus,
+    body.user-site-shell .user-header .user-nav-list .nav-item.active .nav-link {
+        background: rgba(24, 167, 96, 0.08) !important;
+    }
+
+    body.user-site-shell .user-header .user-nav-list .nav-link::after {
+        left: 12px !important;
+        right: 12px !important;
+        bottom: 5px !important;
+        height: 3px !important;
+    }
+
+    body.user-site-shell .user-header .user-menu-trigger {
+        border-color: rgba(20, 136, 88, 0.12) !important;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(242, 249, 245, 0.96)) !important;
+        box-shadow: 0 8px 18px rgba(15, 35, 24, 0.06) !important;
+    }
+
+    body.user-site-shell .user-header a.user-auth-btn,
+    body.user-site-shell .user-header button.user-auth-btn {
+        box-shadow: 0 14px 28px rgba(22, 160, 95, 0.16) !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    body.user-site-shell .user-header .user-navbar-collapse {
+        background: rgba(255, 255, 255, 0.9) !important;
+        box-shadow: 0 16px 34px rgba(15, 35, 24, 0.09) !important;
+    }
+}
