@@ -1,0 +1,512 @@
+﻿/* user-contact-page.css
+   Bản thay thế: giao diện ticket theo kiểu list + phân trang số */
+
+.enterprise-contact-page {
+    background: radial-gradient(circle at top left, rgba(21, 154, 92, 0.08), transparent 26%), linear-gradient(180deg, #f4f8f6 0%, #ffffff 28%, #f7fbf8 100%);
+    padding-bottom: 28px;
+}
+
+    .enterprise-contact-page .container {
+        max-width: 1320px;
+    }
+
+.contact-main-section,
+.contact-ticket-section {
+    padding-top: 24px;
+}
+
+.contact-panel-card,
+.contact-summary-card {
+    background: #ffffff;
+    border: 1px solid #e2ece7;
+    border-radius: 26px;
+    box-shadow: 0 18px 38px rgba(18, 34, 28, 0.07);
+}
+
+.contact-main-grid {
+    display: grid;
+    grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.08fr);
+    gap: 24px;
+}
+
+.contact-panel-card {
+    padding: 24px;
+    overflow: hidden;
+}
+
+.contact-panel-head {
+    margin-bottom: 20px;
+}
+
+.contact-section-kicker {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #eef8f2;
+    color: #117245;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.contact-panel-title {
+    color: #14211d;
+    font-weight: 800;
+    line-height: 1.18;
+    font-size: 32px;
+    margin: 12px 0 8px;
+}
+
+.contact-info-list {
+    display: grid;
+    gap: 16px;
+}
+
+.contact-info-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 16px;
+    border: 1px solid #e6efea;
+    border-radius: 20px;
+    background: #fbfdfc;
+}
+
+.contact-info-icon {
+    width: 50px;
+    height: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: #eef8f2;
+    color: #159a5c;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.contact-info-label {
+    font-size: 14px;
+    color: #6a7a74;
+    margin-bottom: 4px;
+}
+
+.contact-info-value {
+    font-size: 22px;
+    font-weight: 800;
+    color: #16231e;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.contact-standard-box {
+    margin-top: 18px;
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px dashed #d5e4dc;
+    background: #f8fbf9;
+}
+
+.contact-standard-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #16231e;
+    margin-bottom: 12px;
+}
+
+.contact-standard-list {
+    margin: 0;
+    padding-left: 18px;
+    color: #30403a;
+    line-height: 1.75;
+}
+
+.contact-form {
+    display: grid;
+    gap: 16px;
+}
+
+.contact-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.contact-label {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #22322d;
+    font-weight: 700;
+}
+
+.contact-form .form-control {
+    min-height: 52px;
+    border-radius: 16px;
+    border: 1px solid #d9e4de;
+    box-shadow: none !important;
+    font-size: 16px;
+}
+
+.contact-form textarea.form-control {
+    min-height: 180px;
+    padding-top: 12px;
+    resize: vertical;
+}
+
+.contact-form .form-control:focus {
+    border-color: #159a5c;
+    box-shadow: 0 0 0 3px rgba(21, 154, 92, 0.10) !important;
+}
+
+.contact-form-actions {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.contact-submit-btn,
+.contact-login-btn {
+    min-height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 22px;
+    border-radius: 16px;
+    border: 0;
+    background: linear-gradient(135deg, #159a5c, #0f7d4b);
+    color: #ffffff !important;
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none !important;
+    box-shadow: 0 12px 24px rgba(21, 154, 92, 0.22);
+}
+
+.contact-login-state,
+.contact-result-box {
+    padding: 16px 18px;
+    border-radius: 18px;
+    border: 1px solid #dbe7e1;
+    background: #f8fbf9;
+    font-size: 16px;
+    line-height: 1.65;
+    color: #5d7068;
+}
+
+.contact-login-state-success,
+.contact-result-success {
+    background: #f4fbf6;
+    border-color: #cde7d6;
+    color: #17633c;
+}
+
+.contact-login-state-warning,
+.contact-result-error {
+    background: #fff7f7;
+    border-color: #f0d4d4;
+    color: #b42318;
+}
+
+.contact-ticket-shell {
+    display: grid;
+    gap: 24px;
+}
+
+.contact-ticket-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.contact-summary-card {
+    padding: 22px;
+}
+
+.contact-summary-label {
+    font-size: 15px;
+    color: #6c7c75;
+    margin-bottom: 10px;
+}
+
+.contact-summary-value {
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1.06;
+    color: #14211d;
+    margin-bottom: 8px;
+}
+
+/* PHẦN LIST MỚI */
+.contact-ticket-panel {
+    padding: 26px;
+}
+
+.contact-ticket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.contact-ticket-item {
+    position: relative;
+    padding: 22px 24px;
+    border: 1px solid #e3ede8;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdfc 100%);
+    box-shadow: 0 10px 26px rgba(20, 52, 38, 0.04);
+}
+
+.contact-ticket-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 16px;
+    align-items: start;
+}
+
+.contact-ticket-order {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef8f2;
+    color: #117245;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.contact-ticket-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.contact-ticket-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #16231e;
+    line-height: 1.35;
+    margin: 0;
+}
+
+.contact-ticket-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    font-size: 14px;
+    color: #687972;
+    line-height: 1.7;
+}
+
+.contact-ticket-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+
+.contact-ticket-badge-new {
+    background: #fff1f2;
+    color: #be123c;
+    border-color: #ffd4dc;
+}
+
+.contact-ticket-badge-processing {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-color: #d7e7ff;
+}
+
+.contact-ticket-badge-done {
+    background: #e8f8ef;
+    color: #168b4b;
+    border-color: #ccebd8;
+}
+
+.contact-ticket-message,
+.contact-ticket-reply {
+    padding: 16px 18px;
+    border-radius: 18px;
+    line-height: 1.8;
+    white-space: pre-line;
+}
+
+.contact-ticket-message {
+    margin-top: 14px;
+    background: #fafdfb;
+    border: 1px solid #eaf1ed;
+    color: #30403a;
+}
+
+.contact-ticket-reply {
+    margin-top: 12px;
+    background: #f4fbf6;
+    border: 1px solid #d8ebdf;
+    color: #1c4d31;
+}
+
+    .contact-ticket-reply strong {
+        display: inline-block;
+        margin-bottom: 6px;
+        color: #145734;
+    }
+
+.contact-ticket-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.contact-ticket-btn,
+.contact-ticket-btn-secondary {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none !important;
+}
+
+.contact-ticket-btn {
+    background: #159a5c;
+    color: #ffffff !important;
+    border: 1px solid #159a5c;
+}
+
+.contact-ticket-btn-secondary {
+    background: #ffffff;
+    color: #33423c !important;
+    border: 1px solid #d8e4de;
+}
+
+.contact-ticket-empty {
+    padding: 24px;
+    border: 1px dashed #d7e5de;
+    border-radius: 20px;
+    background: #fafcfb;
+    font-size: 16px;
+    color: #5d7068;
+}
+
+/* PAGER SỐ TRANG */
+.contact-ticket-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+#ticketPageInfo {
+    font-size: 15px !important;
+    color: #64796f !important;
+    font-weight: 600;
+}
+
+#ticketPager {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.contact-page-btn {
+    min-width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid rgba(19, 87, 57, 0.12);
+    background: #ffffff;
+    color: #1f3d2f;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .18s ease;
+}
+
+    .contact-page-btn:hover {
+        transform: translateY(-1px);
+        border-color: rgba(19, 87, 57, 0.28);
+    }
+
+    .contact-page-btn.is-active {
+        background: #1faa5d;
+        border-color: #1faa5d;
+        color: #ffffff;
+        box-shadow: 0 10px 24px rgba(31, 170, 93, 0.24);
+    }
+
+    .contact-page-btn.is-disabled {
+        opacity: .45;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+@media (max-width: 1199.98px) {
+    .contact-main-grid,
+    .contact-ticket-summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .contact-main-section,
+    .contact-ticket-section {
+        padding-top: 18px;
+    }
+
+    .contact-panel-card,
+    .contact-summary-card,
+    .contact-ticket-item {
+        border-radius: 22px;
+    }
+
+    .contact-panel-card,
+    .contact-summary-card,
+    .contact-ticket-panel {
+        padding: 20px;
+    }
+
+    .contact-panel-title {
+        font-size: 28px;
+    }
+
+    .contact-form-grid,
+    .contact-ticket-summary-grid,
+    .contact-ticket-row {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-summary-value {
+        font-size: 34px;
+    }
+
+    .contact-ticket-order {
+        width: 40px;
+        height: 40px;
+    }
+
+    .contact-ticket-title {
+        font-size: 20px;
+    }
+
+    .contact-ticket-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -1,0 +1,224 @@
+﻿@model tramsac99.Areas.User.ViewModels.UserProfileViewModel
+
+@{
+    ViewData["Title"] = "Thông tin người dùng";
+    var initial = !string.IsNullOrWhiteSpace(Model.FullName)
+        ? Model.FullName.Trim()[0].ToString().ToUpper()
+        : (!string.IsNullOrWhiteSpace(Model.Username) ? Model.Username.Trim()[0].ToString().ToUpper() : "U");
+
+    // Why changed: avoid showing 01-01-0001 when CreatedAt is empty/default.
+    var createdAtDisplay = Model.CreatedAt <= DateTime.MinValue.AddDays(1)
+        ? DateTime.Now
+        : Model.CreatedAt;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/user/assets/css/user-account.css" asp-append-version="true" />
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="account-page">
+    <div class="container">
+        <div class="account-shell">
+            <aside class="account-sidebar">
+                @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+                {
+                    <div class="sidebar-avatar">
+                        <img src="@Model.AvatarUrl" alt="Avatar người dùng">
+                    </div>
+                }
+                else
+                {
+                    <div class="sidebar-avatar-fallback">@initial</div>
+                }
+
+                <div class="sidebar-name">@(string.IsNullOrWhiteSpace(Model.FullName) ? Model.Username : Model.FullName)</div>
+                <div class="sidebar-meta">@Model.Email</div>
+
+                <div class="sidebar-menu">
+                    <a asp-area="User" asp-controller="Account" asp-action="UserInfo" class="sidebar-menu-link active">
+                        <span>Thông tin người dùng</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a asp-area="User" asp-controller="Account" asp-action="ReviewHistory" class="sidebar-menu-link">
+                        <span>Lịch sử đánh giá</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                                    <a asp-area="User" asp-controller="StationRegistration" asp-action="Register" class="sidebar-menu-link">
+                        <span>Đăng ký thêm trạm</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a asp-area="User" asp-controller="StationRegistration" asp-action="MyStations" class="sidebar-menu-link">
+                        <span>Trạm của tôi</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </aside>
+
+            <div class="account-main">
+                @* <div class="account-hero">
+                     <div class="account-hero-top">
+                        <div>
+                            <h1 class="account-title">Thông tin người dùng</h1>
+                            <p class="account-subtitle">Quản lý ảnh đại diện, thông tin tài khoản và mật khẩu trên một giao diện gọn, rõ, đồng bộ với trang lịch sử đánh giá.</p>
+                        </div>
+
+                        <div class="account-tabs">
+                            <a asp-area="User" asp-controller="Account" asp-action="UserInfo" class="account-tab active">Thông tin người dùng</a>
+                            <a asp-area="User" asp-controller="Account" asp-action="ReviewHistory" class="account-tab">Lịch sử đánh giá</a>
+                        </div>
+                    </div>
+                </div> *@
+
+                <div class="account-main-grid">
+                    <div class="account-card">
+                        <div class="account-card-header">
+                            <h2 class="account-card-title">Ảnh và tổng quan tài khoản</h2>
+                            <p class="account-card-subtitle">Thông tin cơ bản đang dùng cho tài khoản hiện tại.</p>
+                        </div>
+
+                        <div class="account-card-body">
+                            @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+                            {
+                                <div class="avatar-preview-box">
+                                    <img src="@Model.AvatarUrl" alt="Avatar">
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="avatar-preview-fallback">@initial</div>
+                            }
+
+                            <form asp-area="User"
+                                  asp-controller="Account"
+                                  asp-action="UpdateAvatar"
+                                  method="post"
+                                  enctype="multipart/form-data"
+                                  class="avatar-form mb-4">
+                                @Html.AntiForgeryToken()
+
+                                @if (TempData["AvatarSuccessMessage"] != null)
+                                {
+                                    <div class="alert alert-success account-alert">@TempData["AvatarSuccessMessage"]</div>
+                                }
+
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                                <input type="file" name="avatarFile" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+                                <button type="submit" class="btn btn-outline-save">Cập nhật ảnh đại diện</button>
+                            </form>
+
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <div class="summary-label">Tên đăng nhập</div>
+                                    <div class="summary-value">@Model.Username</div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-label">Email</div>
+                                    <div class="summary-value">@Model.Email</div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-label">Họ và tên</div>
+                                    <div class="summary-value">@(string.IsNullOrWhiteSpace(Model.FullName) ? "-" : Model.FullName)</div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-label">Vai trò</div>
+                                    <div class="summary-value">@Model.Role</div>
+                                </div>
+                                <div class="summary-item">
+                                    <div class="summary-label">Ngày tạo tài khoản</div>
+                                    <div class="summary-value">@createdAtDisplay.ToString("dd/MM/yyyy HH:mm")</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="account-card">
+                        <div class="account-card-header">
+                            <h2 class="account-card-title">Sửa thông tin</h2>
+                            <p class="account-card-subtitle">Cập nhật email và họ tên của tài khoản.</p>
+                        </div>
+
+                        <div class="account-card-body">
+                            @if (TempData["ProfileSuccessMessage"] != null)
+                            {
+                                <div class="alert alert-success account-alert mb-3">@TempData["ProfileSuccessMessage"]</div>
+                            }
+
+                            <form asp-area="User" asp-controller="Account" asp-action="UpdateProfile" method="post" class="profile-form">
+                                @Html.AntiForgeryToken()
+
+                                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                                <div>
+                                    <label class="input-label">Tên đăng nhập</label>
+                                    <input class="form-control" value="@Model.Username" readonly />
+                                </div>
+
+                                <div>
+                                    <label class="input-label" asp-for="Email"></label>
+                                    <input asp-for="Email" class="form-control" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+
+                                <div>
+                                    <label class="input-label" asp-for="FullName"></label>
+                                    <input asp-for="FullName" class="form-control" />
+                                    <span asp-validation-for="FullName" class="text-danger"></span>
+                                </div>
+
+                                <button type="submit" class="btn btn-save">Lưu thông tin</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="account-card">
+                    <div class="account-card-header">
+                        <h2 class="account-card-title">Đổi mật khẩu</h2>
+                        <p class="account-card-subtitle">Cập nhật thông tin bảo mật cho tài khoản hiện tại.</p>
+                    </div>
+
+                    <div class="account-card-body">
+                        @if (TempData["PasswordSuccessMessage"] != null)
+                        {
+                            <div class="alert alert-success account-alert mb-3">@TempData["PasswordSuccessMessage"]</div>
+                        }
+
+                        <form asp-area="User" asp-controller="Account" asp-action="ChangePassword" method="post" class="password-form">
+                            @Html.AntiForgeryToken()
+
+                            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                            <div>
+                                <label class="input-label" asp-for="CurrentPassword"></label>
+                                <input asp-for="CurrentPassword" type="password" class="form-control" />
+                                <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                            </div>
+
+                            <div>
+                                <label class="input-label" asp-for="NewPassword"></label>
+                                <input asp-for="NewPassword" type="password" class="form-control" />
+                                <span asp-validation-for="NewPassword" class="text-danger"></span>
+                            </div>
+
+                            <div>
+                                <label class="input-label" asp-for="ConfirmNewPassword"></label>
+                                <input asp-for="ConfirmNewPassword" type="password" class="form-control" />
+                                <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                            </div>
+
+                            <button type="submit" class="btn btn-outline-save">Đổi mật khẩu</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,434 @@
+﻿/* Why changed: dedicated admin support page styles for a consistent enterprise admin UI. */
+
+.support-admin-page .card {
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(31, 41, 55, 0.08);
+    overflow: hidden;
+}
+
+.support-admin-hero .card-body,
+.support-filter-card .card-body,
+.support-table-card .card-footer,
+.support-table-card .card-header {
+    padding: 1.15rem 1.25rem;
+}
+
+.support-admin-kicker,
+.support-modal-kicker {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: #ebf5ff;
+    color: #2563eb;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.support-admin-title {
+    margin: 0.85rem 0 0.55rem;
+    font-size: 1.9rem;
+    line-height: 1.25;
+    font-weight: 800;
+    color: #0f172a;
+    max-width: 900px;
+}
+
+.support-admin-subtitle {
+    margin: 0;
+    color: #64748b;
+    line-height: 1.7;
+    max-width: 880px;
+}
+
+.support-admin-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+
+.support-summary-card {
+    padding: 1rem 1.05rem;
+    border: 1px solid #e5edf6;
+    border-radius: 14px;
+    background: #f8fbff;
+}
+
+.support-summary-label {
+    color: #64748b;
+    font-size: 0.92rem;
+    margin-bottom: 0.55rem;
+}
+
+.support-summary-value {
+    color: #0f172a;
+    font-size: 2rem;
+    line-height: 1.05;
+    font-weight: 800;
+    margin-bottom: 0.35rem;
+}
+
+.support-summary-note {
+    color: #94a3b8;
+    font-size: 0.86rem;
+    line-height: 1.55;
+}
+
+.support-filter-card .card-header,
+.support-table-card .card-header {
+    background: #fff;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.support-filter-card .card-title,
+.support-table-card .card-title {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.support-filter-row {
+    align-items: end;
+}
+
+.support-filter-label {
+    display: inline-block;
+    margin-bottom: 0.45rem;
+    color: #374151;
+    font-weight: 700;
+    font-size: 0.94rem;
+}
+
+.support-admin-page .form-control {
+    min-height: 42px;
+    border-radius: 10px;
+    border: 1px solid #d8e0ea;
+    box-shadow: none;
+}
+
+    .support-admin-page .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 0.16rem rgba(59, 130, 246, 0.12);
+    }
+
+.support-filter-actions {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+    .support-filter-actions .btn {
+        min-height: 42px;
+        border-radius: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+.support-table-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.support-table-head-badges {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.support-table-wrap {
+    overflow-x: auto;
+}
+
+.support-admin-table {
+    width: 100%;
+    min-width: 1120px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+    .support-admin-table thead th {
+        border-top: 0;
+        border-bottom: 1px solid #e8edf3;
+        background: #f8fafc;
+        color: #334155;
+        font-weight: 800;
+        font-size: 0.95rem;
+        vertical-align: middle;
+        padding: 14px 12px;
+    }
+
+    .support-admin-table tbody td {
+        padding: 16px 12px;
+        border-top: 0;
+        border-bottom: 1px solid #edf2f7;
+        vertical-align: top !important;
+        color: #1f2937;
+    }
+
+    .support-admin-table tbody tr:hover {
+        background: #fafcff;
+    }
+
+    .support-admin-table th:nth-child(1),
+    .support-admin-table td:nth-child(1) {
+        width: 19%;
+    }
+
+    .support-admin-table th:nth-child(2),
+    .support-admin-table td:nth-child(2) {
+        width: 28%;
+    }
+
+    .support-admin-table th:nth-child(3),
+    .support-admin-table td:nth-child(3) {
+        width: 15%;
+    }
+
+    .support-admin-table th:nth-child(4),
+    .support-admin-table td:nth-child(4) {
+        width: 14%;
+    }
+
+    .support-admin-table th:nth-child(5),
+    .support-admin-table td:nth-child(5) {
+        width: 14%;
+    }
+
+    .support-admin-table th:nth-child(6),
+    .support-admin-table td:nth-child(6) {
+        width: 10%;
+        min-width: 132px;
+    }
+
+.support-table-empty {
+    text-align: center;
+    padding: 32px 12px !important;
+    color: #6b7280;
+}
+
+.support-sender-name,
+.support-subject-title {
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.45;
+    margin-bottom: 0.25rem;
+}
+
+.support-sender-meta,
+.support-row-meta,
+.support-reply-muted {
+    color: #6b7280;
+    font-size: 0.88rem;
+    line-height: 1.55;
+}
+
+.support-message-snippet {
+    color: #334155;
+    line-height: 1.55;
+    margin-top: 0.35rem;
+}
+
+.support-chip-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.support-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.support-chip-category {
+    background: #eef4ff;
+    color: #2850a7;
+}
+
+.support-chip-priority-low {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.support-chip-priority-medium {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.support-chip-priority-high {
+    background: #fff1f2;
+    color: #be123c;
+}
+
+.support-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 0.8rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.support-status-new {
+    background: #fff1f2;
+    color: #be123c;
+}
+
+.support-status-processing {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.support-status-done {
+    background: #e8f8ef;
+    color: #168b4b;
+}
+
+.support-user-seen-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 0.7rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    margin-top: 0.55rem;
+}
+
+.support-user-seen-yes {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.support-user-seen-no {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.support-action-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.support-action-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid #dbe4ee;
+    background: #fff;
+    color: #334155;
+    transition: all 0.18s ease;
+}
+
+    .support-action-btn:hover {
+        border-color: #c6d4e5;
+        background: #f8fbff;
+        color: #0f172a;
+    }
+
+.support-table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    border-top: 1px solid #eef2f7;
+}
+
+.support-modal-shell {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.support-modal-header,
+.support-modal-footer {
+    border-color: #eef2f7;
+    padding: 1rem 1.25rem;
+}
+
+.support-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.support-detail-box {
+    border: 1px solid #e5edf6;
+    border-radius: 14px;
+    background: #fafcff;
+    padding: 1rem;
+}
+
+    .support-detail-box.full {
+        grid-column: 1 / -1;
+    }
+
+.support-detail-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #64748b;
+    margin-bottom: 0.45rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.support-detail-value {
+    color: #0f172a;
+    white-space: pre-line;
+    line-height: 1.65;
+}
+
+.support-reply-editor {
+    margin-top: 1rem;
+}
+
+    .support-reply-editor textarea {
+        min-height: 120px !important;
+        resize: vertical;
+        padding-top: 0.75rem;
+    }
+
+@media (max-width: 1199.98px) {
+    .support-admin-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 991.98px) {
+    .support-filter-actions {
+        justify-content: flex-start;
+        margin-top: 0.3rem;
+    }
+
+    .support-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .support-admin-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .support-admin-title {
+        font-size: 1.55rem;
+    }
+}

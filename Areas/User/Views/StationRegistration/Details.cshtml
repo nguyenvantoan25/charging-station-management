@@ -1,0 +1,964 @@
+@model tramsac99.Areas.User.ViewModels.ManageStationDetailsViewModel
+@using tramsac99.Areas.Admin.Models
+
+@{
+    ViewData["Title"] = "Chi tiết trạm của tôi";
+
+    string GetStatusClass(string? status)
+    {
+        return status switch
+        {
+            var s when s == ChargingStatus.Active || s == StationOperationStatus.Active => "is-success",
+            var s when s == ChargingStatus.Error || s == StationOperationStatus.Error => "is-danger",
+            var s when s == ChargingStatus.Maintenance || s == StationOperationStatus.Maintenance => "is-warning",
+            _ => "is-muted"
+        };
+    }
+
+    string GetRequestStatusClass(string? status)
+    {
+        return status switch
+        {
+            var s when s == StationWorkflowStatus.Completed || s == StationWorkflowStatus.Approved => "is-success",
+            var s when s == StationWorkflowStatus.Pending || s == StationWorkflowStatus.AwaitingPayment => "is-warning",
+            var s when s == StationWorkflowStatus.Rejected => "is-danger",
+            _ => "is-muted"
+        };
+    }
+
+    string GetMaintenanceClass(string? status)
+    {
+        return StationMaintenanceStatus.Normalize(status) switch
+        {
+            StationMaintenanceStatus.Paid => "is-success",
+            StationMaintenanceStatus.Active => "is-success",
+            StationMaintenanceStatus.Pending => "is-warning",
+            StationMaintenanceStatus.ExpiringSoon => "is-warning",
+            StationMaintenanceStatus.Unpaid => "is-danger",
+            StationMaintenanceStatus.Expired => "is-danger",
+            StationMaintenanceStatus.MaintenanceUnpaid => "is-danger",
+            StationMaintenanceStatus.Hidden => "is-muted",
+            StationMaintenanceStatus.Locked => "is-danger",
+            _ => "is-muted"
+        };
+    }
+}
+
+@section Styles {
+    <style>
+        .station-shell {
+            padding: 34px 0 72px;
+            background: linear-gradient(180deg, #f5fbf8 0%, #eef7f2 100%);
+        }
+
+        .station-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .station-hero {
+            border-radius: 28px;
+            padding: 28px 30px;
+            color: #fff;
+            background: linear-gradient(135deg, #073b33 0%, #0c5f51 48%, #1b8b6c 100%);
+            box-shadow: 0 26px 70px rgba(6, 66, 50, .18);
+        }
+
+        .station-hero__top, .station-toolbar, .station-table-actions, .station-pagination, .station-history-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .station-breadcrumb {
+            font-size: 13px;
+            opacity: .85;
+            margin-bottom: 12px;
+        }
+
+            .station-breadcrumb a {
+                color: #fff;
+                text-decoration: none;
+            }
+
+        .station-hero h1 {
+            margin: 0 0 8px;
+            font-size: 34px;
+            font-weight: 800;
+        }
+
+        .station-hero p {
+            margin: 0;
+            max-width: 760px;
+            color: rgba(255,255,255,.88);
+        }
+
+        .station-hero-badges {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .station-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-weight: 700;
+            background: rgba(255,255,255,.14);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,.16);
+        }
+
+        .station-btn-main, .station-btn-soft, .station-btn-danger, .station-btn-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: .2s ease;
+            white-space: nowrap;
+        }
+
+        .station-btn-main {
+            padding: 14px 18px;
+            background: #19a56d;
+            color: #fff;
+            box-shadow: 0 14px 30px rgba(25,165,109,.22);
+        }
+
+            .station-btn-main:hover {
+                transform: translateY(-1px);
+                color: #fff;
+            }
+
+        .station-btn-soft {
+            padding: 13px 17px;
+            background: #fff;
+            color: #0c5f51;
+            border: 1px solid rgba(12,95,81,.12);
+        }
+
+            .station-btn-soft:hover {
+                color: #0c5f51;
+                transform: translateY(-1px);
+            }
+
+        .station-btn-danger {
+            padding: 12px 16px;
+            background: #fff5f5;
+            color: #d63636;
+            border: 1px solid rgba(214,54,54,.14);
+        }
+
+            .station-btn-danger:hover {
+                color: #d63636;
+            }
+
+        .station-btn-icon {
+            width: 42px;
+            height: 42px;
+            background: #fff;
+            color: #0c5f51;
+            border: 1px solid rgba(12,95,81,.12);
+        }
+
+        .station-alert-box {
+            border-radius: 18px;
+            padding: 15px 18px;
+            font-weight: 600;
+        }
+
+            .station-alert-box.success {
+                background: #effaf5;
+                color: #0e6e52;
+                border: 1px solid rgba(14,110,82,.14);
+            }
+
+            .station-alert-box.error {
+                background: #fff4f4;
+                color: #b43232;
+                border: 1px solid rgba(180,50,50,.12);
+            }
+
+        .station-stats {
+            display: grid;
+            grid-template-columns: repeat(4,minmax(0,1fr));
+            gap: 16px;
+        }
+
+        .station-stat-card, .station-card {
+            background: #fff;
+            border: 1px solid rgba(8,54,42,.08);
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(10, 74, 55, .06);
+        }
+
+        .station-stat-card {
+            padding: 22px;
+        }
+
+        .station-stat-card__label {
+            color: #64756f;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .station-stat-card__value {
+            color: #10211b;
+            font-weight: 800;
+            font-size: 28px;
+        }
+
+        .station-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+            gap: 24px;
+        }
+
+        .station-card__head {
+            padding: 22px 24px 0;
+        }
+
+        .station-card__body {
+            padding: 22px 24px 24px;
+        }
+
+        .station-card__title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            color: #10211b;
+        }
+
+        .station-card__desc {
+            margin: 8px 0 0;
+            color: #66756f;
+        }
+
+        .station-info-list {
+            display: grid;
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 14px;
+        }
+
+        .station-info-item {
+            border-radius: 18px;
+            background: #f8fcfa;
+            border: 1px solid rgba(8,54,42,.06);
+            padding: 18px;
+        }
+
+            .station-info-item span {
+                display: block;
+                color: #6a7973;
+                font-size: 13px;
+                margin-bottom: 7px;
+            }
+
+            .station-info-item strong {
+                color: #10211b;
+                font-size: 17px;
+            }
+
+        .station-form-grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        .station-label {
+            font-weight: 700;
+            color: #123327;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .station-input, .station-select, .station-textarea {
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid #d8e6df;
+            background: #fff;
+            color: #10211b;
+            padding: 14px 16px;
+            outline: none;
+        }
+
+        .station-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .station-pole-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .station-pole-note {
+            color: #64756f;
+            margin-top: 8px;
+        }
+
+        .station-toolbar {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(8,54,42,.07);
+        }
+
+        .station-toolbar__meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            color: #64756f;
+        }
+
+        .station-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            background: #edf8f2;
+            color: #14704f;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+            .status-pill.is-success {
+                background: #ecfaf1;
+                color: #0e8a57;
+            }
+
+            .status-pill.is-warning {
+                background: #fff6df;
+                color: #b97b00;
+            }
+
+            .status-pill.is-danger {
+                background: #fff0f0;
+                color: #ce4040;
+            }
+
+            .status-pill.is-muted {
+                background: #f0f4f2;
+                color: #6a7772;
+            }
+
+        .station-table-wrap {
+            overflow-x: auto;
+        }
+
+        .station-table {
+            width: 100%;
+            min-width: 860px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+            .station-table thead th {
+                background: #f3faf7;
+                color: #184637;
+                font-size: 13px;
+                letter-spacing: .02em;
+                text-transform: uppercase;
+                padding: 14px 16px;
+                border-top: 1px solid rgba(8,54,42,.08);
+                border-bottom: 1px solid rgba(8,54,42,.08);
+            }
+
+                .station-table thead th:first-child {
+                    border-top-left-radius: 18px;
+                }
+
+                .station-table thead th:last-child {
+                    border-top-right-radius: 18px;
+                }
+
+            .station-table tbody td {
+                padding: 18px 16px;
+                background: #fff;
+                border-bottom: 1px solid rgba(8,54,42,.06);
+                vertical-align: middle;
+            }
+
+            .station-table tbody tr:hover td {
+                background: #fbfefd;
+            }
+
+        .station-pole-code {
+            font-weight: 800;
+            color: #10211b;
+        }
+
+        .station-note-cell {
+            max-width: 280px;
+            color: #62736d;
+        }
+
+        .station-table-actions {
+            justify-content: flex-end;
+        }
+
+        .station-pagination {
+            margin-top: 20px;
+        }
+
+        .station-page-link {
+            min-width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 12px;
+            background: #fff;
+            color: #0d5c4e;
+            border: 1px solid rgba(12,95,81,.12);
+            font-weight: 700;
+        }
+
+            .station-page-link.is-active {
+                background: #0c5f51;
+                color: #fff;
+                border-color: #0c5f51;
+            }
+
+            .station-page-link.is-disabled {
+                pointer-events: none;
+                opacity: .4;
+            }
+
+        .station-empty {
+            border-radius: 20px;
+            padding: 34px 20px;
+            text-align: center;
+            color: #65756f;
+            background: #f7fbf9;
+            border: 1px dashed rgba(12,95,81,.18);
+        }
+
+        .station-history-list {
+            display: grid;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .station-history-item {
+            border-radius: 20px;
+            background: #f9fcfa;
+            border: 1px solid rgba(8,54,42,.07);
+            padding: 18px;
+        }
+
+        .station-history-item__top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .station-history-item__title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #10211b;
+        }
+
+        .station-history-item__meta {
+            color: #697974;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+
+        .station-history-item__note {
+            margin-top: 12px;
+            color: #4d5d57;
+        }
+        @@media (max-width: 1199.98px) {
+            .station-stats
+
+        {
+            grid-template-columns: repeat(2,minmax(0,1fr));
+        }
+
+        .station-grid {
+            grid-template-columns: 1fr;
+        }
+
+        }
+        @@media (max-width: 767.98px) {
+            .station-shell
+
+        {
+            padding-top: 24px;
+        }
+
+        .station-hero {
+            padding: 22px 18px;
+        }
+
+            .station-hero h1 {
+                font-size: 28px;
+            }
+
+        .station-stats, .station-info-list {
+            grid-template-columns: 1fr;
+        }
+
+        .station-card__head, .station-card__body {
+            padding-left: 18px;
+            padding-right: 18px;
+        }
+
+        .station-table {
+            min-width: 760px;
+        }
+
+        }</style>
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="station-shell">
+    <div class="container station-stack">
+        @* <div class="station-hero">
+            <div class="station-breadcrumb">
+                <a asp-area="User" asp-controller="StationRegistration" asp-action="MyStations">Trạm của tôi</a>
+                <span> / </span>
+                <span>@Model.Name</span>
+            </div>
+
+            <div class="station-hero__top">
+                <div>
+                    <h1>@Model.Name</h1>
+                    <p>Trang này được tối ưu lại theo kiểu tổng quan: danh sách trụ hiển thị dạng list rõ ràng, có phân trang, có cột thao tác riêng ở cuối và các hành động thêm, sửa, xóa đều tách thành trang con riêng.</p>
+                </div>
+
+                <div class="station-hero-badges">
+                    <span class="station-chip"><i class="fa-solid fa-location-dot"></i> @Model.Address</span>
+                    <span class="station-chip"><i class="fa-solid fa-signal"></i> @Model.Status</span>
+                </div>
+            </div>
+        </div> *@
+
+        @if (TempData["StationRequestSuccess"] != null)
+        {
+            <div class="station-alert-box success">@TempData["StationRequestSuccess"]</div>
+        }
+
+        @if (TempData["StationRequestError"] != null)
+        {
+            <div class="station-alert-box error">@TempData["StationRequestError"]</div>
+        }
+
+        <div class="station-stats">
+            <div class="station-stat-card">
+                <div class="station-stat-card__label">Mã trạm</div>
+                <div class="station-stat-card__value">TRAM-@Model.StationId.ToString("D3")</div>
+            </div>
+            <div class="station-stat-card">
+                <div class="station-stat-card__label">Tổng số trụ</div>
+                <div class="station-stat-card__value">@Model.TotalPoleCount</div>
+            </div>
+            <div class="station-stat-card">
+                <div class="station-stat-card__label">Liên hệ</div>
+                <div class="station-stat-card__value" style="font-size:22px;">@Model.PhoneNumber</div>
+            </div>
+            <div class="station-stat-card">
+                <div class="station-stat-card__label">Yêu cầu gần nhất</div>
+                <div class="station-stat-card__value" style="font-size:20px;">@(Model.LatestOperationAt?.ToString("dd/MM/yyyy") ?? "Chưa có")</div>
+            </div>
+        </div>
+
+        <div class="station-grid">
+            <div class="station-card">
+                <div class="station-card__head">
+                    <h2 class="station-card__title">Tổng quan trạm</h2>
+                    <p class="station-card__desc">Thông tin vận hành chính của trạm được gom lại để dễ xem nhanh.</p>
+                </div>
+                <div class="station-card__body">
+                    <div class="station-info-list">
+                        <div class="station-info-item">
+                            <span>Tên trạm</span>
+                            <strong>@Model.Name</strong>
+                        </div>
+                        <div class="station-info-item">
+                            <span>Trạng thái vận hành</span>
+                            <strong><span class="status-pill @GetStatusClass(Model.OperationStatus)">@Model.OperationStatusText</span></strong>
+                        </div>
+                        <div class="station-info-item">
+                            <span>Trạng thái hệ thống</span>
+                            <strong>@Model.SystemStatusText</strong>
+                        </div>
+                        <div class="station-info-item">
+                            <span>Vĩ độ</span>
+                            <strong>@Model.Latitude</strong>
+                        </div>
+                        <div class="station-info-item">
+                            <span>Kinh độ</span>
+                            <strong>@Model.Longitude</strong>
+                        </div>
+                        <div class="station-info-item" style="grid-column: 1 / -1;">
+                            <span>Địa chỉ</span>
+                            <strong>@Model.Address</strong>
+                        </div>
+                        <div class="station-info-item">
+                            <span>Phí duy trì hàng tháng</span>
+                            <strong>@Model.MonthlyMaintenanceFee.ToString("N0")đ</strong>
+                        </div>
+                        <div class="station-info-item">
+                            <span>Trạng thái phí duy trì</span>
+                            <strong><span class="status-pill @GetMaintenanceClass(Model.MaintenanceFeeStatus)">@Model.MaintenanceFeeStatusText</span></strong>
+                        </div>
+                        <div class="station-info-item">
+                            <span>Hạn duy trì</span>
+                            <strong>@(Model.MaintenanceFeeDueDate.HasValue ? Model.MaintenanceFeeDueDate.Value.ToString("dd/MM/yyyy HH:mm") : "Chưa thanh toán")</strong>
+                        </div>
+                        <div class="station-info-item">
+                            <span>Số ngày còn lại</span>
+                            <strong>@(Model.DaysRemaining > 0 ? $"{Model.DaysRemaining} ngày" : "Đã quá hạn")</strong>
+                        </div>
+                        <div class="station-info-item">
+                            <span>Hiển thị với người dùng</span>
+                            <strong>@(Model.IsVisible ? "Đang hiển thị" : "Đang tạm ẩn")</strong>
+                        </div>
+                        <div class="station-info-item" style="grid-column: 1 / -1;">
+                            <span>Thanh toán duy trì</span>
+                            @if (!Model.IsVisible || !string.IsNullOrWhiteSpace(Model.HiddenReason))
+                            {
+                                <div class="station-alert-box error mb-2">
+                                    Trạm đang tạm ẩn vì chưa thanh toán phí duy trì/quá hạn hoặc bị admin tạm ẩn. Lý do: @(Model.HiddenReason ?? "Chưa rõ")
+                                </div>
+                            }
+                            @if (Model.CanPayMaintenance)
+                            {
+                                <form asp-area="User" asp-controller="StationRegistration" asp-action="StartMaintenancePayment" method="post" class="mt-2">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@Model.StationId" />
+                                <input type="hidden" name="returnToDetails" value="true" />
+                                <input type="hidden" name="historyPage" value="@Model.HistoryPage" />
+                                <input type="hidden" name="polePage" value="@Model.PolePage" />
+                                <button type="submit" class="station-btn-main" @(Model.CanManageOperations ? null : "disabled")>
+                                    <i class="fa-solid fa-wallet"></i>
+                                    Thanh toán duy trì qua PayOS
+                                </button>
+                                </form>
+                            }
+                            else
+                            {
+                                <button type="button" class="station-btn-soft mt-2" disabled>
+                                    <i class="fa-regular fa-circle-check"></i>
+                                    Phí duy trì còn hiệu lực
+                                </button>
+                            }
+                            <small class="text-muted d-block mt-2">Phí duy trì được hệ thống tự gia hạn theo chu kỳ 1 tháng sau khi thanh toán thành công.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="station-card">
+                <div class="station-card__head">
+                    <h2 class="station-card__title">Cập nhật trạng thái</h2>
+                    <p class="station-card__desc">Chủ trạm cập nhật trực tiếp, không cần admin duyệt trước khi áp dụng.</p>
+                </div>
+                <div class="station-card__body">
+                    @if (!Model.CanManageOperations)
+                    {
+                        <div class="station-alert-box error mb-3">Trạm chưa được duyệt/kích hoạt hoặc đang bị admin khóa nên không thể cập nhật vận hành.</div>
+                    }
+                    <form asp-area="User" asp-controller="StationRegistration" asp-action="CreateStatusRequest" method="post" class="station-form-grid">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="StationId" value="@Model.StationId" />
+                        <input type="hidden" name="returnToDetails" value="true" />
+                        <input type="hidden" name="historyPage" value="@Model.HistoryPage" />
+                        <input type="hidden" name="polePage" value="@Model.PolePage" />
+
+                        <div>
+                            <label class="station-label">Trạng thái muốn cập nhật</label>
+                            <select class="station-select" name="RequestedStatus">
+                                <option value="@StationOperationStatus.Active">Đang hoạt động</option>
+                                <option value="@StationOperationStatus.Error">Lỗi</option>
+                                <option value="@StationOperationStatus.Maintenance">Bảo trì</option>
+                                <option value="@StationOperationStatus.Inactive">Không hoạt động</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="station-label">Ghi chú</label>
+                            <textarea class="station-textarea" name="Note" placeholder="Ví dụ: tạm dừng vận hành để kiểm tra hệ thống điện."></textarea>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="station-btn-main">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                Cập nhật trạng thái
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="station-card">
+            <div class="station-card__head">
+                <div class="station-pole-header">
+                    <div>
+                        <h2 class="station-card__title">Danh sách trụ hiện có</h2>
+                        <p class="station-card__desc">Hiển thị kiểu list tổng quan, có cột thao tác rõ ràng ở cuối từng dòng.</p>
+                    </div>
+
+                    <a asp-area="User"
+                       asp-controller="StationRegistration"
+                       asp-action="RequestAddPole"
+                       asp-route-stationId="@Model.StationId"
+                       asp-route-historyPage="@Model.HistoryPage"
+                       asp-route-polePage="@Model.PolePage"
+                       class="station-btn-main">
+                        <i class="fa-solid fa-plus"></i>
+                        Thêm trụ mới
+                    </a>
+                </div>
+            </div>
+            <div class="station-card__body">
+                <div class="station-toolbar">
+                    <div class="station-toolbar__meta">
+                        <span class="station-pill">@Model.PoleTotalCount trụ</span>
+                        <span>Trang @Model.PolePage / @Model.PoleTotalPages</span>
+                        <span>Hiển thị tối đa @Model.PolePageSize trụ mỗi trang</span>
+                    </div>
+
+                    <a asp-area="User" asp-controller="StationRegistration" asp-action="MyStations" class="station-btn-soft">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Quay lại danh sách trạm
+                    </a>
+                </div>
+
+                @if (!Model.PoleItems.Any())
+                {
+                    <div class="station-empty">
+                        <i class="fa-solid fa-charging-station mb-2"></i>
+                        <div>Trạm này chưa có trụ nào. Bạn có thể thêm trụ trực tiếp ở nút phía trên.</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="station-table-wrap">
+                        <table class="station-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:80px;">STT</th>
+                                    <th>Mã trụ</th>
+                                    <th>Công suất</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ghi chú</th>
+                                    <th style="width:220px; text-align:right;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (var i = 0; i < Model.PoleItems.Count; i++)
+                                {
+                                    var pole = Model.PoleItems[i];
+                                    var rowNumber = ((Model.PolePage - 1) * Model.PolePageSize) + i + 1;
+
+                                    <tr>
+                                        <td>@rowNumber</td>
+                                        <td>
+                                            <div class="station-pole-code">@pole.PoleCode</div>
+                                            <div class="text-muted" style="font-size:13px; margin-top:4px;">ID trụ: @pole.Id</div>
+                                        </td>
+                                        <td>@(string.IsNullOrWhiteSpace(pole.MaxPower) ? "-" : pole.MaxPower)</td>
+                                        <td>
+                                            <span class="status-pill @GetStatusClass(pole.Status)">@pole.Status</span>
+                                        </td>
+                                        <td class="station-note-cell">@(string.IsNullOrWhiteSpace(pole.Note) ? "Không có ghi chú" : pole.Note)</td>
+                                        <td>
+                                            <div class="station-table-actions">
+                                                <a asp-area="User"
+                                                   asp-controller="StationRegistration"
+                                                   asp-action="RequestUpdatePole"
+                                                   asp-route-stationId="@Model.StationId"
+                                                   asp-route-poleId="@pole.Id"
+                                                   asp-route-historyPage="@Model.HistoryPage"
+                                                   asp-route-polePage="@Model.PolePage"
+                                                   class="station-btn-soft">
+                                                    <i class="fa-solid fa-pen"></i>
+                                                    Sửa
+                                                </a>
+                                                <a asp-area="User"
+                                                   asp-controller="StationRegistration"
+                                                   asp-action="RequestDeletePole"
+                                                   asp-route-stationId="@Model.StationId"
+                                                   asp-route-poleId="@pole.Id"
+                                                   asp-route-historyPage="@Model.HistoryPage"
+                                                   asp-route-polePage="@Model.PolePage"
+                                                   class="station-btn-danger">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                    Xóa
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (Model.PoleTotalPages > 1)
+                    {
+                        <div class="station-pagination">
+                            <div class="station-toolbar__meta">
+                                <span>Chuyển trang danh sách trụ</span>
+                            </div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <a class="station-page-link @(Model.PolePage <= 1 ? "is-disabled" : string.Empty)"
+                                   asp-area="User"
+                                   asp-controller="StationRegistration"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.StationId"
+                                   asp-route-historyPage="@Model.HistoryPage"
+                                   asp-route-polePage="@(Model.PolePage - 1)">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </a>
+
+                                @for (var pageNumber = 1; pageNumber <= Model.PoleTotalPages; pageNumber++)
+                                {
+                                    <a class="station-page-link @(pageNumber == Model.PolePage ? "is-active" : string.Empty)"
+                                       asp-area="User"
+                                       asp-controller="StationRegistration"
+                                       asp-action="Details"
+                                       asp-route-id="@Model.StationId"
+                                       asp-route-historyPage="@Model.HistoryPage"
+                                       asp-route-polePage="@pageNumber">@pageNumber</a>
+                                }
+
+                                <a class="station-page-link @(Model.PolePage >= Model.PoleTotalPages ? "is-disabled" : string.Empty)"
+                                   asp-area="User"
+                                   asp-controller="StationRegistration"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.StationId"
+                                   asp-route-historyPage="@Model.HistoryPage"
+                                   asp-route-polePage="@(Model.PolePage + 1)">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="station-card">
+            <div class="station-card__head">
+                <div class="station-history-head">
+                    <div>
+                        <h2 class="station-card__title">Nhật ký thao tác</h2>
+                        <p class="station-card__desc">Theo dõi các thao tác trạng thái, thêm, sửa, xóa trụ đã áp dụng trực tiếp.</p>
+                    </div>
+                    <div class="station-toolbar__meta">
+                        <span class="station-pill">@Model.HistoryTotalCount yêu cầu</span>
+                        <span>Trang @Model.HistoryPage / @Model.HistoryTotalPages</span>
+                    </div>
+                </div>
+            </div>
+            <div class="station-card__body">
+                @if (!Model.HistoryItems.Any())
+                {
+                    <div class="station-empty">Chưa có lịch sử yêu cầu nào cho trạm này.</div>
+                }
+                else
+                {
+                    <div class="station-history-list">
+                        @foreach (var item in Model.HistoryItems)
+                        {
+                            <div class="station-history-item">
+                                <div class="station-history-item__top">
+                                    <div>
+                                        <div class="station-history-item__title">@item.RequestType</div>
+                                        <div class="station-history-item__meta">
+                                            @item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                            @if (!string.IsNullOrWhiteSpace(item.PoleCode))
+                                            {
+                                                <span> • Trụ @item.PoleCode</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <span class="status-pill @GetRequestStatusClass(item.Status)">@item.Status</span>
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(item.UserNote))
+                                {
+                                    <div class="station-history-item__note"><strong>Ghi chú:</strong> @item.UserNote</div>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    @if (Model.HistoryTotalPages > 1)
+                    {
+                        <div class="station-pagination">
+                            <div class="station-toolbar__meta">
+                                <span>Chuyển trang lịch sử yêu cầu</span>
+                            </div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                <a class="station-page-link @(Model.HistoryPage <= 1 ? "is-disabled" : string.Empty)"
+                                   asp-area="User"
+                                   asp-controller="StationRegistration"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.StationId"
+                                   asp-route-historyPage="@(Model.HistoryPage - 1)"
+                                   asp-route-polePage="@Model.PolePage">
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </a>
+
+                                @for (var pageNumber = 1; pageNumber <= Model.HistoryTotalPages; pageNumber++)
+                                {
+                                    <a class="station-page-link @(pageNumber == Model.HistoryPage ? "is-active" : string.Empty)"
+                                       asp-area="User"
+                                       asp-controller="StationRegistration"
+                                       asp-action="Details"
+                                       asp-route-id="@Model.StationId"
+                                       asp-route-historyPage="@pageNumber"
+                                       asp-route-polePage="@Model.PolePage">@pageNumber</a>
+                                }
+
+                                <a class="station-page-link @(Model.HistoryPage >= Model.HistoryTotalPages ? "is-disabled" : string.Empty)"
+                                   asp-area="User"
+                                   asp-controller="StationRegistration"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.StationId"
+                                   asp-route-historyPage="@(Model.HistoryPage + 1)"
+                                   asp-route-polePage="@Model.PolePage">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</section>

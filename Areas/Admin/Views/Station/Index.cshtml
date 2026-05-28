@@ -1,0 +1,775 @@
+@{
+    ViewData["Title"] = "Danh sách trạm";
+}
+
+@section Styles {
+    <style>
+        .station-admin-page .card {
+            border: 0;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(31, 41, 55, 0.08);
+        }
+
+        .station-admin-page .card-header {
+            border-bottom: 1px solid #eef2f7;
+            background: #fff;
+            padding: 1rem 1.25rem;
+        }
+
+        .station-admin-page .card-title {
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .station-filter-label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #374151;
+            margin-bottom: 0.45rem;
+        }
+
+        .station-admin-page .form-control {
+            height: 42px;
+            border-radius: 10px;
+            border: 1px solid #d8e0ea;
+            box-shadow: none;
+        }
+
+        .station-control-icon .input-group-text {
+            min-width: 44px;
+            justify-content: center;
+            border-radius: 10px 0 0 10px;
+            border: 1px solid #d8e0ea;
+            border-right: 0;
+            background: #f8fffb;
+            color: #0f8f51;
+        }
+
+        .station-control-icon .form-control {
+            border-radius: 0 10px 10px 0;
+        }
+
+            .station-admin-page .form-control:focus {
+                border-color: #16a34a;
+                box-shadow: 0 0 0 0.16rem rgba(22, 163, 74, 0.12);
+            }
+
+        .station-filter-row {
+            align-items: end;
+        }
+
+        .station-filter-actions {
+            display: flex;
+            align-items: flex-end;
+        }
+
+            .station-filter-actions .btn {
+                min-height: 42px;
+                border-radius: 10px;
+                font-weight: 700;
+                white-space: nowrap;
+            }
+
+        .station-filter-placeholder {
+            visibility: hidden;
+        }
+
+        .station-admin-table-wrap {
+            overflow-x: auto;
+        }
+
+        .station-admin-table {
+            width: 100%;
+            min-width: 1320px;
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: fixed;
+        }
+
+            .station-admin-table thead th {
+                border-top: 0;
+                border-bottom: 1px solid #e8edf3;
+                background: #f8fafc;
+                color: #334155;
+                font-weight: 800;
+                font-size: 0.95rem;
+                vertical-align: middle;
+                padding: 14px 12px;
+                white-space: nowrap;
+            }
+
+            .station-admin-table tbody td {
+                padding: 16px 12px;
+                border-top: 0;
+                border-bottom: 1px solid #edf2f7;
+                vertical-align: top !important;
+                color: #1f2937;
+            }
+
+            .station-admin-table tbody tr:hover {
+                background: #fafcff;
+            }
+
+            .station-admin-table th:nth-child(1),
+            .station-admin-table td:nth-child(1) {
+                width: 26%;
+            }
+
+            .station-admin-table th:nth-child(2),
+            .station-admin-table td:nth-child(2) {
+                width: 14%;
+            }
+
+            .station-admin-table th:nth-child(3),
+            .station-admin-table td:nth-child(3) {
+                width: 10%;
+            }
+
+            .station-admin-table th:nth-child(4),
+            .station-admin-table td:nth-child(4) {
+                width: 13%;
+            }
+
+            .station-admin-table th:nth-child(5),
+            .station-admin-table td:nth-child(5) {
+                width: 10%;
+            }
+
+            .station-admin-table th:nth-child(6),
+            .station-admin-table td:nth-child(6) {
+                width: 9%;
+                min-width: 100px;
+            }
+
+            .station-admin-table th:nth-child(7),
+            .station-admin-table td:nth-child(7) {
+                width: 20%;
+                min-width: 280px;
+            }
+
+        .station-name {
+            font-weight: 800;
+            color: #111827;
+            line-height: 1.45;
+            margin-bottom: 4px;
+        }
+
+        .station-address {
+            font-size: 0.88rem;
+            color: #6b7280;
+            line-height: 1.45;
+            margin-bottom: 8px;
+        }
+
+        .station-source-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .station-source-admin {
+            background: #e8f7ee;
+            color: #0f8f51;
+        }
+
+        .station-source-user {
+            background: #eef2ff;
+            color: #3743b5;
+        }
+
+        .maintenance-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            line-height: 1.2;
+            white-space: normal;
+        }
+
+        .maintenance-active { background: #dcfce7; color: #166534; }
+        .maintenance-expiring { background: #fef3c7; color: #92400e; }
+        .maintenance-unpaid { background: #ffedd5; color: #c2410c; }
+        .maintenance-hidden { background: #f1f5f9; color: #475569; }
+        .maintenance-locked { background: #fee2e2; color: #991b1b; }
+        .maintenance-na { background: #e5e7eb; color: #374151; }
+
+        .station-visibility-note {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: 6px;
+            line-height: 1.35;
+        }
+
+        .station-admin-rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #fff8e6;
+            color: #92400e;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .station-admin-actions {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            width: 100%;
+            min-width: 260px;
+        }
+
+            .station-admin-actions .btn {
+                width: 100%;
+                min-height: 36px;
+                margin: 0 !important;
+                padding: 0.42rem 0.65rem;
+                border-radius: 12px;
+                font-weight: 700;
+                font-size: 0.82rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: flex-start;
+                gap: 7px;
+                white-space: nowrap;
+                line-height: 1.2;
+            }
+
+                .station-admin-actions .btn i {
+                    font-size: 0.9rem;
+                    width: 18px;
+                    text-align: center;
+                    flex: 0 0 18px;
+                }
+
+            .station-admin-actions .btn-pole-full,
+            .station-admin-actions .btn-danger-full,
+            .station-admin-actions .btn-transaction-full {
+                width: 100%;
+            }
+
+        .station-table-empty {
+            padding: 28px 12px !important;
+            color: #6b7280;
+            text-align: center;
+        }
+
+        .station-page-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .station-list-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .station-result-count {
+            margin-left: auto;
+            flex: 0 0 auto;
+            white-space: nowrap;
+            align-self: flex-start;
+        }
+
+        .station-toolbar-add {
+            margin-left: auto;
+            min-height: 40px;
+            padding: 0.55rem 1rem;
+            border-radius: 10px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.18);
+        }
+
+        @@media (max-width: 991.98px) {
+            .station-filter-actions {
+                display: block;
+            }
+
+                .station-filter-actions .btn {
+                    width: 100%;
+                }
+        }
+
+        @@media (max-width: 767.98px) {
+            .station-page-toolbar {
+                align-items: stretch;
+                flex-wrap: wrap;
+            }
+
+            .station-list-header {
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: nowrap;
+            }
+
+            .station-result-count {
+                margin-left: auto;
+            }
+
+            .station-toolbar-add {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .station-admin-actions {
+                min-width: 150px;
+            }
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Danh sách trạm sạc</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active">Danh sách trạm</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content station-admin-page">
+    <div class="container-fluid">
+        <div class="card mb-4">
+            <div class="card-header station-page-toolbar flex-wrap">
+                <h3 class="card-title mb-0">Bộ lọc tra cứu</h3>
+                <a asp-area="Admin" asp-controller="Station" asp-action="Create" class="btn btn-success station-toolbar-add">
+                    <i class="fas fa-plus mr-2"></i> Thêm trạm
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row station-filter-row">
+                    <div class="col-lg-4 col-md-6 mb-3 mb-lg-0">
+                        <label for="keyword" class="station-filter-label"><i class="fas fa-search mr-1"></i>Từ khóa</label>
+                        <div class="input-group station-control-icon">
+                            <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-search"></i></span></div>
+                            <input type="text" id="keyword" class="form-control" placeholder="Nhập tên trạm hoặc địa chỉ..." />
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6 mb-3 mb-md-0">
+                        <label for="statusFilter" class="station-filter-label"><i class="fas fa-toggle-on mr-1"></i>Trạng thái</label>
+                        <div class="input-group station-control-icon">
+                            <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-toggle-on"></i></span></div>
+                            <select id="statusFilter" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="Đang hoạt động">Đang hoạt động</option>
+                                <option value="Lỗi">Lỗi</option>
+                                <option value="Bảo trì">Bảo trì</option>
+                                <option value="Không hoạt động">Không hoạt động</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 mb-3 mb-md-0">
+                        <label for="sourceFilter" class="station-filter-label"><i class="fas fa-user-shield mr-1"></i>Nguồn tạo</label>
+                        <div class="input-group station-control-icon">
+                            <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-user-shield"></i></span></div>
+                            <select id="sourceFilter" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="admin">Admin</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 mb-3 mb-md-0">
+                        <label for="maintenanceFilter" class="station-filter-label"><i class="fas fa-wallet mr-1"></i>Phí duy trì</label>
+                        <div class="input-group station-control-icon">
+                            <div class="input-group-prepend"><span class="input-group-text"><i class="fas fa-wallet"></i></span></div>
+                            <select id="maintenanceFilter" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="active">Đang hoạt động</option>
+                                <option value="expiring_soon">Sắp hết hạn</option>
+                                <option value="maintenance_unpaid">Chưa thanh toán</option>
+                                <option value="hidden">Tạm ẩn</option>
+                                <option value="locked">Bị khóa</option>
+                                <option value="not_applicable">Không áp dụng</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-1 col-md-6 station-filter-actions">
+                        <label class="station-filter-label station-filter-placeholder">Thao tác</label>
+                        <button id="resetFilterBtn" class="btn btn-secondary btn-block">
+                            <i class="fas fa-filter-circle-xmark mr-1"></i>Xóa lọc
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap" style="gap:12px;">
+                <div id="stationPageInfo" class="text-muted small"></div>
+                <div id="stationPager"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header station-list-header">
+                <h3 class="card-title mb-0">Toàn bộ trạm sạc</h3>
+                <span class="badge badge-info px-3 py-2 station-result-count" id="resultCount">0 kết quả</span>
+            </div>
+            <div class="card-body p-0 station-admin-table-wrap">
+                <table class="table table-hover station-admin-table">
+                    <thead>
+                        <tr>
+                            <th>Tên trạm</th>
+                            <th>Khu vực</th>
+                            <th>Trạng thái</th>
+                            <th>Phí duy trì</th>
+                            <th>Đánh giá</th>
+                            <th>Trụ hoạt động</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stationTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        let allStations = [];
+        let stationPager = null;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            stationPager = TramSacPagination.createPager({
+                pageSize: 15,
+                paginationContainer: 'stationPager',
+                infoContainer: 'stationPageInfo',
+                onPageChange: renderTablePage
+            });
+
+            loadStations();
+
+            document.getElementById("keyword").addEventListener("input", applyFilters);
+            document.getElementById("statusFilter").addEventListener("change", applyFilters);
+            document.getElementById("sourceFilter").addEventListener("change", applyFilters);
+            document.getElementById("maintenanceFilter").addEventListener("change", applyFilters);
+            document.getElementById("resetFilterBtn").addEventListener("click", resetFilters);
+        });
+
+        async function loadStations() {
+            try {
+                const response = await fetch('/Admin/api/stations');
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("API /Admin/api/stations lỗi:", errorText);
+
+                    document.getElementById("stationTableBody").innerHTML = `
+                        <tr>
+                            <td colspan="7" class="station-table-empty text-danger">
+                                Không tải được dữ liệu. HTTP ${response.status}
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                const stations = await response.json();
+                allStations = Array.isArray(stations) ? stations : [];
+                applyFilters();
+            } catch (error) {
+                console.error("Lỗi tải danh sách trạm:", error);
+                document.getElementById("stationTableBody").innerHTML = `
+                    <tr>
+                        <td colspan="7" class="station-table-empty text-danger">
+                            Có lỗi JS hoặc lỗi kết nối khi tải dữ liệu.
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function applyFilters() {
+            const keyword = document.getElementById("keyword").value.trim().toLowerCase();
+            const status = document.getElementById("statusFilter").value;
+            const source = document.getElementById("sourceFilter").value;
+            const maintenance = document.getElementById("maintenanceFilter").value;
+
+            const filtered = allStations.filter(s => {
+                const matchKeyword =
+                    !keyword ||
+                    (s.name && s.name.toLowerCase().includes(keyword)) ||
+                    (s.address && s.address.toLowerCase().includes(keyword));
+
+                const matchStatus = !status || s.status === status;
+                const matchSource = !source
+                    || (source === 'admin' && s.isAdminManaged)
+                    || (source === 'user' && !s.isAdminManaged);
+
+                const matchMaintenance = !maintenance || normalizeMaintenanceStatus(s) === maintenance;
+
+                return matchKeyword && matchStatus && matchSource && matchMaintenance;
+            });
+
+            document.getElementById("resultCount").innerText = `${filtered.length} kết quả`;
+            stationPager.setItems(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById("keyword").value = "";
+            document.getElementById("statusFilter").value = "";
+            document.getElementById("sourceFilter").value = "";
+            document.getElementById("maintenanceFilter").value = "";
+            applyFilters();
+        }
+
+        function renderTablePage(stations) {
+            const tbody = document.getElementById("stationTableBody");
+            tbody.innerHTML = "";
+
+            if (stations.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="station-table-empty">Không có dữ liệu phù hợp.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            stations.forEach(s => {
+                let badgeClass = "badge-success";
+                if (s.status === "Bảo trì") badgeClass = "badge-warning";
+                else if (s.status === "Lỗi" || s.status === "Không hoạt động") badgeClass = "badge-danger";
+
+                const sourceBadgeClass = s.isAdminManaged ? 'station-source-admin' : 'station-source-user';
+                const sourceLabel = s.isAdminManaged ? 'Admin' : (s.ownerName ? `User: ${s.ownerName}` : 'User');
+                const normalizedMaintenance = normalizeMaintenanceStatus(s);
+                const maintenanceStatus = s.isAdminManaged ? 'Không áp dụng' : (s.maintenanceFeeStatusText || getMaintenanceStatusText(normalizedMaintenance));
+                const maintenanceBadgeClass = getMaintenanceBadgeClass(normalizedMaintenance, s.isAdminManaged);
+                const maintenanceIcon = getMaintenanceIcon(normalizedMaintenance, s.isAdminManaged);
+                const dueValue = s.maintenanceFeeDueDate || s.maintenancePaidUntil;
+                const maintenancePaidUntil = dueValue
+                    ? `<div class="small text-muted mt-1">Hạn ${new Date(dueValue).toLocaleString('vi-VN')}</div>`
+                    : '';
+                const visibilityNote = s.isAdminManaged ? '' : `
+                    <div class="station-visibility-note">
+                        Hiển thị: <strong>${s.isVisible ? 'Đang hiện' : 'Đang ẩn'}</strong>
+                        ${s.hiddenReason ? `<br>Lý do: ${escapeHtml(s.hiddenReason)}` : ''}
+                    </div>`;
+                const lockButton = normalizeMaintenanceStatus(s) === 'locked'
+                    ? `<button type="button" class="btn btn-sm btn-outline-success" onclick="postStationAction(${s.id}, 'unlock')" title="Mở khóa trạm">
+                            <i class="fas fa-unlock"></i> Mở khóa
+                       </button>`
+                    : `<button type="button" class="btn btn-sm btn-outline-danger" onclick="postStationAction(${s.id}, 'lock')" title="Khóa trạm">
+                            <i class="fas fa-lock"></i> Khóa
+                       </button>`;
+                const hideShowButton = s.isVisible
+                    ? `<button type="button" class="btn btn-sm btn-outline-secondary" onclick="postStationAction(${s.id}, 'hide')" title="Tạm ẩn trạm">
+                            <i class="fas fa-eye-slash"></i> Ẩn trạm
+                       </button>`
+                    : `<button type="button" class="btn btn-sm btn-outline-success" onclick="postStationAction(${s.id}, 'show')" title="Hiện lại trạm">
+                            <i class="fas fa-eye"></i> Hiện trạm
+                       </button>`;
+                const addPoleButton = s.isAdminManaged
+                    ? `<a href="/Admin/ChargingPole?stationId=${s.id}&openCreate=1" class="btn btn-sm btn-success btn-pole-full" title="Thêm trụ mới">
+                            <i class="fas fa-plus"></i> Thêm trụ
+                       </a>`
+                    : `<button type="button" class="btn btn-sm btn-outline-secondary btn-pole-full" disabled title="Chỉ thêm trụ trực tiếp cho trạm do admin tạo.">
+                            <i class="fas fa-lock"></i> Trạm user
+                       </button>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>
+                            <div class="station-name">${escapeHtml(s.name)}</div>
+                            <div class="station-address">${escapeHtml(s.address ?? '')}</div>
+                            <span class="station-source-badge ${sourceBadgeClass}"><i class="${s.isAdminManaged ? 'fas fa-user-shield' : 'fas fa-user'}"></i>${escapeHtml(sourceLabel)}</span>
+                        </td>
+                        <td>${escapeHtml(extractDistrict(s.address))}</td>
+                        <td><span class="badge ${badgeClass}">${escapeHtml(s.status)}</span></td>
+                        <td>
+                            <span class="maintenance-badge ${maintenanceBadgeClass}"><i class="${maintenanceIcon}"></i>${escapeHtml(maintenanceStatus)}</span>
+                            ${maintenancePaidUntil}
+                            ${visibilityNote}
+                        </td>
+                        <td>
+                            <div class="station-admin-rating">
+                                <i class="fas fa-star"></i>
+                                <span>${s.averageRating ?? 0} (${s.reviewCount ?? 0})</span>
+                            </div>
+                        </td>
+                        <td><i class="fas fa-plug text-success mr-1"></i>${s.activePoleCount ?? 0}/${s.poleCount ?? 0}</td>
+                        <td>
+                            <div class="station-admin-actions">
+                                <a href="/Admin/Station/Details/${s.id}" class="btn btn-sm btn-outline-primary" title="Xem chi tiết">
+                                    <i class="fas fa-eye"></i> Chi tiết
+                                </a>
+                                <a href="/Admin/Station/Edit/${s.id}" class="btn btn-sm btn-outline-warning" title="Chỉnh sửa trạm">
+                                    <i class="fas fa-pen"></i> Sửa
+                                </a>
+                                <a href="/Admin/ChargingPole?stationId=${s.id}" class="btn btn-sm btn-outline-success" title="Quản lý trụ sạc">
+                                    <i class="fas fa-charging-station"></i> QL trụ
+                                </a>
+                                ${addPoleButton}
+                                ${hideShowButton}
+                                ${lockButton}
+                                <a href="/Admin/PaymentTransaction?keyword=${encodeURIComponent(s.name || '')}" class="btn btn-sm btn-outline-info btn-transaction-full" title="Lịch sử thanh toán">
+                                    <i class="fas fa-receipt"></i> Giao dịch
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger btn-danger-full"
+                                        onclick="deleteStation(${s.id}, '${jsEscape(s.name)}', ${s.isAdminManaged ? 'true' : 'false'})" title="Xóa trạm">
+                                    <i class="fas fa-trash"></i> Xóa
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function normalizeMaintenanceStatus(s) {
+            if (!s || s.isAdminManaged || s.maintenanceFeeStatus === 'not_applicable') return 'not_applicable';
+            const raw = String(s.maintenanceFeeStatus || '').toLowerCase();
+
+            if (raw === 'locked') return 'locked';
+            if (raw === 'hidden') return 'hidden';
+            if (raw === 'expiring_soon') return 'expiring_soon';
+            if (raw === 'maintenance_unpaid' || raw === 'unpaid' || raw === 'expired' || raw === 'pending') {
+                return s.isVisible === false && s.hiddenReason ? 'hidden' : 'maintenance_unpaid';
+            }
+            if (s.isVisible === false && s.hiddenReason) return 'hidden';
+            return 'active';
+        }
+
+        function getMaintenanceStatusText(status) {
+            if (status === 'not_applicable') return 'Không áp dụng';
+            if (status === 'expiring_soon') return 'Sắp hết hạn';
+            if (status === 'maintenance_unpaid') return 'Chưa thanh toán phí duy trì';
+            if (status === 'hidden') return 'Tạm ngừng hiển thị';
+            if (status === 'locked') return 'Bị khóa';
+            return 'Đang hoạt động';
+        }
+
+        function getMaintenanceBadgeClass(status, isAdminManaged) {
+            if (isAdminManaged || status === 'not_applicable') return 'maintenance-na';
+            if (status === 'expiring_soon') return 'maintenance-expiring';
+            if (status === 'maintenance_unpaid') return 'maintenance-unpaid';
+            if (status === 'hidden') return 'maintenance-hidden';
+            if (status === 'locked') return 'maintenance-locked';
+            return 'maintenance-active';
+        }
+
+        function getMaintenanceIcon(status, isAdminManaged) {
+            if (isAdminManaged || status === 'not_applicable') return 'fas fa-minus';
+            if (status === 'expiring_soon') return 'fas fa-hourglass-half';
+            if (status === 'maintenance_unpaid') return 'fas fa-exclamation-triangle';
+            if (status === 'hidden') return 'fas fa-eye-slash';
+            if (status === 'locked') return 'fas fa-lock';
+            return 'fas fa-check-circle';
+        }
+
+        async function postStationAction(id, action) {
+            const labels = {
+                lock: 'khóa trạm',
+                unlock: 'mở khóa trạm',
+                hide: 'ẩn trạm',
+                show: 'hiện trạm'
+            };
+
+            if (!confirm(`Bạn có chắc muốn ${labels[action] || action} này không?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/api/stations/${id}/${action}`, { method: 'POST' });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    alert(result.message || 'Thao tác thất bại.');
+                    return;
+                }
+
+                alert(result.message || 'Thao tác thành công.');
+                await loadStations();
+            } catch (error) {
+                console.error('Lỗi thao tác trạm:', error);
+                alert('Có lỗi xảy ra khi thao tác trạm.');
+            }
+        }
+
+        async function deleteStation(id, name, isAdminManaged) {
+            const message = isAdminManaged
+                ? `Bạn có chắc muốn xóa trạm "${name}" không?`
+                : `Bạn có chắc muốn xóa trạm "${name}" không? Hệ thống sẽ gửi thông báo về user trong mục Liên hệ.`;
+
+            const confirmDelete = confirm(message);
+            if (!confirmDelete) return;
+
+            try {
+                const response = await fetch(`/Admin/api/stations/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    alert(result.message || "Xóa trạm thất bại.");
+                    return;
+                }
+
+                alert(result.message || "Xóa trạm thành công.");
+                await loadStations();
+            } catch (error) {
+                console.error("Lỗi xóa trạm:", error);
+                alert("Có lỗi xảy ra khi xóa trạm.");
+            }
+        }
+
+        function extractDistrict(address) {
+            if (!address) return "";
+            const parts = address.split(",");
+            if (parts.length >= 2) {
+                return parts.slice(parts.length - 2).join(",").trim();
+            }
+            return address;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            return String(text)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function jsEscape(text) {
+            if (!text) return "";
+            return String(text)
+                .replaceAll("\\", "\\\\")
+                .replaceAll("'", "\\'")
+                .replaceAll('"', '\\"');
+        }
+    </script>
+}

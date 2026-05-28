@@ -1,0 +1,37 @@
+﻿@model tramsac99.Areas.Admin.Models.AppUser
+
+@{
+    ViewData["Title"] = "Tạo người dùng mới";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">@ViewData["Title"]</h3>
+    </div>
+    <div class="card-body">
+        <form method="post" asp-action="Create">
+            <div class="form-group">
+                <label for="Username">Username</label>
+                <input type="text" class="form-control" id="Username" name="Username" value="@Model.Username" required />
+            </div>
+            <div class="form-group">
+                <label for="Email">Email</label>
+                <input type="email" class="form-control" id="Email" name="Email" value="@Model.Email" required />
+            </div>
+            <div class="form-group">
+                <label for="FullName">Full Name</label>
+                <input type="text" class="form-control" id="FullName" name="FullName" value="@Model.FullName" required />
+            </div>
+
+            <!-- Nút Lưu và Hủy -->
+            <div class="form-group text-right">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Lưu
+                </button>
+                <a href="@Url.Action("Index", "User")" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Hủy
+                </a>
+            </div>
+        </form>
+    </div>
+</div>

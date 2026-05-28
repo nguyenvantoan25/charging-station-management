@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tramsac99", "tramsac99.csproj", "{B49CB9F2-9DDA-4668-938A-C27AD8865028}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B49CB9F2-9DDA-4668-938A-C27AD8865028}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B49CB9F2-9DDA-4668-938A-C27AD8865028}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B49CB9F2-9DDA-4668-938A-C27AD8865028}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B49CB9F2-9DDA-4668-938A-C27AD8865028}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FC47D4CF-16F9-4BFD-B246-722486F85FA8}
+	EndGlobalSection
+EndGlobal

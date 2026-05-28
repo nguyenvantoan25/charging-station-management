@@ -1,0 +1,401 @@
+@using tramsac99.Areas.Admin.Models
+@model tramsac99.Areas.User.ViewModels.RegisterStationRequestViewModel
+@inject IConfiguration Configuration
+
+@{
+    ViewData["Title"] = "Đăng ký thêm trạm";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/user/assets/css/station-workflow.css" asp-append-version="true" />
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="station-workflow-page">
+    <div class="container station-workflow-shell">
+        <h1 class="station-page-title">Đăng ký thêm trạm</h1>
+        <p class="station-page-subtitle">User gửi yêu cầu thêm trạm, admin duyệt, sau đó thanh toán phí kích hoạt lần đầu 50.000đ qua PayOS để hệ thống tự động tạo trạm.</p>
+
+        <div class="station-stepper" id="stationStepper">
+            <div class="station-step-item active" data-step="1">
+                <div class="station-step-badge"><i class="fa-regular fa-clipboard"></i></div>
+                <div class="station-step-title">Basic Info</div>
+                <div class="station-step-desc">Thông tin trạm</div>
+            </div>
+            <div class="station-step-item" data-step="2">
+                <div class="station-step-badge"><i class="fa-solid fa-location-dot"></i></div>
+                <div class="station-step-title">Location</div>
+                <div class="station-step-desc">Địa chỉ & tọa độ</div>
+            </div>
+            <div class="station-step-item" data-step="3">
+                <div class="station-step-badge"><i class="fa-solid fa-bolt"></i></div>
+                <div class="station-step-title">Charging Poles</div>
+                <div class="station-step-desc">Cấu hình trụ</div>
+            </div>
+            <div class="station-step-item" data-step="4">
+                <div class="station-step-badge"><i class="fa-regular fa-circle-check"></i></div>
+                <div class="station-step-title">Review</div>
+                <div class="station-step-desc">Xác nhận & gửi</div>
+            </div>
+        </div>
+
+        <form asp-area="User" asp-controller="StationRegistration" asp-action="Register" method="post" enctype="multipart/form-data" class="station-form-card" id="stationRegisterForm">
+            @Html.AntiForgeryToken()
+
+            <div class="card-head">
+                <h3 class="mb-1 font-weight-bold">Đăng ký trạm mới</h3>
+                <div class="text-muted">Luồng mới chỉ còn trạm và trụ, không dùng cổng sạc.</div>
+            </div>
+
+            <div class="card-body">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="station-form-step active" data-step="1">
+                    <div class="station-grid-2">
+                        <div>
+                            <label class="station-label" asp-for="StationName"></label>
+                            <input asp-for="StationName" class="station-input" placeholder="VD: Trạm sạc Bắc Ninh Gateway" />
+                            <span asp-validation-for="StationName" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label class="station-label" asp-for="OperatorName"></label>
+                            <input asp-for="OperatorName" class="station-input" placeholder="VD: Công ty ABC" />
+                            <span asp-validation-for="OperatorName" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label class="station-label" asp-for="ContactEmail"></label>
+                            <input asp-for="ContactEmail" class="station-input" placeholder="email@domain.com" />
+                            <span asp-validation-for="ContactEmail" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label class="station-label" asp-for="ContactPhone"></label>
+                            <input asp-for="ContactPhone" class="station-input" placeholder="09xxxxxxxx" />
+                            <span asp-validation-for="ContactPhone" class="text-danger"></span>
+                        </div>
+                        <div class="w-100" style="grid-column: 1 / -1;">
+                            <label class="station-label" asp-for="Description"></label>
+                            <textarea asp-for="Description" class="station-textarea" placeholder="Mô tả ngắn về vị trí, quy mô, ưu điểm của trạm."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="station-form-step" data-step="2">
+                    <div class="station-grid-2">
+                        <div>
+                            <label class="station-label">Tìm địa chỉ bằng Map4D</label>
+                            <input type="text" id="stationAddressSuggest" class="station-input" placeholder="Nhập tên đường, tòa nhà, khu vực..." autocomplete="off" />
+                            <div id="stationSuggestBox" class="bg-white border mt-2 rounded" style="display:none;"></div>
+                        </div>
+                        <div>
+                            <label class="station-label" asp-for="Address"></label>
+                            <input asp-for="Address" class="station-input" id="stationAddressInput" placeholder="Địa chỉ được gợi ý hoặc chọn trên bản đồ" />
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label class="station-label" asp-for="Latitude"></label>
+                            <input asp-for="Latitude" class="station-input" id="stationLatitudeInput" readonly />
+                        </div>
+                        <div>
+                            <label class="station-label" asp-for="Longitude"></label>
+                            <input asp-for="Longitude" class="station-input" id="stationLongitudeInput" readonly />
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label class="station-label">Bản đồ Map4D</label>
+                            <div id="stationPickMap" class="station-map-box"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="station-form-step" data-step="3">
+                    <div class="station-grid-2">
+                        <div>
+                            <label class="station-label" asp-for="InitialPoleCount"></label>
+                            <input asp-for="InitialPoleCount" type="number" min="1" class="station-input" placeholder="VD: 4" />
+                            <span asp-validation-for="InitialPoleCount" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label class="station-label" asp-for="InitialPoleChargerType"></label>
+                            <select asp-for="InitialPoleChargerType" class="station-input">
+                                <option value="">-- Chọn loại sạc --</option>
+                                @foreach (var option in ChargerTypeCatalog.Options)
+                                {
+                                    <option value="@option">@option</option>
+                                }
+                            </select>
+                            <span asp-validation-for="InitialPoleChargerType" class="text-danger"></span>
+                        </div>
+                        <div>
+                            <label class="station-label" asp-for="InitialPoleMaxPower"></label>
+                            <input asp-for="InitialPoleMaxPower" class="station-input" placeholder="VD: 120" />
+                        </div>
+                        <div>
+                            <label class="station-label" asp-for="ImageFile"></label>
+                            <input asp-for="ImageFile" type="file" class="station-input" accept=".jpg,.jpeg,.png,.webp" style="padding-top: 12px;" />
+                        </div>
+                        <div>
+                            <label class="station-label">Phí xác nhận</label>
+                            <input class="station-input" id="stationFeePreview" value="@Model.EstimatedFeeAmount.ToString("N0") VND" readonly />
+                            <small class="text-muted d-block mt-2">Phí kích hoạt cố định: 50.000đ/lần đăng ký trạm.</small>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <label class="station-label" asp-for="InitialPoleNote"></label>
+                            <textarea asp-for="InitialPoleNote" class="station-textarea" placeholder="Ví dụ: khu vực để xe rộng, ưu tiên trụ nhanh, cần lắp theo dãy bên phải."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="station-form-step" data-step="4">
+                    <div class="station-grid-2">
+                        <div class="station-side-panel" style="grid-column: 1 / -1;">
+                            <h4>Luồng xử lý</h4>
+                            <p>1. User gửi yêu cầu thêm trạm.</p>
+                            <p>2. Admin vào mục xác nhận trạm sạc để duyệt hoặc từ chối.</p>
+                            <p>3. Khi đã duyệt, user thanh toán PayOS phí kích hoạt lần đầu 50.000đ.</p>
+                            <p>4. Hệ thống tự động tạo trạm và hiển thị trong mục <strong>Trạm của tôi</strong>.</p>
+                        </div>
+
+                        <div class="station-side-panel">
+                            <h4>Thông tin trạm</h4>
+                            <p><strong>Tên trạm:</strong> <span data-review="StationName"></span></p>
+                            <p><strong>Đơn vị vận hành:</strong> <span data-review="OperatorName"></span></p>
+                            <p><strong>Email:</strong> <span data-review="ContactEmail"></span></p>
+                            <p><strong>Điện thoại:</strong> <span data-review="ContactPhone"></span></p>
+                        </div>
+
+                        <div class="station-side-panel">
+                            <h4>Vị trí & trụ</h4>
+                            <p><strong>Địa chỉ:</strong> <span data-review="Address"></span></p>
+                            <p><strong>Vĩ độ:</strong> <span data-review="Latitude"></span></p>
+                            <p><strong>Kinh độ:</strong> <span data-review="Longitude"></span></p>
+                            <p><strong>Số trụ dự kiến:</strong> <span data-review="InitialPoleCount"></span></p>
+                            <p><strong>Loại sạc:</strong> <span data-review="InitialPoleChargerType"></span></p>
+                            <p><strong>Công suất:</strong> <span data-review="InitialPoleMaxPower"></span></p>
+                            <p><strong>Phí dự kiến:</strong> <span id="stationFeeReview">@Model.EstimatedFeeAmount.ToString("N0") VND</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="station-form-actions">
+                <button type="button" class="station-btn-outline" id="stationPrevStep">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Previous
+                </button>
+                <div class="station-form-progress">Step <span id="stationCurrentStepText">1</span> of 4</div>
+                <button type="button" class="station-btn" id="stationNextStep">
+                    Next
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+                <button type="submit" class="station-btn d-none" id="stationSubmitBtn">
+                    Gửi yêu cầu
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        (() => {
+            const totalSteps = 4;
+            let currentStep = 1;
+            const form = document.getElementById('stationRegisterForm');
+            const stepItems = Array.from(document.querySelectorAll('.station-step-item'));
+            const steps = Array.from(document.querySelectorAll('.station-form-step'));
+            const prevBtn = document.getElementById('stationPrevStep');
+            const nextBtn = document.getElementById('stationNextStep');
+            const submitBtn = document.getElementById('stationSubmitBtn');
+            const stepText = document.getElementById('stationCurrentStepText');
+
+            function renderStep() {
+                steps.forEach(step => step.classList.toggle('active', Number(step.dataset.step) === currentStep));
+                stepItems.forEach(item => {
+                    const stepNumber = Number(item.dataset.step);
+                    item.classList.toggle('active', stepNumber === currentStep);
+                    item.classList.toggle('completed', stepNumber < currentStep);
+                });
+
+                prevBtn.style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+                nextBtn.classList.toggle('d-none', currentStep === totalSteps);
+                submitBtn.classList.toggle('d-none', currentStep !== totalSteps);
+                stepText.textContent = String(currentStep);
+
+                if (currentStep === totalSteps) {
+                    syncReview();
+                }
+            }
+
+            function syncFeePreview() {
+                const poleCountInput = form.querySelector('[name="InitialPoleCount"]');
+                const feePreview = document.getElementById('stationFeePreview');
+                const feeReview = document.getElementById('stationFeeReview');
+                const poleCount = Math.max(0, Number(poleCountInput?.value || 0));
+                const feeAmount = 50000;
+                const feeText = `${feeAmount.toLocaleString('vi-VN')} VND`;
+
+                if (feePreview) feePreview.value = feeText;
+                if (feeReview) feeReview.textContent = feeText;
+            }
+
+            function syncReview() {
+                form.querySelectorAll('[data-review]').forEach(target => {
+                    const fieldName = target.getAttribute('data-review');
+                    const source = form.querySelector(`[name="${fieldName}"]`);
+                    target.textContent = source && source.value ? source.value : '-';
+                });
+
+                syncFeePreview();
+            }
+
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    currentStep -= 1;
+                    form.querySelector('[name="InitialPoleCount"]')?.addEventListener('input', syncFeePreview);
+            syncFeePreview();
+            renderStep();
+                }
+            });
+
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < totalSteps) {
+                    currentStep += 1;
+                    renderStep();
+                }
+            });
+
+            renderStep();
+        })();
+    </script>
+
+    <script>
+        (() => {
+            const mapKey = '@(Configuration["Map4D:ApiKey"] ?? "")';
+            const mapElement = document.getElementById('stationPickMap');
+            const addressSuggestInput = document.getElementById('stationAddressSuggest');
+            const suggestBox = document.getElementById('stationSuggestBox');
+            const addressInput = document.getElementById('stationAddressInput');
+            const latInput = document.getElementById('stationLatitudeInput');
+            const lngInput = document.getElementById('stationLongitudeInput');
+            let mapInstance = null;
+            let marker = null;
+            let suggestTimer = null;
+
+            function updatePoint(lat, lng, address) {
+                latInput.value = Number(lat).toFixed(6);
+                lngInput.value = Number(lng).toFixed(6);
+                if (address) {
+                    addressInput.value = address;
+                }
+
+                if (!marker && mapInstance) {
+                    marker = TramSacMap4D.createMarker(mapInstance, {
+                        position: { lat, lng },
+                        title: 'Vị trí trạm mới'
+                    });
+                }
+
+                if (marker) {
+                    marker.setPosition({ lat, lng });
+                }
+
+                if (mapInstance) {
+                    mapInstance.setCenter({ lat, lng });
+                    mapInstance.setZoom(16);
+                }
+            }
+
+            async function setupMap() {
+                if (!mapElement || !mapKey) {
+                    return;
+                }
+
+                await TramSacMap4D.ensureSdk(mapKey);
+
+                mapInstance = new map4d.Map(mapElement, {
+                    center: { lat: 21.0285, lng: 105.8542 },
+                    zoom: 13,
+                    controls: true
+                });
+
+                // Why changed: let the user pin the station directly from Map4D.
+                mapInstance.addListener('click', function (event) {
+                    if (!event || !event.location) {
+                        return;
+                    }
+
+                    updatePoint(event.location.lat, event.location.lng);
+                });
+            }
+
+            function hideSuggestBox() {
+                suggestBox.style.display = 'none';
+                suggestBox.innerHTML = '';
+            }
+
+            async function loadSuggest(keyword) {
+                if (!keyword || keyword.trim().length < 3) {
+                    hideSuggestBox();
+                    return;
+                }
+
+                const response = await fetch(`/User/Home/PlaceSuggest?keyword=${encodeURIComponent(keyword.trim())}`);
+                if (!response.ok) {
+                    hideSuggestBox();
+                    return;
+                }
+
+                const rows = await response.json();
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    hideSuggestBox();
+                    return;
+                }
+
+                suggestBox.innerHTML = rows.map(item => `
+                    <button type="button" class="w-100 text-left border-0 bg-white px-3 py-2 station-suggest-item" data-lat="${item.lat ?? ''}" data-lng="${item.lng ?? ''}" data-address="${(item.displayName || item.address || item.name || '').replace(/"/g, '&quot;')}">
+                        <div class="font-weight-bold">${item.name || 'Địa điểm'}</div>
+                        <div class="text-muted small">${item.displayName || item.address || ''}</div>
+                    </button>
+                `).join('');
+                suggestBox.style.display = 'block';
+            }
+
+            addressSuggestInput?.addEventListener('input', function () {
+                clearTimeout(suggestTimer);
+                suggestTimer = setTimeout(() => loadSuggest(this.value), 250);
+            });
+
+            suggestBox?.addEventListener('click', function (event) {
+                const button = event.target.closest('.station-suggest-item');
+                if (!button) {
+                    return;
+                }
+
+                const lat = Number(button.getAttribute('data-lat') || '0');
+                const lng = Number(button.getAttribute('data-lng') || '0');
+                const address = button.getAttribute('data-address') || '';
+
+                addressSuggestInput.value = address;
+                updatePoint(lat, lng, address);
+                hideSuggestBox();
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!suggestBox.contains(event.target) && event.target !== addressSuggestInput) {
+                    hideSuggestBox();
+                }
+            });
+
+            setupMap().catch(function () {
+                if (mapElement) {
+                    mapElement.innerHTML = '<div class="p-4 text-danger">Không tải được Map4D. Hãy kiểm tra lại API key.</div>';
+                }
+            });
+        })();
+    </script>
+}

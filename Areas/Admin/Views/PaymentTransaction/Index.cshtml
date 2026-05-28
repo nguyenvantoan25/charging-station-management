@@ -1,0 +1,125 @@
+@model List<tramsac99.Areas.Admin.Models.PaymentTransaction>
+@using tramsac99.Areas.Admin.Models
+@{
+    ViewData["Title"] = "Lịch sử giao dịch";
+    var page = (int)(ViewBag.Page ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var pageSize = (int)(ViewBag.PageSize ?? 10);
+    var type = (string)(ViewBag.Type ?? "all");
+    var status = (string)(ViewBag.Status ?? "all");
+    var keyword = (string)(ViewBag.Keyword ?? "");
+    var total = (int)(ViewBag.Total ?? 0);
+}
+
+@section Styles {
+    <style>
+        .payment-admin-page .card { border:0; border-radius:18px; box-shadow:0 14px 35px rgba(15,23,42,.08); }
+        .payment-admin-page .card-header { background:#fff; border-bottom:1px solid #edf2f7; padding:18px 20px; }
+        .payment-admin-title { margin:0; font-weight:900; color:#1f2937; }
+        .payment-admin-toolbar { display:grid; grid-template-columns:minmax(230px,1fr) 220px 220px 120px; gap:12px; }
+        .payment-admin-toolbar .form-control { height:44px; border-radius:12px; }
+        .payment-table { min-width:1060px; }
+        .payment-table th { background:#f8fafc; border-top:0; color:#334155; font-weight:900; white-space:nowrap; }
+        .payment-table td { vertical-align:middle; }
+        .payment-badge { display:inline-flex; align-items:center; padding:6px 10px; border-radius:999px; font-weight:900; font-size:12px; }
+        .payment-paid { background:#dcfce7; color:#166534; }
+        .payment-pending { background:#fef3c7; color:#92400e; }
+        .payment-cancelled, .payment-failed { background:#fee2e2; color:#b91c1c; }
+        .payment-soft { background:#eef2ff; color:#3730a3; }
+        .payment-pager { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+        .payment-pager a { min-width:38px; height:38px; border-radius:12px; border:1px solid #d7e7dc; display:inline-flex; align-items:center; justify-content:center; color:#147c43; font-weight:900; text-decoration:none; }
+        .payment-pager a.active { background:#16a34a; color:#fff; border-color:#16a34a; }
+        @@media(max-width:991.98px){ .payment-admin-toolbar{grid-template-columns:1fr;} }
+    </style>
+}
+
+<section class="content pt-3 payment-admin-page">
+    <div class="container-fluid">
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap" style="gap:12px;">
+                <div>
+                    <h3 class="payment-admin-title">Lịch sử giao dịch</h3>
+                    <div class="text-muted small">Theo dõi thanh toán lần đầu 50.000đ và phí duy trì trạm 10.000đ.</div>
+                </div>
+                <span class="badge badge-success px-3 py-2">@total giao dịch</span>
+            </div>
+            <div class="card-body">
+                <form method="get" class="payment-admin-toolbar">
+                    <input class="form-control" name="keyword" value="@keyword" placeholder="Tìm user, email, tên trạm..." />
+                    <select class="form-control" name="type">
+                        <option value="all" selected="@(type == "all" ? "selected" : null)">Tất cả loại phí</option>
+                        <option value="@PaymentTransactionType.InitialRegistration" selected="@(type == PaymentTransactionType.InitialRegistration ? "selected" : null)">Phí kích hoạt trạm</option>
+                        <option value="@PaymentTransactionType.Maintenance" selected="@(type == PaymentTransactionType.Maintenance ? "selected" : null)">Phí duy trì trạm</option>
+                    </select>
+                    <select class="form-control" name="status">
+                        <option value="all" selected="@(status == "all" ? "selected" : null)">Tất cả trạng thái</option>
+                        <option value="@PaymentTransactionStatus.Pending" selected="@(status == PaymentTransactionStatus.Pending ? "selected" : null)">Đang chờ thanh toán</option>
+                        <option value="@PaymentTransactionStatus.Paid" selected="@(status == PaymentTransactionStatus.Paid ? "selected" : null)">Đã thanh toán</option>
+                        <option value="@PaymentTransactionStatus.Cancelled" selected="@(status == PaymentTransactionStatus.Cancelled ? "selected" : null)">Đã hủy thanh toán</option>
+                        <option value="@PaymentTransactionStatus.Failed" selected="@(status == PaymentTransactionStatus.Failed ? "selected" : null)">Thanh toán chưa thành công</option>
+                    </select>
+                    <button class="btn btn-success font-weight-bold" type="submit">Lọc</button>
+                    <input type="hidden" name="pageSize" value="@pageSize" />
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover payment-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Giao dịch</th>
+                            <th>User</th>
+                            <th>Trạm</th>
+                            <th>Số tiền</th>
+                            <th>Trạng thái</th>
+                            <th>PayOS</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.Any())
+                        {
+                            <tr><td colspan="7" class="text-center text-muted py-4">Không có giao dịch phù hợp.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model)
+                            {
+                                var badgeClass = item.Status == PaymentTransactionStatus.Paid ? "payment-paid" : item.Status == PaymentTransactionStatus.Pending || item.Status.Contains("Chờ") ? "payment-pending" : item.Status == PaymentTransactionStatus.Cancelled ? "payment-cancelled" : "payment-failed";
+                                var stationName = item.Station?.Name ?? item.RegistrationRequest?.StationName ?? "-";
+                                var activityAt = item.PaidAt ?? item.CancelledAt ?? item.CreatedAt;
+                                <tr>
+                                    <td>
+                                        <strong>@PaymentTransactionType.ToDisplay(item.PaymentType)</strong><br />
+                                        <span class="text-muted small">@item.Description</span>
+                                    </td>
+                                    <td>
+                                        <strong>@(item.User?.Username ?? "-")</strong><br />
+                                        <span class="text-muted small">@(item.User?.Email ?? "")</span>
+                                    </td>
+                                    <td>@stationName</td>
+                                    <td><strong>@item.Amount.ToString("N0")đ</strong></td>
+                                    <td><span class="payment-badge @badgeClass">@item.Status</span></td>
+                                    <td>
+                                        <span class="payment-badge payment-soft">@(item.PayOsOrderCode?.ToString() ?? "-")</span>
+                                    </td>
+                                    <td>@activityAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="payment-pager">
+                    @for (var i = 1; i <= totalPages; i++)
+                    {
+                        <a class="@(i == page ? "active" : "")" asp-area="Admin" asp-controller="PaymentTransaction" asp-action="Index" asp-route-page="@i" asp-route-pageSize="@pageSize" asp-route-type="@type" asp-route-status="@status" asp-route-keyword="@keyword">@i</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

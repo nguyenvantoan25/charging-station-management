@@ -1,0 +1,195 @@
+@{
+    ViewData["Title"] = "Lịch sử hoạt động";
+}
+
+@section Styles {
+    <style>
+        body { background: linear-gradient(180deg, #f4f8f6 0%, #ffffff 100%); }
+        .activity-page { padding: 28px 0 56px; }
+        .activity-shell { display: flex; flex-direction: column; gap: 22px; }
+        .activity-hero, .activity-card, .activity-list-card { background: #fff; border: 1px solid #e4eee8; border-radius: 28px; box-shadow: 0 18px 45px rgba(15, 25, 21, .07); }
+        .activity-hero { padding: 30px; display:flex; align-items:flex-end; justify-content:space-between; gap:18px; flex-wrap:wrap; }
+        .activity-tag { display:inline-flex; align-items:center; gap:8px; padding:8px 13px; border-radius:999px; background:#eef8f2; color:#147c43; font-weight:900; margin-bottom:12px; }
+        .activity-title { margin:0 0 10px; color:#10231a; font-size:42px; line-height:1.1; font-weight:900; }
+        .activity-subtitle { margin:0; color:#64766e; max-width:820px; font-size:16px; }
+        .activity-hero-actions { display:flex; gap:10px; flex-wrap:wrap; }
+        .activity-btn { min-height:44px; border-radius:999px; padding:0 18px; display:inline-flex; align-items:center; gap:8px; border:0; background:#16a34a; color:#fff; font-weight:900; text-decoration:none; cursor:pointer; }
+        .activity-btn-soft { background:#eef8f2; color:#147c43; border:1px solid #cfe9d9; }
+        .activity-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+        .activity-card { padding:22px; }
+        .activity-card span { display:block; color:#6d7e77; font-size:14px; margin-bottom:8px; }
+        .activity-card strong { color:#10231a; font-size:34px; line-height:1; font-weight:900; }
+        .activity-list-card { padding:22px; }
+        .activity-toolbar { display:grid; grid-template-columns:minmax(240px,1fr) 210px 150px 120px; gap:12px; margin-bottom:18px; }
+        .activity-input, .activity-select { min-height:50px; border-radius:16px; border:1px solid #dce8e2; padding:0 15px; outline:none; background:#fff; }
+        .activity-list { display:flex; flex-direction:column; gap:14px; }
+        .activity-item { display:grid; grid-template-columns:54px minmax(0,1fr) auto; gap:15px; align-items:center; padding:18px; border:1px solid #e5eee8; border-radius:22px; background:linear-gradient(180deg,#fff 0%,#f9fcfa 100%); }
+        .activity-icon { width:54px; height:54px; border-radius:18px; display:flex; align-items:center; justify-content:center; background:#eef8f2; color:#16a34a; font-size:20px; }
+        .activity-main { min-width:0; }
+        .activity-title-row { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:6px; }
+        .activity-item h3 { margin:0; color:#10231a; font-size:18px; font-weight:900; }
+        .activity-type { padding:6px 10px; border-radius:999px; background:#f0f7f3; color:#147c43; font-size:12px; font-weight:900; }
+        .activity-desc { margin:0 0 10px; color:#5d7068; line-height:1.5; }
+        .activity-meta { display:flex; flex-wrap:wrap; gap:8px; }
+        .activity-chip { padding:7px 11px; border-radius:999px; background:#f5f8f6; color:#33473d; font-size:13px; font-weight:800; }
+        .activity-status-paid { background:#eef8f2; color:#147c43; }
+        .activity-status-pending { background:#fff7dc; color:#a16207; }
+        .activity-status-cancelled, .activity-status-failed { background:#fff5f5; color:#dc2626; }
+        .activity-link { border-radius:999px; border:1px solid #d3e5da; color:#0f8d42; background:#fff; font-weight:900; padding:10px 14px; text-decoration:none; white-space:nowrap; }
+        .activity-pagination { display:flex; justify-content:center; gap:8px; margin-top:18px; flex-wrap:wrap; }
+        .activity-page-btn { min-width:42px; height:42px; border-radius:14px; border:1px solid #d7e7dc; background:#fff; font-weight:900; cursor:pointer; }
+        .activity-page-btn.active { background:#16a34a; border-color:#16a34a; color:#fff; }
+        .activity-empty, .activity-loading { text-align:center; padding:28px; border-radius:20px; background:#f7faf9; color:#60736b; border:1px dashed #d3e2db; }
+        @@media (max-width: 991.98px) { .activity-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .activity-toolbar, .activity-item { grid-template-columns:1fr; } .activity-link { text-align:center; } }
+        @@media (max-width: 575.98px) { .activity-summary { grid-template-columns:1fr; } .activity-title { font-size:32px; } }
+    </style>
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="activity-page">
+    <div class="container">
+        <div class="activity-shell">
+            <div class="activity-hero">
+                <div>
+                    <div class="activity-tag"><i class="fa-solid fa-layer-group"></i> Nhật ký người dùng</div>
+                    <h1 class="activity-title">Lịch sử hoạt động</h1>
+                    <p class="activity-subtitle">Tất cả đánh giá, lộ trình đã lưu và giao dịch thanh toán được gộp vào một trang để bạn dễ tra cứu, lọc và dùng lại.</p>
+                </div>
+                <div class="activity-hero-actions">
+                    <a class="activity-btn activity-btn-soft" asp-area="User" asp-controller="Home" asp-action="Route"><i class="fa-solid fa-route"></i> Lập lộ trình</a>
+                    <a class="activity-btn" asp-area="User" asp-controller="StationRegistration" asp-action="MyStations"><i class="fa-solid fa-charging-station"></i> Trạm của tôi</a>
+                </div>
+            </div>
+
+            <div class="activity-summary">
+                <div class="activity-card"><span>Tổng hoạt động</span><strong id="sumTotal">0</strong></div>
+                <div class="activity-card"><span>Đánh giá</span><strong id="sumReviews">0</strong></div>
+                <div class="activity-card"><span>Lộ trình</span><strong id="sumRoutes">0</strong></div>
+                <div class="activity-card"><span>Giao dịch</span><strong id="sumTransactions">0</strong></div>
+            </div>
+
+            <div class="activity-list-card">
+                <div class="activity-toolbar">
+                    <input id="activityKeyword" class="activity-input" placeholder="Tìm theo tên trạm, lộ trình, giao dịch..." />
+                    <select id="activityType" class="activity-select">
+                        <option value="all">Tất cả lịch sử</option>
+                        <option value="review">Lịch sử đánh giá</option>
+                        <option value="route">Lịch sử lộ trình</option>
+                        <option value="transaction">Lịch sử giao dịch</option>
+                    </select>
+                    <select id="activityPageSize" class="activity-select">
+                        <option value="8">8 dòng</option>
+                        <option value="12">12 dòng</option>
+                        <option value="20">20 dòng</option>
+                    </select>
+                    <button id="btnActivityFilter" type="button" class="activity-btn"><i class="fa-solid fa-filter"></i> Lọc</button>
+                </div>
+
+                <div id="activityList" class="activity-list"><div class="activity-loading">Đang tải lịch sử...</div></div>
+                <div id="activityPagination" class="activity-pagination"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        let activityPage = 1;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('btnActivityFilter')?.addEventListener('click', () => { activityPage = 1; loadActivityHistory(); });
+            document.getElementById('activityType')?.addEventListener('change', () => { activityPage = 1; loadActivityHistory(); });
+            document.getElementById('activityPageSize')?.addEventListener('change', () => { activityPage = 1; loadActivityHistory(); });
+            document.getElementById('activityKeyword')?.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') { activityPage = 1; loadActivityHistory(); }
+            });
+            loadActivityHistory();
+        });
+
+        async function loadActivityHistory(page = activityPage) {
+            activityPage = page;
+            const keyword = document.getElementById('activityKeyword')?.value || '';
+            const type = document.getElementById('activityType')?.value || 'all';
+            const pageSize = document.getElementById('activityPageSize')?.value || 8;
+            const url = `/User/api/activity-history?type=${encodeURIComponent(type)}&keyword=${encodeURIComponent(keyword)}&page=${page}&pageSize=${pageSize}`;
+
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'Không tải được lịch sử.');
+                renderSummary(result.summary);
+                renderItems(result.items || []);
+                renderPagination(result.page, result.totalPages);
+            } catch (error) {
+                document.getElementById('activityList').innerHTML = `<div class="activity-empty text-danger">${escapeHtml(error.message || 'Không tải được lịch sử.')}</div>`;
+            }
+        }
+
+        function renderSummary(summary) {
+            document.getElementById('sumTotal').textContent = summary?.total ?? 0;
+            document.getElementById('sumReviews').textContent = summary?.reviews ?? 0;
+            document.getElementById('sumRoutes').textContent = summary?.routes ?? 0;
+            document.getElementById('sumTransactions').textContent = summary?.transactions ?? 0;
+        }
+
+        function renderItems(items) {
+            const list = document.getElementById('activityList');
+            if (!items.length) {
+                list.innerHTML = '<div class="activity-empty">Không có lịch sử phù hợp với bộ lọc.</div>';
+                return;
+            }
+
+            list.innerHTML = items.map(item => {
+                const statusClass = getStatusClass(item.statusText || '');
+                return `<article class="activity-item">
+                    <div class="activity-icon"><i class="fa-solid ${escapeHtml(item.icon || 'fa-clock')}"></i></div>
+                    <div class="activity-main">
+                        <div class="activity-title-row">
+                            <h3>${escapeHtml(item.title)}</h3>
+                            <span class="activity-type">${escapeHtml(item.typeText)}</span>
+                        </div>
+                        <p class="activity-desc">${escapeHtml(item.description)}</p>
+                        <div class="activity-meta">
+                            <span class="activity-chip ${statusClass}">${escapeHtml(item.statusText || 'Đã ghi nhận')}</span>
+                            ${item.amountText ? `<span class="activity-chip">${escapeHtml(item.amountText)}</span>` : ''}
+                            <span class="activity-chip">${formatDate(item.activityAt)}</span>
+                        </div>
+                    </div>
+                    <a class="activity-link" href="${escapeHtml(item.url || '#')}">Xem chi tiết</a>
+                </article>`;
+            }).join('');
+        }
+
+        function renderPagination(page, totalPages) {
+            const wrap = document.getElementById('activityPagination');
+            if (!totalPages || totalPages <= 1) { wrap.innerHTML = ''; return; }
+            let html = '';
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button type="button" class="activity-page-btn ${i === page ? 'active' : ''}" onclick="loadActivityHistory(${i})">${i}</button>`;
+            }
+            wrap.innerHTML = html;
+        }
+
+        function getStatusClass(status) {
+            const s = String(status || '').toLowerCase();
+            if (s.includes('đã thanh toán')) return 'activity-status-paid';
+            if (s.includes('hủy')) return 'activity-status-cancelled';
+            if (s.includes('chưa thành công')) return 'activity-status-failed';
+            if (s.includes('chờ') || s.includes('đang')) return 'activity-status-pending';
+            return '';
+        }
+
+        function formatDate(value) {
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '--';
+            return date.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+        }
+    </script>
+}

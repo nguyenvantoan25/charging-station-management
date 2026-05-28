@@ -1,0 +1,232 @@
+@model tramsac99.Areas.Admin.ViewModels.StationRequestIndexViewModel
+@using tramsac99.Areas.Admin.Models
+
+@{
+    ViewData["Title"] = "Xác nhận đăng ký trạm";
+
+    string GetStatusClass(string? status)
+    {
+        return status switch
+        {
+            var s when s == StationWorkflowStatus.Pending => "station-chip-warning",
+            var s when s == StationWorkflowStatus.Rejected => "station-chip-danger",
+            var s when s == StationWorkflowStatus.Completed => "station-chip",
+            var s when s == StationWorkflowStatus.Approved || s == StationWorkflowStatus.AwaitingPayment => "station-chip-blue",
+            _ => "station-chip-soft"
+        };
+    }
+
+    string GetStatusIcon(string? status)
+    {
+        return status switch
+        {
+            var s when s == StationWorkflowStatus.Pending => "far fa-clock",
+            var s when s == StationWorkflowStatus.Rejected => "fas fa-ban",
+            var s when s == StationWorkflowStatus.Completed => "far fa-check-circle",
+            var s when s == StationWorkflowStatus.Approved => "fas fa-check-double",
+            var s when s == StationWorkflowStatus.AwaitingPayment => "fas fa-wallet",
+            _ => "fas fa-info-circle"
+        };
+    }
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/user/assets/css/station-workflow.css" asp-append-version="true" />
+    <style>
+        .request-page-shell { display: flex; flex-direction: column; gap: 22px; }
+        .request-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+        .request-stat-card { background:#fff; border:1px solid #e0ebf2; border-radius:22px; padding:18px; box-shadow:0 18px 40px rgba(15,54,74,.06); }
+        .request-stat-card i { width:42px; height:42px; border-radius:14px; display:inline-flex; align-items:center; justify-content:center; background:#edf9f4; color:#0f8d5a; margin-bottom:12px; }
+        .request-stat-label { color:#6c7d8e; font-weight:700; font-size:13px; }
+        .request-stat-value { font-size:30px; font-weight:900; color:#102a43; line-height:1; margin-top:6px; }
+        .request-panel { background:#fff; border:1px solid #dfeaf0; border-radius:24px; overflow:hidden; box-shadow:0 18px 45px rgba(15,54,74,.06); }
+        .request-panel-head { padding:22px 24px; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; border-bottom:1px solid #eef4f7; }
+        .request-panel-head h1 { font-size:25px; font-weight:900; margin:0 0 6px; color:#102a43; }
+        .request-panel-head p { color:#6c7d8e; margin:0; max-width:820px; }
+        .request-list { padding:20px 24px 24px; display:flex; flex-direction:column; gap:14px; }
+        .request-item { border:1px solid #e0ebf2; border-radius:20px; background:linear-gradient(180deg,#fbfefd,#fff); overflow:hidden; }
+        .request-summary { list-style:none; cursor:pointer; padding:18px; display:grid; grid-template-columns:minmax(0,1.5fr) minmax(180px,.6fr) minmax(180px,.6fr) auto; gap:14px; align-items:center; }
+        .request-title { font-size:18px; font-weight:900; color:#102a43; margin:0 0 5px; }
+        .request-subline { color:#687889; display:flex; gap:12px; flex-wrap:wrap; font-size:13px; }
+        .request-pill-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:9px; }
+        .request-pill { border-radius:999px; background:#f2f7f5; color:#25443b; padding:7px 11px; font-size:12px; font-weight:800; display:inline-flex; gap:6px; align-items:center; }
+        .request-col-label { color:#81909d; font-size:12px; font-weight:800; margin-bottom:5px; }
+        .request-col-value { color:#102a43; font-weight:900; }
+        .request-detail { border-top:1px solid #edf4f7; padding:18px; display:grid; grid-template-columns:minmax(0,1fr) 360px; gap:18px; }
+        .request-card { border:1px dashed #d8e7ef; border-radius:18px; padding:16px; background:#fbfefd; }
+        .request-info-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+        .request-info-item { background:#fff; border:1px solid #e8f0f3; border-radius:14px; padding:13px; position:relative; padding-left:46px; }
+        .request-info-item:before { content:"i"; position:absolute; left:13px; top:15px; width:22px; height:22px; border-radius:8px; display:flex; align-items:center; justify-content:center; background:#edf9f4; color:#0c8d5f; font-family:"Segoe UI Symbol","Segoe UI Emoji",Arial,sans-serif; font-weight:900; }
+        .request-info-label { color:#708292; font-weight:800; font-size:12px; margin-bottom:4px; }
+        .request-info-value { color:#102a43; font-weight:800; word-break:break-word; }
+        .request-actions { display:flex; flex-direction:column; gap:12px; }
+        .request-actions textarea { width:100%; min-height:110px; border:1px solid #dce8ee; border-radius:14px; padding:12px 12px 12px 42px; background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%230c8d5f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z'/%3E%3C/svg%3E") no-repeat 13px 14px; }
+        .request-actions button { width:100%; }
+        .request-empty { padding:40px 20px; text-align:center; color:#718291; font-weight:800; }
+        .request-pagination { padding:0 24px 24px; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+        .request-page-link { min-width:42px; height:42px; padding:0 14px; border-radius:12px; border:1px solid #dce8ee; display:inline-flex; align-items:center; justify-content:center; text-decoration:none; color:#0c6b4a; font-weight:900; }
+        .request-page-link.active { background:#0c8d5f; color:#fff; border-color:#0c8d5f; }
+        @@media (max-width: 1200px) { .request-summary, .request-detail { grid-template-columns:1fr; } .request-stat-grid { grid-template-columns:repeat(2,1fr); } }
+        @@media (max-width: 768px) { .request-stat-grid, .request-info-grid { grid-template-columns:1fr; } }
+    </style>
+}
+
+<div class="station-admin-shell request-page-shell">
+    @if (TempData["AdminStationRequestSuccess"] != null)
+    {
+        <div class="station-alert success"><i class="far fa-check-circle me-2"></i>@TempData["AdminStationRequestSuccess"]</div>
+    }
+
+    @if (TempData["AdminStationRequestError"] != null)
+    {
+        <div class="station-alert error"><i class="fas fa-triangle-exclamation me-2"></i>@TempData["AdminStationRequestError"]</div>
+    }
+
+    <div class="request-stat-grid">
+        <div class="request-stat-card"><i class="far fa-clock"></i><div class="request-stat-label">Chờ duyệt trạm mới</div><div class="request-stat-value">@Model.PendingRegistrations</div></div>
+        <div class="request-stat-card"><i class="fas fa-wallet"></i><div class="request-stat-label">Chờ user thanh toán</div><div class="request-stat-value">@Model.AwaitingPaymentCount</div></div>
+        <div class="request-stat-card"><i class="far fa-check-circle"></i><div class="request-stat-label">Đã kích hoạt trạm</div><div class="request-stat-value">@Model.ApprovedCount</div></div>
+        <div class="request-stat-card"><i class="fas fa-ban"></i><div class="request-stat-label">Đã từ chối</div><div class="request-stat-value">@Model.RejectedCount</div></div>
+    </div>
+
+    <div class="request-panel">
+        <div class="request-panel-head">
+            <div>
+                <h1><i class="fas fa-clipboard-check me-2"></i>Xác nhận yêu cầu đăng ký trạm mới</h1>
+                <p>Admin chỉ duyệt hoặc từ chối hồ sơ đăng ký trạm mới. Các thao tác thêm/sửa/xóa trụ và đổi trạng thái vận hành do chủ trạm tự quản lý, admin xem lại qua lịch sử thao tác.</p>
+            </div>
+            <div class="station-chip-soft"><i class="fas fa-layer-group"></i> Tổng @Model.RegistrationTotalCount hồ sơ</div>
+        </div>
+
+        @if (!Model.RegistrationItems.Any())
+        {
+            <div class="request-empty"><i class="far fa-folder-open me-2"></i>Chưa có yêu cầu đăng ký trạm mới.</div>
+        }
+        else
+        {
+            <div class="request-list">
+                @for (var i = 0; i < Model.RegistrationItems.Count; i++)
+                {
+                    var request = Model.RegistrationItems[i];
+                    var rowNumber = ((Model.RegistrationPage - 1) * Model.RegistrationPageSize) + i + 1;
+                    var isPending = request.ApprovalStatus == StationWorkflowStatus.Pending;
+                    var ownerName = request.User?.FullName ?? request.User?.Username ?? request.OperatorName;
+
+                    <details class="request-item" @(i == 0 ? "open" : null)>
+                        <summary class="request-summary">
+                            <div>
+                                <h2 class="request-title">@rowNumber. @request.StationName</h2>
+                                <div class="request-subline">
+                                    <span><i class="far fa-user me-1"></i>@ownerName</span>
+                                    <span><i class="fas fa-location-dot me-1"></i>@request.Address</span>
+                                </div>
+                                <div class="request-pill-row">
+                                    <span class="request-pill"><i class="fas fa-phone"></i>@request.ContactPhone</span>
+                                    <span class="request-pill"><i class="fas fa-plug"></i>@request.InitialPoleCount trụ ban đầu</span>
+                                    <span class="request-pill"><i class="fas fa-crosshairs"></i>@request.Latitude.ToString("0.######"), @request.Longitude.ToString("0.######")</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="request-col-label">Ngày gửi</div>
+                                <div class="request-col-value">@request.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                            </div>
+                            <div>
+                                <div class="request-col-label">Phí đăng ký</div>
+                                <div class="request-col-value">@request.FeeAmount.ToString("N0") VND</div>
+                            </div>
+                            <div>
+                                <span class="@GetStatusClass(request.ApprovalStatus)"><i class="@GetStatusIcon(request.ApprovalStatus)"></i>@request.ApprovalStatus</span>
+                            </div>
+                        </summary>
+
+                        <div class="request-detail">
+                            <div class="request-card">
+                                <div class="request-info-grid">
+                                    <div class="request-info-item"><div class="request-info-label">Tên trạm</div><div class="request-info-value">@request.StationName</div></div>
+                                    <div class="request-info-item"><div class="request-info-label">Chủ trạm</div><div class="request-info-value">@ownerName</div></div>
+                                    <div class="request-info-item"><div class="request-info-label">Email liên hệ</div><div class="request-info-value">@request.ContactEmail</div></div>
+                                    <div class="request-info-item"><div class="request-info-label">Số điện thoại</div><div class="request-info-value">@request.ContactPhone</div></div>
+                                    <div class="request-info-item"><div class="request-info-label">Địa chỉ</div><div class="request-info-value">@request.Address</div></div>
+                                    <div class="request-info-item"><div class="request-info-label">Tọa độ</div><div class="request-info-value">@request.Latitude.ToString("0.######"), @request.Longitude.ToString("0.######")</div></div>
+                                    <div class="request-info-item"><div class="request-info-label">Số trụ ban đầu</div><div class="request-info-value">@request.InitialPoleCount</div></div>
+                                    <div class="request-info-item"><div class="request-info-label">Loại sạc/Công suất</div><div class="request-info-value">@(string.IsNullOrWhiteSpace(request.InitialPoleChargerType) ? "-" : request.InitialPoleChargerType) / @(string.IsNullOrWhiteSpace(request.InitialPoleMaxPower) ? "-" : request.InitialPoleMaxPower)</div></div>
+                                </div>
+
+                                @if (!string.IsNullOrWhiteSpace(request.Description))
+                                {
+                                    <div class="station-request-note user-note mt-3"><strong>Mô tả:</strong> @request.Description</div>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(request.AdminNote))
+                                {
+                                    <div class="station-request-note admin-note mt-3"><strong>Ghi chú admin:</strong> @request.AdminNote</div>
+                                }
+                            </div>
+
+                            <div class="request-card request-actions">
+                                @if (isPending)
+                                {
+                                    <form asp-area="Admin" asp-controller="StationRequest" asp-action="ApproveRegistration" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@request.Id" />
+                                        <input type="hidden" name="registrationPage" value="@Model.RegistrationPage" />
+                                        <button type="submit" class="station-btn"><i class="fas fa-check"></i>Duyệt trạm mới</button>
+                                    </form>
+
+                                    <form asp-area="Admin" asp-controller="StationRequest" asp-action="RejectRegistration" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@request.Id" />
+                                        <input type="hidden" name="registrationPage" value="@Model.RegistrationPage" />
+                                        <textarea name="adminNote" placeholder="Nhập lý do từ chối để user xem được..."></textarea>
+                                        <button type="submit" class="station-btn-danger"><i class="fas fa-xmark"></i>Từ chối</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <div class="station-chip-soft"><i class="fas fa-circle-info"></i>Hồ sơ đã được xử lý</div>
+                                }
+                            </div>
+                        </div>
+                    </details>
+                }
+            </div>
+
+            @if (Model.RegistrationTotalPages > 1)
+            {
+                <div class="request-pagination">
+                    @if (Model.RegistrationPage > 1)
+                    {
+                        <a asp-area="Admin"
+                           asp-controller="StationRequest"
+                           asp-action="Index"
+                           asp-route-registrationPage="@(Model.RegistrationPage - 1)"
+                           class="request-page-link">
+                            Trước
+                        </a>
+                    }
+
+                    @for (var pageNumber = 1; pageNumber <= Model.RegistrationTotalPages; pageNumber++)
+                    {
+                        <a asp-area="Admin"
+                           asp-controller="StationRequest"
+                           asp-action="Index"
+                           asp-route-registrationPage="@pageNumber"
+                           class="request-page-link @(pageNumber == Model.RegistrationPage ? "active" : string.Empty)">
+                            @(pageNumber)
+                        </a>
+                    }
+
+                    @if (Model.RegistrationPage < Model.RegistrationTotalPages)
+                    {
+                        <a asp-area="Admin"
+                           asp-controller="StationRequest"
+                           asp-action="Index"
+                           asp-route-registrationPage="@(Model.RegistrationPage + 1)"
+                           class="request-page-link">
+                            Sau
+                        </a>
+                    }
+                </div>
+            }
+        }
+    </div>
+</div>

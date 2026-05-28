@@ -1,0 +1,400 @@
+@model tramsac99.Areas.Admin.ViewModels.RevenueStatisticsViewModel
+@using System.Text.Json
+@using tramsac99.Areas.Admin.Models
+@{
+    ViewData["Title"] = "Thống kê doanh thu";
+    var f = Model.Filter;
+    var dailyLabelsJson = JsonSerializer.Serialize(Model.DailyRevenueChartData.Select(x => x.Label));
+    var dailyAmountsJson = JsonSerializer.Serialize(Model.DailyRevenueChartData.Select(x => x.Amount));
+    var todayYesterdayJson = JsonSerializer.Serialize(new[] { Model.TodayYesterdayChartData.Yesterday, Model.TodayYesterdayChartData.Today });
+    var weekRegistrationJson = JsonSerializer.Serialize(new[] { Model.WeekCompareChartData.LastWeekRegistration, Model.WeekCompareChartData.ThisWeekRegistration });
+    var weekMaintenanceJson = JsonSerializer.Serialize(new[] { Model.WeekCompareChartData.LastWeekMaintenance, Model.WeekCompareChartData.ThisWeekMaintenance });
+    var typeLabelsJson = JsonSerializer.Serialize(Model.RevenueByTypeChartData.Select(x => x.Label));
+    var typeAmountsJson = JsonSerializer.Serialize(Model.RevenueByTypeChartData.Select(x => x.Amount));
+}
+
+@section Styles {
+    <style>
+        .revenue-page { padding: 20px 8px 32px; }
+        .revenue-hero {
+            border: 0; border-radius: 26px; overflow: hidden; color: #fff;
+            background: radial-gradient(circle at top left, rgba(52,211,153,.45), transparent 30%), linear-gradient(135deg, #064e3b 0%, #0f766e 52%, #0369a1 100%);
+            box-shadow: 0 22px 55px rgba(6,78,59,.22);
+        }
+        .revenue-hero .card-body { padding: 26px 28px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+        .revenue-hero-title { font-size: 30px; font-weight: 900; margin: 0 0 8px; letter-spacing: -.03em; }
+        .revenue-hero-subtitle { margin: 0; color: rgba(255,255,255,.82); font-size: 15px; }
+        .revenue-hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .revenue-hero-btn { border: 1px solid rgba(255,255,255,.28); background: rgba(255,255,255,.14); color: #fff; border-radius: 14px; padding: 10px 14px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .revenue-hero-btn:hover { color: #fff; background: rgba(255,255,255,.22); }
+        .revenue-filter-card, .revenue-panel { border: 0; border-radius: 22px; box-shadow: 0 14px 38px rgba(15,23,42,.08); }
+        .revenue-filter-card .card-body { padding: 18px; }
+        .revenue-filter-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; align-items: end; }
+        .revenue-filter-grid label { font-weight: 800; color: #334155; font-size: 13px; margin-bottom: 6px; }
+        .revenue-filter-grid .form-control { border-radius: 13px; min-height: 44px; border-color: #dbeafe; }
+        .revenue-filter-actions { display: flex; gap: 8px; }
+        .btn-revenue-primary { background: #16a34a; border: 0; color: #fff; border-radius: 13px; min-height: 44px; padding: 0 16px; font-weight: 900; }
+        .btn-revenue-light { background: #f1f5f9; border: 0; color: #334155; border-radius: 13px; min-height: 44px; padding: 0 16px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+        .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+        .stat-card { border: 0; border-radius: 22px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,.075); overflow: hidden; position: relative; }
+        .stat-card:before { content:""; position:absolute; inset:0 auto 0 0; width:5px; background: var(--accent, #16a34a); }
+        .stat-card .card-body { padding: 18px 20px 18px 24px; }
+        .stat-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+        .stat-icon { width: 46px; height: 46px; border-radius: 16px; display:flex; align-items:center; justify-content:center; color: var(--accent, #16a34a); background: color-mix(in srgb, var(--accent, #16a34a) 13%, white); font-size: 19px; }
+        .stat-title { color:#64748b; font-weight:800; font-size:13px; text-transform: uppercase; letter-spacing:.02em; }
+        .stat-value { color:#0f172a; font-size: 25px; font-weight: 950; letter-spacing:-.03em; }
+        .stat-compare { margin-top:8px; font-weight:800; font-size:13px; display:flex; align-items:center; gap:7px; }
+        .trend-up { color:#16a34a; }
+        .trend-down { color:#dc2626; }
+        .trend-same { color:#64748b; }
+        .chart-grid { display: grid; grid-template-columns: 1.35fr .65fr; gap: 16px; }
+        .chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .revenue-panel .card-header { background:#fff; border-bottom:1px solid #edf2f7; padding:18px 20px; border-radius:22px 22px 0 0; }
+        .panel-title { margin:0; font-weight:950; color:#0f172a; font-size:18px; }
+        .panel-subtitle { color:#64748b; font-size:13px; margin-top:3px; }
+        .chart-box { position: relative; height: 320px; padding: 8px; }
+        .chart-box.small { height: 270px; }
+        .compare-summary { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+        .compare-pill { border-radius: 16px; background:#f8fafc; padding:12px; }
+        .compare-pill span { display:block; color:#64748b; font-size:12px; font-weight:800; }
+        .compare-pill strong { color:#0f172a; font-size:17px; font-weight:950; }
+        .revenue-table { min-width: 1120px; }
+        .revenue-table th { background:#f8fafc; color:#334155; font-weight:950; border-top:0; white-space:nowrap; }
+        .revenue-table td { vertical-align: middle; }
+        .status-badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:7px 10px; font-weight:900; font-size:12px; }
+        .status-success { background:#dcfce7; color:#166534; }
+        .status-pending { background:#fef3c7; color:#92400e; }
+        .status-failed { background:#fee2e2; color:#b91c1c; }
+        .status-expired { background:#e5e7eb; color:#374151; }
+        .status-other { background:#e0f2fe; color:#075985; }
+        .revenue-pager { display:flex; justify-content:center; gap:7px; flex-wrap:wrap; }
+        .revenue-pager a { min-width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center; border-radius:12px; border:1px solid #d7e7dc; color:#047857; font-weight:900; text-decoration:none; }
+        .revenue-pager a.active { background:#16a34a; border-color:#16a34a; color:#fff; }
+        .type-chip { background:#eef2ff; color:#3730a3; border-radius:999px; padding:7px 10px; font-weight:900; font-size:12px; display:inline-flex; }
+        @@media(max-width: 1199.98px) { .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .chart-grid, .chart-grid-2 { grid-template-columns: 1fr; } .revenue-filter-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+        @@media(max-width: 575.98px) { .stat-grid, .revenue-filter-grid { grid-template-columns: 1fr; } .revenue-hero-title { font-size:24px; } .chart-box { height:260px; } }
+    </style>
+}
+
+<section class="content revenue-page">
+    <div class="container-fluid">
+        <div class="card revenue-hero mb-3">
+            <div class="card-body">
+                <div>
+                    <h1 class="revenue-hero-title">Thống kê doanh thu</h1>
+                    <p class="revenue-hero-subtitle">Theo dõi phí đăng ký trạm ban đầu, phí duy trì hàng tháng, giao dịch PayOS và trạng thái vận hành thương mại.</p>
+                </div>
+                <div class="revenue-hero-actions">
+                    <a class="revenue-hero-btn" asp-area="Admin" asp-controller="PaymentTransaction" asp-action="Index"><i class="fas fa-receipt"></i> Lịch sử giao dịch</a>
+                    <a class="revenue-hero-btn" asp-area="Admin" asp-controller="Station" asp-action="Index"><i class="fas fa-charging-station"></i> Quản lý trạm</a>
+                </div>
+            </div>
+        </div>
+        <div class="card revenue-filter-card mb-3">
+            <div class="card-body">
+                <form method="get" class="revenue-filter-grid">
+                    <div>
+                        <label>Từ ngày</label>
+                        <input type="date" class="form-control" name="fromDate" value="@(f.FromDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div>
+                        <label>Đến ngày</label>
+                        <input type="date" class="form-control" name="toDate" value="@(f.ToDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div>
+                        <label>Loại phí</label>
+                        <select class="form-control" name="type">
+                            <option value="all" selected="@(f.Type == "all" ? "selected" : null)">Tất cả</option>
+                            <option value="@PaymentTransactionType.InitialRegistration" selected="@(f.Type == PaymentTransactionType.InitialRegistration ? "selected" : null)">Phí đăng ký</option>
+                            <option value="@PaymentTransactionType.Maintenance" selected="@(f.Type == PaymentTransactionType.Maintenance ? "selected" : null)">Phí duy trì</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Trạng thái</label>
+                        <select class="form-control" name="status">
+                            <option value="all" selected="@(f.Status == "all" ? "selected" : null)">Tất cả</option>
+                            <option value="success" selected="@(f.Status == "success" ? "selected" : null)">Thành công</option>
+                            <option value="pending" selected="@(f.Status == "pending" ? "selected" : null)">Đang chờ</option>
+                            <option value="failed" selected="@(f.Status == "failed" ? "selected" : null)">Thất bại</option>
+                            <option value="expired" selected="@(f.Status == "expired" ? "selected" : null)">Hết hạn</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Chủ trạm</label>
+                        <input class="form-control" name="ownerKeyword" value="@f.OwnerKeyword" placeholder="Tên, username, email..." />
+                    </div>
+                    <div>
+                        <label>Trạm sạc</label>
+                        <input class="form-control" name="stationKeyword" value="@f.StationKeyword" placeholder="Tên trạm, địa chỉ..." />
+                    </div>
+                    <div class="revenue-filter-actions">
+                        <button class="btn-revenue-primary" type="submit"><i class="fas fa-filter"></i> Lọc dữ liệu</button>
+                        <a class="btn-revenue-light" asp-area="Admin" asp-controller="RevenueStatistics" asp-action="Index"><i class="fas fa-sync-alt"></i> Làm mới</a>
+                    </div>
+                    <div class="revenue-filter-actions">
+                        <a class="btn-revenue-light" asp-area="Admin" asp-controller="RevenueStatistics" asp-action="ExportCsv" asp-route-fromDate="@(f.FromDate?.ToString("yyyy-MM-dd"))" asp-route-toDate="@(f.ToDate?.ToString("yyyy-MM-dd"))" asp-route-type="@f.Type" asp-route-status="@f.Status" asp-route-ownerKeyword="@f.OwnerKeyword" asp-route-stationKeyword="@f.StationKeyword"><i class="fas fa-file-excel"></i> Xuất Excel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="stat-grid mb-3">
+            <div class="card stat-card" style="--accent:#0ea5e9"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Tổng doanh thu</div><div class="stat-value">@Model.TotalRevenue.ToString("N0")đ</div></div><div class="stat-icon"><i class="fas fa-wallet"></i></div></div><div class="stat-compare trend-@Model.TotalCompare.Trend"><i class="@Model.TotalCompare.IconClass"></i> @Model.TotalCompare.Text</div></div></div>
+            <div class="card stat-card" style="--accent:#16a34a"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Doanh thu hôm nay</div><div class="stat-value">@Model.TodayRevenue.ToString("N0")đ</div></div><div class="stat-icon"><i class="fas fa-calendar-day"></i></div></div><div class="stat-compare trend-@Model.TodayCompare.Trend"><i class="@Model.TodayCompare.IconClass"></i> @Model.TodayCompare.Text</div></div></div>
+            <div class="card stat-card" style="--accent:#64748b"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Doanh thu hôm qua</div><div class="stat-value">@Model.YesterdayRevenue.ToString("N0")đ</div></div><div class="stat-icon"><i class="fas fa-history"></i></div></div><div class="stat-compare trend-same"><i class="fas fa-minus"></i> Mốc so sánh hôm nay</div></div></div>
+            <div class="card stat-card" style="--accent:#8b5cf6"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Doanh thu tuần này</div><div class="stat-value">@Model.ThisWeekRevenue.ToString("N0")đ</div></div><div class="stat-icon"><i class="fas fa-chart-line"></i></div></div><div class="stat-compare trend-@Model.WeekCompare.Trend"><i class="@Model.WeekCompare.IconClass"></i> @Model.WeekCompare.Text</div></div></div>
+            <div class="card stat-card" style="--accent:#94a3b8"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Doanh thu tuần trước</div><div class="stat-value">@Model.LastWeekRevenue.ToString("N0")đ</div></div><div class="stat-icon"><i class="fas fa-calendar-week"></i></div></div><div class="stat-compare trend-same"><i class="fas fa-minus"></i> Mốc so sánh tuần này</div></div></div>
+            <div class="card stat-card" style="--accent:#06b6d4"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Doanh thu tháng này</div><div class="stat-value">@Model.ThisMonthRevenue.ToString("N0")đ</div></div><div class="stat-icon"><i class="fas fa-calendar-alt"></i></div></div><div class="stat-compare trend-@Model.MonthCompare.Trend"><i class="@Model.MonthCompare.IconClass"></i> @Model.MonthCompare.Text</div></div></div>
+            <div class="card stat-card" style="--accent:#22c55e"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Giao dịch thành công</div><div class="stat-value">@Model.SuccessTransactionCount</div></div><div class="stat-icon"><i class="fas fa-check-circle"></i></div></div><div class="stat-compare trend-up"><i class="fas fa-check-circle"></i> Chỉ cộng vào doanh thu</div></div></div>
+            <div class="card stat-card" style="--accent:#f59e0b"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Chờ thanh toán</div><div class="stat-value">@Model.PendingTransactionCount</div></div><div class="stat-icon"><i class="fas fa-clock"></i></div></div><div class="stat-compare trend-same"><i class="fas fa-hourglass-half"></i> Chưa tính doanh thu</div></div></div>
+            <div class="card stat-card" style="--accent:#ef4444"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Giao dịch thất bại</div><div class="stat-value">@Model.FailedTransactionCount</div></div><div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div></div><div class="stat-compare trend-down"><i class="fas fa-ban"></i> Không cộng doanh thu</div></div></div>
+            <div class="card stat-card" style="--accent:#10b981"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Trạm đang hoạt động</div><div class="stat-value">@Model.ActiveStationCount</div></div><div class="stat-icon"><i class="fas fa-charging-station"></i></div></div><div class="stat-compare trend-up"><i class="fas fa-map-marker-alt"></i> Đang hiển thị công khai</div></div></div>
+            <div class="card stat-card" style="--accent:#f97316"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Chưa đóng phí duy trì</div><div class="stat-value">@Model.UnpaidStationCount</div></div><div class="stat-icon"><i class="fas fa-bell"></i></div></div><div class="stat-compare trend-down"><i class="fas fa-exclamation-circle"></i> Cần nhắc thanh toán</div></div></div>
+            <div class="card stat-card" style="--accent:#475569"><div class="card-body"><div class="stat-top"><div><div class="stat-title">Trạm tạm ẩn / khóa</div><div class="stat-value">@Model.HiddenStationCount</div></div><div class="stat-icon"><i class="fas fa-eye-slash"></i></div></div><div class="stat-compare trend-same"><i class="fas fa-lock"></i> Không hiện với user thường</div></div></div>
+        </div>
+        <div class="chart-grid mb-3">
+            <div class="card revenue-panel">
+                <div class="card-header"><h3 class="panel-title">Doanh thu 7 ngày gần nhất</h3><div class="panel-subtitle">Chỉ tính các giao dịch có trạng thái thành công.</div></div>
+                <div class="card-body"><div class="chart-box"><canvas id="dailyRevenueChart"></canvas></div></div>
+            </div>
+            <div class="card revenue-panel">
+                <div class="card-header"><h3 class="panel-title">Cơ cấu doanh thu</h3><div class="panel-subtitle">Tỷ trọng theo loại phí.</div></div>
+                <div class="card-body"><div class="chart-box"><canvas id="revenueTypeChart"></canvas></div></div>
+            </div>
+        </div>
+
+        <div class="chart-grid-2 mb-3">
+            <div class="card revenue-panel">
+                <div class="card-header"><h3 class="panel-title">So sánh hôm nay và hôm qua</h3><div class="panel-subtitle">@Model.TodayYesterdayChartData.CompareText</div></div>
+                <div class="card-body">
+                    <div class="chart-box small"><canvas id="todayYesterdayChart"></canvas></div>
+                    <div class="compare-summary">
+                        <div class="compare-pill"><span>Hôm qua</span><strong>@Model.YesterdayRevenue.ToString("N0")đ</strong></div>
+                        <div class="compare-pill"><span>Hôm nay</span><strong>@Model.TodayRevenue.ToString("N0")đ</strong></div>
+                        <div class="compare-pill"><span>Chênh lệch</span><strong>@Model.TodayYesterdayChartData.Difference.ToString("N0")đ</strong></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card revenue-panel">
+                <div class="card-header"><h3 class="panel-title">So sánh tuần theo loại phí</h3><div class="panel-subtitle">Phí đăng ký trạm và phí duy trì trạm.</div></div>
+                <div class="card-body"><div class="chart-box small"><canvas id="weekCompareChart"></canvas></div></div>
+            </div>
+        </div>
+
+        <div class="card revenue-panel">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap" style="gap:10px;">
+                <div>
+                    <h3 class="panel-title">Lịch sử giao dịch gần đây</h3>
+                    <div class="panel-subtitle">@Model.TotalTransactions giao dịch phù hợp bộ lọc. Bảng có phân trang để không làm rối giao diện.</div>
+                </div>
+                <span class="badge badge-success px-3 py-2">Trang @Model.Page / @Model.TotalPages</span>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover revenue-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã giao dịch</th>
+                            <th>Chủ trạm</th>
+                            <th>Tên trạm</th>
+                            <th>Loại phí</th>
+                            <th>Số tiền</th>
+                            <th>Phương thức</th>
+                            <th>Trạng thái</th>
+                            <th>Thời gian</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (!Model.RecentTransactions.Any())
+                        {
+                            <tr><td colspan="10" class="text-center text-muted py-4">Không có giao dịch phù hợp bộ lọc.</td></tr>
+                        }
+                        else
+                        {
+                            foreach (var item in Model.RecentTransactions)
+                            {
+                                <tr>
+                                    <td><strong>@item.Index</strong></td>
+                                    <td><span class="type-chip">@item.TransactionCode</span></td>
+                                    <td>@item.OwnerName</td>
+                                    <td>@item.StationName</td>
+                                    <td>@item.PaymentType</td>
+                                    <td><strong>@item.Amount.ToString("N0")đ</strong></td>
+                                    <td>@item.PaymentMethod</td>
+                                    <td><span class="status-badge status-@item.StatusKey">@item.Status</span></td>
+                                    <td>@item.ActivityAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-outline-success font-weight-bold" asp-area="Admin" asp-controller="RevenueStatistics" asp-action="Details" asp-route-id="@item.Id">
+                                            <i class="fas fa-eye"></i> Chi tiết
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="revenue-pager">
+                    @for (var i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <a class="@(i == Model.Page ? "active" : "")" asp-area="Admin" asp-controller="RevenueStatistics" asp-action="Index" asp-route-page="@i" asp-route-pageSize="@Model.PageSize" asp-route-fromDate="@(f.FromDate?.ToString("yyyy-MM-dd"))" asp-route-toDate="@(f.ToDate?.ToString("yyyy-MM-dd"))" asp-route-type="@f.Type" asp-route-status="@f.Status" asp-route-ownerKeyword="@f.OwnerKeyword" asp-route-stationKeyword="@f.StationKeyword">@i</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+@section Scripts {
+    <script>
+        const dailyLabels = @Html.Raw(dailyLabelsJson);
+        const dailyAmounts = @Html.Raw(dailyAmountsJson);
+        const todayYesterday = @Html.Raw(todayYesterdayJson);
+        const weekRegistration = @Html.Raw(weekRegistrationJson);
+        const weekMaintenance = @Html.Raw(weekMaintenanceJson);
+        const typeLabels = @Html.Raw(typeLabelsJson);
+        const typeAmounts = @Html.Raw(typeAmountsJson);
+
+        function money(value) {
+            return Number(value || 0).toLocaleString('vi-VN') + 'đ';
+        }
+
+        function createGradient(ctx, colorA, colorB) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+            gradient.addColorStop(0, colorA);
+            gradient.addColorStop(1, colorB);
+            return gradient;
+        }
+
+        const commonMoneyTooltip = {
+            callbacks: {
+                label: function(tooltipItem, data) {
+                    const dataset = data.datasets[tooltipItem.datasetIndex];
+                    return (dataset.label ? dataset.label + ': ' : '') + money(tooltipItem.yLabel ?? tooltipItem.value);
+                }
+            }
+        };
+
+        (function () {
+            const canvas = document.getElementById('dailyRevenueChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dailyLabels,
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: dailyAmounts,
+                        backgroundColor: createGradient(ctx, 'rgba(22,163,74,.28)', 'rgba(22,163,74,.02)'),
+                        borderColor: '#16a34a',
+                        pointBackgroundColor: '#16a34a',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        pointRadius: 5,
+                        borderWidth: 3,
+                        lineTension: .35,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    tooltips: commonMoneyTooltip,
+                    scales: {
+                        yAxes: [{ ticks: { beginAtZero: true, callback: money }, gridLines: { color: 'rgba(148,163,184,.2)' } }],
+                        xAxes: [{ gridLines: { display: false } }]
+                    }
+                }
+            });
+        })();
+
+        (function () {
+            const canvas = document.getElementById('todayYesterdayChart');
+            if (!canvas) return;
+            new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Hôm qua', 'Hôm nay'],
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: todayYesterday,
+                        backgroundColor: ['rgba(100,116,139,.72)', 'rgba(22,163,74,.82)'],
+                        borderColor: ['#64748b', '#16a34a'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    legend: { display: false },
+                    tooltips: commonMoneyTooltip,
+                    scales: {
+                        yAxes: [{ ticks: { beginAtZero: true, callback: money }, gridLines: { color: 'rgba(148,163,184,.2)' } }],
+                        xAxes: [{ gridLines: { display: false } }]
+                    }
+                }
+            });
+        })();
+
+        (function () {
+            const canvas = document.getElementById('weekCompareChart');
+            if (!canvas) return;
+            new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Tuần trước', 'Tuần này'],
+                    datasets: [
+                        { label: 'Phí đăng ký', data: weekRegistration, backgroundColor: 'rgba(14,165,233,.78)', borderColor: '#0ea5e9', borderWidth: 1 },
+                        { label: 'Phí duy trì', data: weekMaintenance, backgroundColor: 'rgba(22,163,74,.78)', borderColor: '#16a34a', borderWidth: 1 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    tooltips: commonMoneyTooltip,
+                    scales: {
+                        yAxes: [{ ticks: { beginAtZero: true, callback: money }, gridLines: { color: 'rgba(148,163,184,.2)' } }],
+                        xAxes: [{ gridLines: { display: false } }]
+                    }
+                }
+            });
+        })();
+
+        (function () {
+            const canvas = document.getElementById('revenueTypeChart');
+            if (!canvas) return;
+            new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: typeLabels,
+                    datasets: [{
+                        data: typeAmounts,
+                        backgroundColor: ['rgba(14,165,233,.85)', 'rgba(22,163,74,.85)'],
+                        borderColor: ['#0ea5e9', '#16a34a'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutoutPercentage: 62,
+                    legend: { position: 'bottom' },
+                    tooltips: {
+                        callbacks: {
+                            label: function(tooltipItem, data) {
+                                const label = data.labels[tooltipItem.index] || '';
+                                const value = data.datasets[0].data[tooltipItem.index] || 0;
+                                const total = data.datasets[0].data.reduce((a, b) => Number(a) + Number(b), 0);
+                                const percent = total > 0 ? (Number(value) / total * 100).toFixed(1) : '0.0';
+                                return label + ': ' + money(value) + ' (' + percent + '%)';
+                            }
+                        }
+                    }
+                }
+            });
+        })();
+    </script>
+}

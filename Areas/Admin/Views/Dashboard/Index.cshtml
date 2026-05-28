@@ -1,0 +1,925 @@
+@using System.Text.Json
+@using tramsac99.Areas.Admin.Models
+@model tramsac99.Areas.Admin.ViewModels.AdminDashboardViewModel
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
+@{
+    ViewData["Title"] = "Tổng quan quản trị";
+    var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    var stationsJson = JsonSerializer.Serialize(Model.Stations, jsonOptions);
+
+    var activeStations = Model.Stations.Count(x => x.Status == ChargingStatus.Active);
+    var errorStations = Model.Stations.Count(x => x.Status == ChargingStatus.Error);
+    var maintenanceStations = Model.Stations.Count(x => x.Status == ChargingStatus.Maintenance);
+    var inactiveStations = Model.Stations.Count(x => x.Status == ChargingStatus.Inactive);
+    var issueStations = errorStations + maintenanceStations + inactiveStations;
+}
+
+@section Styles {
+    <style>
+        .admin-dashboard-page {
+            padding-bottom: 1rem;
+        }
+
+            .admin-dashboard-page .dashboard-kpi-card,
+            .admin-dashboard-page .dashboard-panel {
+                border: 0;
+                border-radius: 18px;
+                box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+                overflow: hidden;
+                background: #fff;
+                height: 100%;
+            }
+
+                .admin-dashboard-page .dashboard-kpi-card .card-body,
+                .admin-dashboard-page .dashboard-panel .card-body {
+                    padding: 1rem;
+                }
+
+                .admin-dashboard-page .dashboard-panel .card-header {
+                    background: #fff;
+                    border-bottom: 1px solid #edf2f7;
+                    padding: 0.95rem 1rem 0.85rem;
+                }
+
+        .dashboard-section-title {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .dashboard-kpi-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .dashboard-kpi-label {
+            color: #64748b;
+            font-size: 0.84rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .dashboard-kpi-value {
+            color: #0f172a;
+            font-size: 1.6rem;
+            line-height: 1.1;
+            font-weight: 800;
+            margin-bottom: 0.2rem;
+        }
+
+        .dashboard-kpi-note {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.82rem;
+        }
+
+        .dashboard-kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.05rem;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+            .dashboard-kpi-icon.is-station {
+                background: linear-gradient(135deg, #16a34a, #22c55e);
+            }
+
+            .dashboard-kpi-icon.is-active {
+                background: linear-gradient(135deg, #0891b2, #06b6d4);
+            }
+
+            .dashboard-kpi-icon.is-warning {
+                background: linear-gradient(135deg, #f97316, #fb923c);
+            }
+
+            .dashboard-kpi-icon.is-review {
+                background: linear-gradient(135deg, #2563eb, #60a5fa);
+            }
+
+        .dashboard-panel-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .dashboard-panel-subtitle {
+            margin: 0.2rem 0 0;
+            font-size: 0.82rem;
+            color: #64748b;
+        }
+
+        .dashboard-main-row > [class*='col-'] {
+            display: flex;
+        }
+
+        .dashboard-map-panel,
+        .dashboard-side-stack,
+        .dashboard-side-stack .dashboard-panel {
+            width: 100%;
+            height: 100%;
+        }
+
+            .dashboard-map-panel .card-body {
+                display: flex;
+                flex-direction: column;
+            }
+
+        .dashboard-main-map {
+            flex: 1 1 auto;
+            min-height: 540px;
+            height: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .dashboard-side-stack {
+            display: grid;
+            grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 1rem;
+            min-height: 540px;
+        }
+
+        .dashboard-panel.chart-panel .card-body {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            gap: 0.75rem;
+        }
+
+        .dashboard-chart-wrap {
+            position: relative;
+            flex: 1 1 auto;
+            min-height: 0;
+            height: auto;
+            max-height: none;
+        }
+
+            .dashboard-chart-wrap.is-donut {
+                min-height: 180px;
+            }
+
+            .dashboard-chart-wrap canvas {
+                position: absolute;
+                inset: 0;
+                width: 100% !important;
+                height: 100% !important;
+                display: block;
+            }
+
+        .dashboard-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 0;
+        }
+
+        .dashboard-mini-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: #f8fafc;
+            padding: 0.75rem 0.8rem;
+        }
+
+            .dashboard-mini-card span {
+                display: block;
+                color: #64748b;
+                font-size: 0.78rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .dashboard-mini-card strong {
+                display: block;
+                color: #0f172a;
+                font-size: 1rem;
+                font-weight: 800;
+                line-height: 1.15;
+            }
+
+        .dashboard-featured-list,
+        .dashboard-warning-list,
+        .dashboard-summary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .dashboard-panel.is-list .card-body {
+            max-height: 360px;
+            overflow: auto;
+        }
+
+        .dashboard-featured-item,
+        .dashboard-warning-item,
+        .dashboard-summary-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: #f8fafc;
+            padding: 0.85rem 0.9rem;
+        }
+
+        .dashboard-featured-item-title,
+        .dashboard-warning-name,
+        .dashboard-summary-item-title {
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 0.15rem;
+        }
+
+        .dashboard-featured-item-meta,
+        .dashboard-warning-address,
+        .dashboard-summary-item-note {
+            color: #64748b;
+            font-size: 0.82rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .dashboard-featured-item-value,
+        .dashboard-summary-item-value {
+            color: #166534;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+
+        .dashboard-warning-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .dashboard-warning-right {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .dashboard-status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.28rem 0.62rem;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+            .dashboard-status-badge.is-active {
+                background: #dcfce7;
+                color: #166534;
+            }
+
+            .dashboard-status-badge.is-error {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            .dashboard-status-badge.is-maintenance {
+                background: #ffedd5;
+                color: #9a3412;
+            }
+
+            .dashboard-status-badge.is-inactive {
+                background: #e2e8f0;
+                color: #334155;
+            }
+
+        .dashboard-empty {
+            border: 1px dashed #cbd5e1;
+            border-radius: 14px;
+            background: #f8fafc;
+            color: #64748b;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .dashboard-stars {
+            white-space: nowrap;
+            margin-top: 0.4rem;
+        }
+
+        @@media (max-width: 991.98px) {
+            .dashboard-main-row > [class*='col-'] {
+                display: block;
+            }
+
+            .dashboard-main-map {
+                min-height: 420px;
+            }
+
+            .dashboard-side-stack {
+                min-height: auto;
+                grid-template-rows: none;
+            }
+
+            .dashboard-panel.chart-panel .card-body {
+                min-height: 280px;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .dashboard-kpi-value {
+                font-size: 1.35rem;
+            }
+
+            .dashboard-main-map {
+                min-height: 320px;
+            }
+
+            .dashboard-panel.chart-panel .card-body {
+                min-height: 240px;
+            }
+
+            .dashboard-chart-wrap,
+            .dashboard-chart-wrap.is-donut {
+                min-height: 180px;
+            }
+
+            .dashboard-mini-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2 align-items-center">
+            <div class="col-sm-6">
+                <h1 class="m-0 dashboard-section-title">Tổng quan hệ thống</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right mb-0">
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active">Tổng quan</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content admin-dashboard-page">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card dashboard-kpi-card">
+                    <div class="card-body">
+                        <div class="dashboard-kpi-wrap">
+                            <div>
+                                <div class="dashboard-kpi-label">Tổng trạm sạc</div>
+                                <div class="dashboard-kpi-value">@Model.TotalStations</div>
+                                <p class="dashboard-kpi-note">Toàn bộ trạm trong hệ thống.</p>
+                            </div>
+                            <div class="dashboard-kpi-icon is-station"><i class="fas fa-charging-station"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card dashboard-kpi-card">
+                    <div class="card-body">
+                        <div class="dashboard-kpi-wrap">
+                            <div>
+                                <div class="dashboard-kpi-label">Trạm hoạt động</div>
+                                <div class="dashboard-kpi-value">@activeStations</div>
+                                <p class="dashboard-kpi-note">Đủ điều kiện hiển thị và vận hành.</p>
+                            </div>
+                            <div class="dashboard-kpi-icon is-active"><i class="fas fa-check-circle"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card dashboard-kpi-card">
+                    <div class="card-body">
+                        <div class="dashboard-kpi-wrap">
+                            <div>
+                                <div class="dashboard-kpi-label">Trạm cần xử lý</div>
+                                <div class="dashboard-kpi-value">@issueStations</div>
+                                <p class="dashboard-kpi-note">Gồm lỗi, bảo trì, không hoạt động.</p>
+                            </div>
+                            <div class="dashboard-kpi-icon is-warning"><i class="fas fa-exclamation-triangle"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6 mb-3">
+                <div class="card dashboard-kpi-card">
+                    <div class="card-body">
+                        <div class="dashboard-kpi-wrap">
+                            <div>
+                                <div class="dashboard-kpi-label">Tổng lượt đánh giá</div>
+                                <div class="dashboard-kpi-value">@Model.TotalReviews</div>
+                                <p class="dashboard-kpi-note">Phản hồi của người dùng về trạm.</p>
+                            </div>
+                            <div class="dashboard-kpi-icon is-review"><i class="fas fa-star"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-stretch dashboard-main-row">
+            <div class="col-lg-8 mb-3">
+                <div class="card dashboard-panel dashboard-map-panel">
+                    <div class="card-header">
+                        <h3 class="dashboard-panel-title">Bản đồ tổng quan</h3>
+                        <p class="dashboard-panel-subtitle">Theo dõi nhanh vị trí các trạm sạc đang có trong hệ thống.</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="map" class="dashboard-main-map"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-3">
+                <div class="dashboard-side-stack">
+                    <div class="card dashboard-panel chart-panel">
+                        <div class="card-header">
+                            <h3 class="dashboard-panel-title">Nguồn tạo trạm</h3>
+                            <p class="dashboard-panel-subtitle">Phân biệt trạm admin thêm và trạm do chủ trạm đăng ký.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="dashboard-chart-wrap is-donut">
+                                <canvas id="sourceChart"></canvas>
+                            </div>
+                            <div class="dashboard-mini-grid">
+                                <div class="dashboard-mini-card">
+                                    <span>Admin thêm</span>
+                                    <strong>@Model.AdminManagedStations</strong>
+                                </div>
+                                <div class="dashboard-mini-card">
+                                    <span>User đăng ký</span>
+                                    <strong>@Model.UserSubmittedStations</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card dashboard-panel chart-panel">
+                        <div class="card-header">
+                            <h3 class="dashboard-panel-title">Tình trạng vận hành</h3>
+                            <p class="dashboard-panel-subtitle">Theo dõi 4 trạng thái đồng bộ giữa user và admin.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="dashboard-chart-wrap is-donut">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                            <div class="dashboard-mini-grid">
+                                <div class="dashboard-mini-card">
+                                    <span>Đang hoạt động</span>
+                                    <strong>@activeStations</strong>
+                                </div>
+                                <div class="dashboard-mini-card">
+                                    <span>Lỗi</span>
+                                    <strong>@errorStations</strong>
+                                </div>
+                                <div class="dashboard-mini-card">
+                                    <span>Bảo trì</span>
+                                    <strong>@maintenanceStations</strong>
+                                </div>
+                                <div class="dashboard-mini-card">
+                                    <span>Không hoạt động</span>
+                                    <strong>@inactiveStations</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row align-items-stretch">
+            <div class="col-lg-4 mb-3">
+                <div class="card dashboard-panel is-list">
+                    <div class="card-header">
+                        <h3 class="dashboard-panel-title">Trạm nổi bật</h3>
+                        <p class="dashboard-panel-subtitle">Ưu tiên các trạm có đánh giá tốt và nhiều phản hồi.</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="featuredStationList" class="dashboard-featured-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 mb-3">
+                <div class="card dashboard-panel is-list">
+                    <div class="card-header">
+                        <h3 class="dashboard-panel-title">Trạm cần chú ý</h3>
+                        <p class="dashboard-panel-subtitle">Ưu tiên trạm lỗi, bảo trì, không hoạt động hoặc đánh giá thấp.</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="warningStationList" class="dashboard-warning-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4 mb-3">
+                <div class="card dashboard-panel is-list">
+                    <div class="card-header">
+                        <h3 class="dashboard-panel-title">Tóm tắt hạ tầng</h3>
+                        <p class="dashboard-panel-subtitle">Các chỉ số vận hành cốt lõi của hệ thống trạm sạc.</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="dashboard-summary-list">
+                            <div class="dashboard-summary-item">
+                                <div class="dashboard-summary-item-title">Tổng số trụ sạc</div>
+                                <div class="dashboard-summary-item-note">Tổng trụ thuộc các trạm hiện có.</div>
+                                <div class="dashboard-summary-item-value">@Model.TotalPoles</div>
+                            </div>
+                            <div class="dashboard-summary-item">
+                                <div class="dashboard-summary-item-title">Trụ đang hoạt động</div>
+                                <div class="dashboard-summary-item-note">Số trụ có trạng thái đang hoạt động.</div>
+                                <div class="dashboard-summary-item-value">@Model.ActivePoles / @Model.TotalPoles</div>
+                            </div>
+                            <div class="dashboard-summary-item">
+                                <div class="dashboard-summary-item-title">Trạm admin quản lý</div>
+                                <div class="dashboard-summary-item-note">Các trạm được admin thêm trực tiếp.</div>
+                                <div class="dashboard-summary-item-value">@Model.AdminManagedStations</div>
+                            </div>
+                            <div class="dashboard-summary-item">
+                                <div class="dashboard-summary-item-title">Trạm chủ trạm đăng ký</div>
+                                <div class="dashboard-summary-item-note">Các trạm do user gửi yêu cầu và được đưa vào hệ thống.</div>
+                                <div class="dashboard-summary-item-value">@Model.UserSubmittedStations</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const MAP4D_API_KEY = '@(Configuration["Map4D:ApiKey"] ?? "")';
+        const stations = @Html.Raw(stationsJson);
+        let dashboardMap;
+        let dashboardMarkers = [];
+        let statusChart;
+        let sourceChart;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            try {
+                await initMap();
+                renderMap(stations);
+            } catch (error) {
+                console.error('Lỗi khởi tạo Map4D dashboard:', error);
+            }
+
+            try {
+                renderSourceChart(stations);
+                renderStatusChart(stations);
+            } catch (error) {
+                console.error('Lỗi render chart dashboard:', error);
+            }
+
+            renderFeaturedStations(stations);
+            renderWarningStations(stations);
+        });
+
+        async function initMap() {
+            await TramSacMap4D.ensureSdk(MAP4D_API_KEY);
+            dashboardMap = new map4d.Map(document.getElementById('map'), {
+                center: { lat: 16.5, lng: 107.5 },
+                zoom: 6,
+                controls: true
+            });
+        }
+
+        function renderMap(items) {
+            dashboardMarkers.forEach(marker => TramSacMap4D.clearObject(marker));
+            dashboardMarkers = [];
+
+            const points = (Array.isArray(items) ? items : [])
+                .filter(item => Number.isFinite(Number(item.latitude)) && Number.isFinite(Number(item.longitude)))
+                .map(item => ({
+                    name: item.name || 'Trạm sạc',
+                    status: item.status || 'Chưa rõ',
+                    lat: Number(item.latitude),
+                    lng: Number(item.longitude)
+                }));
+
+            if (!points.length || !dashboardMap) {
+                return;
+            }
+
+            points.forEach(item => {
+                dashboardMarkers.push(TramSacMap4D.createMarker(dashboardMap, {
+                    position: { lat: item.lat, lng: item.lng },
+                    title: `${item.name} - ${item.status}`
+                }));
+            });
+
+            if (points.length === 1) {
+                dashboardMap.setCenter({ lat: points[0].lat, lng: points[0].lng });
+                dashboardMap.setZoom(13);
+                return;
+            }
+
+            const latitudes = points.map(x => x.lat);
+            const longitudes = points.map(x => x.lng);
+            const latSpread = Math.max.apply(null, latitudes) - Math.min.apply(null, latitudes);
+            const lngSpread = Math.max.apply(null, longitudes) - Math.min.apply(null, longitudes);
+            const spread = Math.max(latSpread, lngSpread);
+
+            if (spread > 1.2) {
+                TramSacMap4D.fitBounds(
+                    dashboardMap,
+                    points.map(x => ({ lat: x.lat, lng: x.lng })),
+                    { lat: 16.5, lng: 107.5 },
+                    6
+                );
+                return;
+            }
+
+            const center = points.reduce((acc, item) => {
+                acc.lat += item.lat;
+                acc.lng += item.lng;
+                return acc;
+            }, { lat: 0, lng: 0 });
+
+            dashboardMap.setCenter({
+                lat: center.lat / points.length,
+                lng: center.lng / points.length
+            });
+
+            if (spread <= 0.03) {
+                dashboardMap.setZoom(14);
+            } else if (spread <= 0.08) {
+                dashboardMap.setZoom(13);
+            } else if (spread <= 0.4) {
+                dashboardMap.setZoom(11);
+            } else {
+                dashboardMap.setZoom(9);
+            }
+        }
+
+        function renderSourceChart(items) {
+            const canvas = document.getElementById('sourceChart');
+            if (!canvas || typeof Chart === 'undefined') {
+                return;
+            }
+
+            const safeItems = Array.isArray(items) ? items : [];
+            const adminCount = safeItems.filter(x => x.isAdminManaged === true).length;
+            const userCount = Math.max(0, safeItems.length - adminCount);
+            const ctx = canvas.getContext('2d');
+
+            if (sourceChart) {
+                sourceChart.destroy();
+            }
+
+            sourceChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Admin thêm', 'User đăng ký'],
+                    datasets: [{
+                        data: [adminCount, userCount],
+                        backgroundColor: ['#16a34a', '#38bdf8'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    cutoutPercentage: 68,
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10,
+                            fontSize: 11,
+                            padding: 12
+                        }
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                const label = data.labels[tooltipItem.index] || '';
+                                const value = data.datasets[0].data[tooltipItem.index] || 0;
+                                return ` ${label}: ${value} trạm`;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderStatusChart(items) {
+            const canvas = document.getElementById('statusChart');
+            if (!canvas || typeof Chart === 'undefined') {
+                return;
+            }
+
+            const safeItems = Array.isArray(items) ? items : [];
+            const counts = {
+                active: safeItems.filter(x => normalizeStatus(x.status) === 'active').length,
+                error: safeItems.filter(x => normalizeStatus(x.status) === 'error').length,
+                maintenance: safeItems.filter(x => normalizeStatus(x.status) === 'maintenance').length,
+                inactive: safeItems.filter(x => normalizeStatus(x.status) === 'inactive').length
+            };
+            const ctx = canvas.getContext('2d');
+
+            if (statusChart) {
+                statusChart.destroy();
+            }
+
+            statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Đang hoạt động', 'Lỗi', 'Bảo trì', 'Không hoạt động'],
+                    datasets: [{
+                        data: [counts.active, counts.error, counts.maintenance, counts.inactive],
+                        backgroundColor: ['#22c55e', '#ef4444', '#f97316', '#94a3b8'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    cutoutPercentage: 68,
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10,
+                            fontSize: 11,
+                            padding: 12
+                        }
+                    },
+                    tooltips: {
+                        callbacks: {
+                            label: function (tooltipItem, data) {
+                                const label = data.labels[tooltipItem.index] || '';
+                                const value = data.datasets[0].data[tooltipItem.index] || 0;
+                                return ` ${label}: ${value} trạm`;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderFeaturedStations(items) {
+            const container = document.getElementById('featuredStationList');
+            if (!container) {
+                return;
+            }
+
+            const featuredStations = (Array.isArray(items) ? items : [])
+                .filter(item => Number(item.reviewCount || 0) > 0)
+                .sort((a, b) => {
+                    const ratingDiff = Number(b.averageRating || 0) - Number(a.averageRating || 0);
+                    if (ratingDiff !== 0) {
+                        return ratingDiff;
+                    }
+
+                    return Number(b.reviewCount || 0) - Number(a.reviewCount || 0);
+                })
+                .slice(0, 5);
+
+            if (!featuredStations.length) {
+                container.innerHTML = '<div class="dashboard-empty">Chưa có dữ liệu đánh giá để xếp hạng trạm nổi bật.</div>';
+                return;
+            }
+
+            container.innerHTML = featuredStations.map(item => `
+                <div class="dashboard-featured-item">
+                    <div class="dashboard-featured-item-title">${escapeHtml(item.name || 'Trạm sạc')}</div>
+                    <div class="dashboard-featured-item-meta">${escapeHtml(extractDistrict(item.address))}</div>
+                    <div class="dashboard-featured-item-value">
+                        ${renderStars(item.averageRating)}
+                        <span class="ml-1">${Number(item.averageRating || 0).toFixed(1)} / 5</span>
+                        <span class="text-muted ml-1">(${Number(item.reviewCount || 0)} lượt)</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderWarningStations(items) {
+            const container = document.getElementById('warningStationList');
+            if (!container) {
+                return;
+            }
+
+            const warningStations = (Array.isArray(items) ? items : [])
+                .filter(item => normalizeStatus(item.status) !== 'active' || (Number(item.reviewCount || 0) > 0 && Number(item.averageRating || 0) < 4))
+                .sort((a, b) => {
+                    const priority = {
+                        error: 4,
+                        maintenance: 3,
+                        inactive: 2,
+                        active: 1
+                    };
+                    const aPriority = priority[normalizeStatus(a.status)] || 0;
+                    const bPriority = priority[normalizeStatus(b.status)] || 0;
+                    if (aPriority !== bPriority) {
+                        return bPriority - aPriority;
+                    }
+
+                    return Number(a.averageRating || 0) - Number(b.averageRating || 0);
+                })
+                .slice(0, 5);
+
+            if (!warningStations.length) {
+                container.innerHTML = '<div class="dashboard-empty">Hiện chưa có trạm nào cần ưu tiên xử lý.</div>';
+                return;
+            }
+
+            container.innerHTML = warningStations.map(item => {
+                const statusKey = normalizeStatus(item.status);
+                return `
+                    <div class="dashboard-warning-item">
+                        <div>
+                            <div class="dashboard-warning-name">${escapeHtml(item.name || 'Trạm sạc')}</div>
+                            <div class="dashboard-warning-address">${escapeHtml(extractDistrict(item.address))}</div>
+                        </div>
+                        <div class="dashboard-warning-right">
+                            <div class="dashboard-status-badge is-${statusKey}">${escapeHtml(getStatusText(item.status))}</div>
+                            <div class="dashboard-stars">${renderStars(item.averageRating)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function normalizeStatus(status) {
+            const value = String(status || '').trim().toLowerCase();
+            if (value === 'lỗi' || value === 'loi' || value === 'error' || value === 'technical_error' || value === 'quá tải') {
+                return 'error';
+            }
+
+            if (value === 'bảo trì' || value === 'bao tri' || value === 'maintenance') {
+                return 'maintenance';
+            }
+
+            if (value === 'không hoạt động' || value === 'khong hoat dong' || value === 'inactive' || value === 'tạm ngừng') {
+                return 'inactive';
+            }
+
+            return 'active';
+        }
+
+        function getStatusText(status) {
+            const key = normalizeStatus(status);
+            if (key === 'error') {
+                return 'Lỗi';
+            }
+
+            if (key === 'maintenance') {
+                return 'Bảo trì';
+            }
+
+            if (key === 'inactive') {
+                return 'Không hoạt động';
+            }
+
+            return 'Đang hoạt động';
+        }
+
+        function extractDistrict(address) {
+            if (!address) {
+                return '';
+            }
+
+            const parts = String(address).split(',').map(x => x.trim()).filter(Boolean);
+            if (parts.length >= 2) {
+                return parts.slice(parts.length - 2).join(', ');
+            }
+
+            return String(address);
+        }
+
+        function renderStars(rating) {
+            const value = Math.round(Number(rating || 0));
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                html += i <= value
+                    ? '<i class="fas fa-star text-warning"></i>'
+                    : '<i class="far fa-star text-muted"></i>';
+            }
+            return html;
+        }
+
+        function escapeHtml(text) {
+            return String(text ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+    </script>
+}

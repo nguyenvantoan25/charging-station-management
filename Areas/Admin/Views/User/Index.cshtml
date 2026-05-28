@@ -1,0 +1,601 @@
+﻿@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+<style>
+    .card-header .card-tools {
+        float: right !important;
+        margin-top: 0 !important;
+    }
+
+    #userCountBadge {
+        font-size: 12px !important;
+        padding: 5px 9px !important;
+        line-height: 1.1 !important;
+        border-radius: 4px !important;
+    }
+
+    .user-action-group {
+        display: grid;
+        grid-template-columns: repeat(4, 40px);
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .user-action-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-width: 1px;
+        box-shadow: none;
+    }
+
+        .user-action-btn i {
+            font-size: 14px;
+        }
+
+    @@media (max-width: 767.98px) {
+        .user-action-group {
+            grid-template-columns: repeat(2, 40px);
+        }
+    }
+</style>
+
+<section class="content p-3">
+    <div class="container-fluid">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-3" style="gap:12px;">
+            <h1 class="m-0">Quản lý người dùng</h1>
+            <ol class="breadcrumb float-sm-right mb-0">
+                <li class="breadcrumb-item"><a asp-area="Admin" asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active">Quản lý người dùng</li>
+            </ol>
+        </div>
+
+        <!-- Filter card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap" style="gap:12px;">
+                <h3 class="card-title mb-0">Bộ lọc</h3>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4 col-md-6 mb-3">
+                        <label class="font-weight-bold">Từ khóa</label>
+                        <!-- Why changed: quick keyword filter for username/email/fullname -->
+                        <input id="userKeywordFilter" type="text" class="form-control" placeholder="Nhập tài khoản, email hoặc họ tên">
+                    </div>
+
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <label class="font-weight-bold">Trạng thái</label>
+                        <select id="userStatusFilter" class="form-control">
+                            <option value="">Tất cả</option>
+                            <option value="active">Đang hoạt động</option>
+                            <option value="blocked">Đã khóa</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <label class="font-weight-bold">Đánh giá</label>
+                        <select id="userReviewFilter" class="form-control">
+                            <option value="">Tất cả</option>
+                            <option value="has-review">Có đánh giá</option>
+                            <option value="no-review">Chưa có đánh giá</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 mb-3 d-flex align-items-end">
+                        <button id="resetUserFiltersBtn" type="button" class="btn btn-secondary w-100">
+                            Xóa lọc
+                        </button>
+                    </div>
+                </div>
+
+                <div id="userFilterInfo" class="text-muted small">
+                    Hiển thị 0-0 / 0
+                </div>
+            </div>
+        </div>
+
+        <!-- List card -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Danh sách người dùng</h3>
+                <div class="card-tools">
+                    <span id="userCountBadge" class="badge badge-info">0 kết quả</span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                @* <div class="text-muted mb-3" style="font-size:14px;">Realtime refresh mỗi 20 giây</div> *@
+
+                @Html.AntiForgeryToken()
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width:70px;">Ảnh</th>
+                                <th>Tài khoản</th>
+                                <th>Email</th>
+                                <th>Họ tên</th>
+                                <th>Vai trò</th>
+                                <th>Trạng thái</th>
+                                <th>Đánh giá</th>
+                                <th style="width:190px;" class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Đang tải dữ liệu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center flex-wrap mt-3" style="gap:12px;">
+                    <div id="userPageInfo" class="text-muted small"></div>
+                    <div id="userPager"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="reviewHistoryModal" tabindex="-1" role="dialog" aria-labelledby="reviewHistoryTitle" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header d-flex justify-content-between align-items-center flex-wrap" style="gap:12px;">
+                <div class="d-flex align-items-center flex-wrap" style="gap:10px;">
+                    <h5 id="reviewHistoryTitle" class="modal-title mb-0">Lịch sử đánh giá</h5>
+                    <span id="reviewHistoryCountBadge" class="badge badge-info" style="font-size:13px;padding:6px 10px;">0 kết quả</span>
+                </div>
+
+                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Why changed: review filters inside modal -->
+                <div class="card card-outline card-light mb-3">
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group col-md-6 mb-2">
+                                <label class="font-weight-bold">Tìm kiếm</label>
+                                <input id="reviewFilterKeyword" type="text" class="form-control" placeholder="Nhập tên trạm hoặc nội dung đánh giá">
+                            </div>
+
+                            <div class="form-group col-md-3 mb-2">
+                                <label class="font-weight-bold">Số sao</label>
+                                <select id="reviewFilterRating" class="form-control">
+                                    <option value="">Tất cả</option>
+                                    <option value="5">5 sao</option>
+                                    <option value="4">4 sao</option>
+                                    <option value="3">3 sao</option>
+                                    <option value="2">2 sao</option>
+                                    <option value="1">1 sao</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group col-md-3 mb-2">
+                                <label class="font-weight-bold">Trạng thái</label>
+                                <select id="reviewFilterEdited" class="form-control">
+                                    <option value="">Tất cả</option>
+                                    <option value="edited">Đã chỉnh sửa</option>
+                                    <option value="new">Chưa chỉnh sửa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:10px;">
+                            <div id="reviewFilterInfo" class="text-muted small"></div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetReviewFilters()">
+                                <i class="fas fa-rotate-left mr-1"></i>Đặt lại bộ lọc
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reviewHistoryBody">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        let allUsers = [];
+        let filteredUsers = [];
+        let userPager = null;
+
+        let currentReviewHistory = [];
+        let filteredReviewHistory = [];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Why changed: initialize shared pager
+            userPager = TramSacPagination.createPager({
+                pageSize: 15,
+                paginationContainer: 'userPager',
+                infoContainer: 'userPageInfo',
+                onPageChange: renderUsersPage
+            });
+
+            bindUserFilterEvents();
+            bindReviewFilterEvents();
+
+            loadUsers();
+            setInterval(loadUsers, 20000);
+        });
+
+        function bindUserFilterEvents() {
+            const keyword = document.getElementById('userKeywordFilter');
+            const status = document.getElementById('userStatusFilter');
+            const review = document.getElementById('userReviewFilter');
+            const resetBtn = document.getElementById('resetUserFiltersBtn');
+
+            if (keyword) {
+                keyword.addEventListener('input', applyUserFilters);
+            }
+
+            if (status) {
+                status.addEventListener('change', applyUserFilters);
+            }
+
+            if (review) {
+                review.addEventListener('change', applyUserFilters);
+            }
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', resetUserFilters);
+            }
+        }
+
+        function updateUserCountBadge(total) {
+            const badge = document.getElementById('userCountBadge');
+            if (!badge) return;
+            badge.textContent = `${Number(total || 0)} kết quả`;
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/Admin/User/ListData');
+                if (!response.ok) {
+                    throw new Error('Không thể tải danh sách người dùng.');
+                }
+
+                allUsers = await response.json() || [];
+                applyUserFilters();
+            } catch (error) {
+                console.error(error);
+                updateUserCountBadge(0);
+                document.getElementById('userFilterInfo').textContent = 'Hiển thị 0-0 / 0';
+                document.getElementById('userTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-danger">Không thể tải danh sách người dùng.</td>
+                    </tr>
+                `;
+            }
+        }
+
+        function applyUserFilters() {
+            const keyword = (document.getElementById('userKeywordFilter')?.value || '').trim().toLowerCase();
+            const status = document.getElementById('userStatusFilter')?.value || '';
+            const review = document.getElementById('userReviewFilter')?.value || '';
+
+            filteredUsers = allUsers.filter(user => {
+                const username = String(user.username || '').toLowerCase();
+                const email = String(user.email || '').toLowerCase();
+                const fullName = String(user.fullName || '').toLowerCase();
+
+                const matchKeyword = !keyword
+                    || username.includes(keyword)
+                    || email.includes(keyword)
+                    || fullName.includes(keyword);
+
+                const matchStatus = !status
+                    || (status === 'active' && !user.isBlocked)
+                    || (status === 'blocked' && !!user.isBlocked);
+
+                const reviewCount = Number(user.reviewCount || 0);
+                const matchReview = !review
+                    || (review === 'has-review' && reviewCount > 0)
+                    || (review === 'no-review' && reviewCount === 0);
+
+                return matchKeyword && matchStatus && matchReview;
+            });
+
+            updateUserCountBadge(filteredUsers.length);
+            updateUserFilterInfo();
+            userPager.setItems(filteredUsers);
+        }
+
+        function resetUserFilters() {
+            const keyword = document.getElementById('userKeywordFilter');
+            const status = document.getElementById('userStatusFilter');
+            const review = document.getElementById('userReviewFilter');
+
+            if (keyword) keyword.value = '';
+            if (status) status.value = '';
+            if (review) review.value = '';
+
+            applyUserFilters();
+        }
+
+        function updateUserFilterInfo() {
+            const info = document.getElementById('userFilterInfo');
+            if (!info) return;
+
+            const total = Number(allUsers.length || 0);
+            const filtered = Number(filteredUsers.length || 0);
+
+            if (filtered === 0) {
+                info.textContent = `Hiển thị 0-0 / ${total}`;
+                return;
+            }
+
+            info.textContent = `Hiển thị 1-${filtered} / ${total}`;
+        }
+
+        function renderUsersPage(users) {
+            const tbody = document.getElementById('userTableBody');
+
+            if (!users.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Không có người dùng nào.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td class="text-center">${renderAvatar(user)}</td>
+                    <td><strong>${escapeHtml(user.username)}</strong></td>
+                    <td>${escapeHtml(user.email)}</td>
+                    <td>${escapeHtml(user.fullName || '-')}</td>
+                    <td>${escapeHtml(user.role || '-')}</td>
+                    <td>
+                        <span class="badge ${user.isBlocked ? 'badge-danger' : 'badge-success'}">
+                            ${user.isBlocked ? 'Đã khóa' : 'Đang hoạt động'}
+                        </span>
+                    </td>
+                    <td>${Number(user.reviewCount || 0)}</td>
+                    <td class="text-center">
+                        <div class="user-action-group">
+                            <a class="btn btn-sm btn-primary user-action-btn" title="Sửa" href="/Admin/User/Edit/${user.id}">
+                                <i class="fas fa-pen"></i>
+                            </a>
+
+                            <button type="button"
+                                    class="btn btn-sm ${user.isBlocked ? 'btn-success' : 'btn-warning'} user-action-btn"
+                                    title="${user.isBlocked ? 'Mở khóa' : 'Khóa'}"
+                                    onclick="toggleBlock(${user.id})">
+                                <i class="fas ${user.isBlocked ? 'fa-lock-open' : 'fa-lock'}"></i>
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-info user-action-btn"
+                                    title="Lịch sử đánh giá"
+                                    onclick="showReviewHistory(${user.id})">
+                                <i class="fas fa-clock-rotate-left"></i>
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-danger user-action-btn"
+                                    title="Xóa"
+                                    onclick="deleteUser(${user.id}, '${escapeJs(user.username)}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAvatar(user) {
+            if (user.avatarUrl) {
+                return `<img src="${user.avatarUrl}" alt="avatar" style="width:38px;height:38px;object-fit:cover;border-radius:4px;border:1px solid #ddd;">`;
+            }
+
+            const first = (user.fullName || user.username || 'U').trim().charAt(0).toUpperCase();
+            return `<div style="width:38px;height:38px;border:1px solid #ddd;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;background:#f5f5f5;">${escapeHtml(first)}</div>`;
+        }
+
+        async function toggleBlock(id) {
+            if (!antiForgeryToken) {
+                alert('Thiếu anti-forgery token.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/User/ToggleBlock/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': antiForgeryToken
+                    }
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    alert(result.message || 'Không thể cập nhật trạng thái người dùng.');
+                    return;
+                }
+
+                await loadUsers();
+            } catch (error) {
+                console.error(error);
+                alert('Có lỗi xảy ra khi cập nhật trạng thái người dùng.');
+            }
+        }
+
+        async function deleteUser(id, username) {
+            if (!antiForgeryToken) {
+                alert('Thiếu anti-forgery token.');
+                return;
+            }
+
+            if (!confirm(`Bạn có chắc muốn xóa người dùng "${username}" không?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/Admin/User/Delete/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': antiForgeryToken
+                    }
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    alert(result.message || 'Không thể xóa người dùng.');
+                    return;
+                }
+
+                await loadUsers();
+            } catch (error) {
+                console.error(error);
+                alert('Có lỗi xảy ra khi xóa người dùng.');
+            }
+        }
+
+        async function showReviewHistory(id) {
+            try {
+                const response = await fetch(`/Admin/User/ReviewHistory/${id}`);
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    alert(result.message || 'Không thể tải lịch sử đánh giá.');
+                    return;
+                }
+
+                document.getElementById('reviewHistoryTitle').textContent = `Lịch sử đánh giá - ${result.userName}`;
+
+                currentReviewHistory = Array.isArray(result.reviews) ? result.reviews : [];
+                resetReviewFilters(false);
+                applyReviewFilters();
+
+                $('#reviewHistoryModal').modal('show');
+            } catch (error) {
+                console.error(error);
+                alert('Có lỗi xảy ra khi tải lịch sử đánh giá.');
+            }
+        }
+
+        function bindReviewFilterEvents() {
+            const keyword = document.getElementById('reviewFilterKeyword');
+            const rating = document.getElementById('reviewFilterRating');
+            const edited = document.getElementById('reviewFilterEdited');
+
+            if (keyword) {
+                keyword.addEventListener('input', applyReviewFilters);
+            }
+
+            if (rating) {
+                rating.addEventListener('change', applyReviewFilters);
+            }
+
+            if (edited) {
+                edited.addEventListener('change', applyReviewFilters);
+            }
+        }
+
+        function resetReviewFilters(runFilter = true) {
+            const keyword = document.getElementById('reviewFilterKeyword');
+            const rating = document.getElementById('reviewFilterRating');
+            const edited = document.getElementById('reviewFilterEdited');
+
+            if (keyword) keyword.value = '';
+            if (rating) rating.value = '';
+            if (edited) edited.value = '';
+
+            if (runFilter) {
+                applyReviewFilters();
+            }
+        }
+
+        function applyReviewFilters() {
+            const keyword = (document.getElementById('reviewFilterKeyword')?.value || '').trim().toLowerCase();
+            const rating = document.getElementById('reviewFilterRating')?.value || '';
+            const edited = document.getElementById('reviewFilterEdited')?.value || '';
+
+            filteredReviewHistory = currentReviewHistory.filter(review => {
+                const stationName = String(review.stationName || '').toLowerCase();
+                const comment = String(review.comment || '').toLowerCase();
+
+                const matchesKeyword = !keyword || stationName.includes(keyword) || comment.includes(keyword);
+                const matchesRating = !rating || String(Number(review.rating || 0)) === rating;
+                const matchesEdited = !edited
+                    || (edited === 'edited' && !!review.isEdited)
+                    || (edited === 'new' && !review.isEdited);
+
+                return matchesKeyword && matchesRating && matchesEdited;
+            });
+
+            renderFilteredReviewHistory();
+        }
+
+        function renderFilteredReviewHistory() {
+            const body = document.getElementById('reviewHistoryBody');
+            const badge = document.getElementById('reviewHistoryCountBadge');
+            const info = document.getElementById('reviewFilterInfo');
+
+            if (badge) {
+                badge.textContent = `${filteredReviewHistory.length} kết quả`;
+            }
+
+            if (info) {
+                info.textContent = `Hiển thị ${filteredReviewHistory.length}/${currentReviewHistory.length} đánh giá`;
+            }
+
+            if (!filteredReviewHistory.length) {
+                body.innerHTML = '<div class="alert alert-light border mb-0">Không có đánh giá nào phù hợp với bộ lọc hiện tại.</div>';
+                return;
+            }
+
+            body.innerHTML = filteredReviewHistory.map(review => `
+                <div class="border rounded p-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap" style="gap:10px;">
+                        <div class="font-weight-bold mb-1">${escapeHtml(review.stationName || 'Trạm sạc')}</div>
+                        <small class="text-muted">${formatDateTime(review.activityAt)} ${review.isEdited ? '- đã chỉnh sửa' : ''}</small>
+                    </div>
+                    <div class="text-warning font-weight-bold mb-2">⭐ ${Number(review.rating || 0)}</div>
+                    <div class="mb-0">${escapeHtml(review.comment || '')}</div>
+                </div>
+            `).join('');
+        }
+
+        function formatDateTime(value) {
+            if (!value) return '-';
+            return new Date(value).toLocaleString('vi-VN');
+        }
+
+        function escapeHtml(text) {
+            return String(text || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function escapeJs(text) {
+            return String(text || '')
+                .replaceAll("\\", "\\\\")
+                .replaceAll("'", "\\'")
+                .replaceAll('"', '\\"');
+        }
+    </script>
+}
+@* '''
+path = "/mnt/data/admin-user-like-chargingpole.txt"
+with open(path, "w", encoding="utf-8") as f:
+    f.write(content)
+print(path)򐟾 *@

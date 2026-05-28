@@ -1,0 +1,852 @@
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = "Chi tiết trạm sạc";
+    var stationId = ViewBag.StationId ?? 0;
+}
+
+@section Styles {
+    <style>
+        .station-details-page .card {
+            border: 0;
+            border-radius: 18px;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .station-details-page .card-header {
+            background: #fff;
+            border-bottom: 1px solid #edf2f7;
+            padding: 1rem 1.25rem;
+        }
+
+        .station-details-page .card-title,
+        .station-details-page .section-title {
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .station-hero {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(21, 128, 61, 0.96) 100%);
+            color: #fff;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 18px 38px rgba(15, 23, 42, 0.14);
+        }
+
+        .station-hero-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .station-hero-name {
+            font-size: 1.85rem;
+            font-weight: 800;
+            line-height: 1.25;
+            margin-bottom: 8px;
+        }
+
+        .station-hero-address {
+            color: rgba(255,255,255,0.85);
+            font-size: 1rem;
+            line-height: 1.55;
+            max-width: 880px;
+        }
+
+        .station-hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .station-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 0.92rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .station-pill-light {
+            background: rgba(255,255,255,0.14);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.14);
+        }
+
+        .station-pill-success {
+            background: #e8f7ee;
+            color: #0f8f51;
+        }
+
+        .station-pill-danger {
+            background: #fff1f2;
+            color: #dc2626;
+        }
+
+        .station-pill-warning {
+            background: #fff8e6;
+            color: #b45309;
+        }
+
+        .station-pill-info {
+            background: #eef2ff;
+            color: #3743b5;
+        }
+
+        .station-hero-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+            .station-hero-actions .btn {
+                min-height: 42px;
+                border-radius: 12px;
+                font-weight: 700;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+        .station-metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .station-metric-card {
+            background: #fff;
+            border: 1px solid #e8edf4;
+            border-radius: 16px;
+            padding: 1.1rem 1rem;
+            height: 100%;
+        }
+
+        .station-metric-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .station-metric-value {
+            font-size: 1.8rem;
+            line-height: 1.15;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .station-metric-note {
+            margin-top: 6px;
+            color: #6b7280;
+            font-size: 0.84rem;
+        }
+
+        .station-info-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 18px;
+        }
+
+        .station-panel {
+            background: #fff;
+            border: 1px solid #e8edf4;
+            border-radius: 18px;
+            padding: 1.2rem;
+            height: 100%;
+        }
+
+        .station-info-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            margin: 0;
+        }
+
+        .station-info-item {
+            border: 1px solid #edf2f7;
+            border-radius: 14px;
+            padding: 0.95rem 1rem;
+            background: #f8fafc;
+        }
+
+        .station-info-key {
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.88rem;
+            margin-bottom: 4px;
+        }
+
+        .station-info-value {
+            color: #0f172a;
+            font-weight: 800;
+            word-break: break-word;
+        }
+
+        .station-map {
+            height: 360px;
+            border-radius: 16px;
+            border: 1px solid #dbe4ee;
+            overflow: hidden;
+            background: #f8fafc;
+        }
+
+        .station-table-wrap {
+            overflow-x: auto;
+        }
+
+        .station-table {
+            width: 100%;
+            min-width: 760px;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 0;
+        }
+
+            .station-table thead th {
+                background: #f8fafc;
+                color: #334155;
+                font-weight: 800;
+                border-bottom: 1px solid #e8edf3;
+                padding: 13px 12px;
+                white-space: nowrap;
+            }
+
+            .station-table tbody td {
+                padding: 14px 12px;
+                border-bottom: 1px solid #edf2f7;
+                vertical-align: top;
+                color: #1f2937;
+            }
+
+        .station-row-main {
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .station-row-sub {
+            font-size: 0.88rem;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .station-empty {
+            padding: 1.25rem;
+            border: 1px dashed #d7dee8;
+            border-radius: 14px;
+            background: #f8fafc;
+            color: #64748b;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .station-review-list {
+            display: grid;
+            gap: 14px;
+        }
+
+        .station-review-item {
+            border: 1px solid #edf2f7;
+            border-radius: 16px;
+            padding: 1rem;
+            background: #fff;
+        }
+
+        .station-review-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .station-review-user {
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .station-review-meta {
+            color: #64748b;
+            font-size: 0.86rem;
+            margin-top: 4px;
+        }
+
+        .station-rating-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #fff8e6;
+            color: #92400e;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .station-review-comment {
+            margin-top: 0.85rem;
+            color: #334155;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .station-loading {
+            padding: 2rem 1rem;
+            text-align: center;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .station-details-page .station-card-header {
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+            .station-details-page .station-card-header::after {
+                display: none !important;
+                content: none !important;
+            }
+
+            .station-details-page .station-card-header .card-title {
+                margin-bottom: 0;
+            }
+
+            .station-details-page .station-card-header .badge {
+                margin-left: auto;
+                flex-shrink: 0;
+            }
+        .station-activity-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .station-activity-item {
+            border: 1px solid #e8edf4;
+            border-radius: 16px;
+            padding: 14px 16px;
+            background: #fff;
+        }
+
+        .station-activity-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .station-activity-action {
+            font-weight: 900;
+            color: #0f172a;
+        }
+
+        .station-activity-meta {
+            color: #64748b;
+            font-size: .88rem;
+            font-weight: 700;
+        }
+
+        .station-activity-change {
+            color: #334155;
+            font-size: .92rem;
+            line-height: 1.55;
+        }
+
+
+        .station-error-box {
+            border: 1px solid #fecaca;
+            background: #fff1f2;
+            color: #b91c1c;
+            border-radius: 14px;
+            padding: 1rem;
+            font-weight: 700;
+        }
+
+        @@media (max-width: 1199.98px) {
+            .station-metric-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .station-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .station-hero-name {
+                font-size: 1.45rem;
+            }
+
+            .station-metric-grid,
+            .station-info-list {
+                grid-template-columns: 1fr;
+            }
+
+            .station-map {
+                height: 300px;
+            }
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Chi tiết trạm sạc</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="Station" asp-action="Index">Quản lý trạm sạc</a>
+                    </li>
+                    <li class="breadcrumb-item active">Chi tiết trạm</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content station-details-page">
+    <div class="container-fluid">
+        <div id="detailsLoading" class="station-loading">Đang tải chi tiết trạm sạc...</div>
+        <div id="detailsError" class="station-error-box d-none"></div>
+
+        <div id="detailsContent" class="d-none">
+            <div class="station-hero mb-4">
+                <div class="station-hero-top">
+                    <div>
+                        <div id="stationName" class="station-hero-name">-</div>
+                        <div id="stationAddress" class="station-hero-address">-</div>
+                        <div class="station-hero-badges">
+                            <span id="stationStatusBadge" class="station-pill station-pill-light">-</span>
+                            <span id="stationSourceBadge" class="station-pill station-pill-light">-</span>
+                            <span id="stationRatingBadge" class="station-pill station-pill-light">-</span>
+                        </div>
+                    </div>
+
+                    <div class="station-hero-actions">
+                        <a id="editStationBtn" href="#" class="btn btn-warning">
+                            <i class="fas fa-pen mr-1"></i> Sửa
+                        </a>
+                        <a id="managePolesBtn" href="#" class="btn btn-light text-success">
+                            <i class="fas fa-charging-station mr-1"></i> Quản lý trụ
+                        </a>
+                        <a asp-area="Admin" asp-controller="Station" asp-action="Index" class="btn btn-outline-light">
+                            <i class="fas fa-arrow-left mr-1"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="station-metric-grid mb-4">
+                <div class="station-metric-card">
+                    <div class="station-metric-label">Tổng trụ sạc</div>
+                    <div id="metricPoleCount" class="station-metric-value">0</div>
+                    <div class="station-metric-note">Toàn bộ trụ thuộc trạm này.</div>
+                </div>
+                <div class="station-metric-card">
+                    <div class="station-metric-label">Trụ hoạt động</div>
+                    <div id="metricActivePoleCount" class="station-metric-value">0</div>
+                    <div class="station-metric-note">Số trụ đang ở trạng thái hoạt động.</div>
+                </div>
+                <div class="station-metric-card">
+                    <div class="station-metric-label">Đánh giá trung bình</div>
+                    <div id="metricAverageRating" class="station-metric-value">0.0</div>
+                    <div id="metricReviewNote" class="station-metric-note">0 lượt đánh giá.</div>
+                </div>
+                <div class="station-metric-card">
+                    <div class="station-metric-label">Mức giá niêm yết</div>
+                    <div id="metricPrice" class="station-metric-value">0đ</div>
+                    <div class="station-metric-note">Theo cấu hình hiện tại của trạm.</div>
+                </div>
+            </div>
+
+            <div class="station-info-grid mb-4">
+                <div class="station-panel">
+                    <div class="section-title mb-3">Thông tin chi tiết</div>
+                    <div class="station-info-list">
+                        <div class="station-info-item">
+                            <div class="station-info-key">Tên trạm</div>
+                            <div id="infoName" class="station-info-value">-</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-key">Khu vực</div>
+                            <div id="infoArea" class="station-info-value">-</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-key">Địa chỉ</div>
+                            <div id="infoAddress" class="station-info-value">-</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-key">Nguồn tạo</div>
+                            <div id="infoSource" class="station-info-value">-</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-key">Vĩ độ</div>
+                            <div id="infoLatitude" class="station-info-value">-</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-key">Kinh độ</div>
+                            <div id="infoLongitude" class="station-info-value">-</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-key">Trạng thái</div>
+                            <div id="infoStatus" class="station-info-value">-</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-key">Loại sạc / Công suất</div>
+                            <div id="infoPower" class="station-info-value">-</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-key">Trạng thái hệ thống</div>
+                            <div id="infoSystemStatus" class="station-info-value">-</div>
+                        </div>
+                        <div class="station-info-item">
+                            <div class="station-info-key">Trạng thái vận hành</div>
+                            <div id="infoOperationStatus" class="station-info-value">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="station-panel">
+                    <div class="section-title mb-3">Vị trí bản đồ</div>
+                    <div id="stationMap" class="station-map"></div>
+                    <div class="text-muted small mt-3">Bản đồ hiển thị đúng vị trí trạm để admin kiểm tra nhanh.</div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xl-7 mb-4 mb-xl-0">
+                    <div class="card h-100">
+                        <div class="card-header station-card-header">
+                            <h3 class="card-title mb-0">Danh sách trụ sạc</h3>
+                            <span id="poleCountBadge" class="badge badge-success px-3 py-2">0 trụ</span>
+                        </div>
+                        <div class="card-body p-0 station-table-wrap">
+                            <table class="station-table">
+                                <thead>
+                                    <tr>
+                                        <th>Mã trụ</th>
+                                        <th>Công suất</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ghi chú</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="poleTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-5">
+                    <div class="card h-100">
+                        <div class="card-header station-card-header">
+                            <h3 class="card-title mb-0">Đánh giá gần đây</h3>
+                            <span id="reviewCountBadge" class="badge badge-warning px-3 py-2">0 đánh giá</span>
+                        </div>
+                        <div class="card-body">
+                            <div id="reviewList" class="station-review-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header station-card-header">
+                    <h3 class="card-title mb-0">Lịch sử thao tác chủ trạm</h3>
+                    <span id="activityCountBadge" class="badge badge-info px-3 py-2">0 log</span>
+                </div>
+                <div class="card-body">
+                    <div id="activityLogList" class="station-activity-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const MAP4D_API_KEY = '@(Configuration["Map4D:ApiKey"] ?? "")';
+        const stationId = @stationId;
+
+        let mapInstance = null;
+        let stationMarker = null;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadStationDetails();
+        });
+
+        async function loadStationDetails() {
+            const loading = document.getElementById('detailsLoading');
+            const errorBox = document.getElementById('detailsError');
+            const content = document.getElementById('detailsContent');
+
+            loading.classList.remove('d-none');
+            errorBox.classList.add('d-none');
+            content.classList.add('d-none');
+
+            try {
+                const [stationRes, polesRes, reviewsRes, logsRes] = await Promise.all([
+                    fetch(`/Admin/api/stations/${stationId}`),
+                    fetch(`/Admin/api/poles?stationId=${stationId}`),
+                    fetch(`/Admin/api/reviews/station/${stationId}`),
+                    fetch(`/Admin/api/stations/${stationId}/activity-logs`)
+                ]);
+
+                if (!stationRes.ok) {
+                    throw new Error('Không tải được thông tin trạm.');
+                }
+
+                const station = await stationRes.json();
+                const poles = polesRes.ok ? await polesRes.json() : [];
+                const reviews = reviewsRes.ok ? await reviewsRes.json() : [];
+                const logs = logsRes.ok ? await logsRes.json() : [];
+
+                renderStation(station, poles, reviews, logs);
+                loading.classList.add('d-none');
+                content.classList.remove('d-none');
+            } catch (error) {
+                console.error(error);
+                loading.classList.add('d-none');
+                errorBox.classList.remove('d-none');
+                errorBox.textContent = error.message || 'Có lỗi khi tải chi tiết trạm.';
+            }
+        }
+
+        async function renderStation(station, poles, reviews, logs) {
+            const averageRating = reviews.length
+                ? (reviews.reduce((sum, item) => sum + (Number(item.rating) || 0), 0) / reviews.length)
+                : 0;
+
+            const activePoleCount = poles.filter(x => normalizeStatus(x.status) === 'Đang hoạt động').length;
+            const sourceLabel = station.isAdminManaged ? 'Admin thêm trực tiếp' : 'User gửi yêu cầu';
+            const areaText = extractArea(station.address);
+            const priceText = formatCurrency(station.pricePerKwh || 0);
+            const powerText = [station.chargerType, station.power].filter(Boolean).join(' / ') || 'Chưa cấu hình';
+
+            document.getElementById('stationName').textContent = station.name || `Trạm #${station.id}`;
+            document.getElementById('stationAddress').textContent = station.address || 'Chưa có địa chỉ';
+            document.getElementById('stationStatusBadge').className = `station-pill ${getStatusPillClass(station.status)}`;
+            document.getElementById('stationStatusBadge').innerHTML = `<i class="fas fa-circle"></i> ${escapeHtml(station.status || '-')}`;
+
+            document.getElementById('stationSourceBadge').className = `station-pill ${station.isAdminManaged ? 'station-pill-success' : 'station-pill-info'}`;
+            document.getElementById('stationSourceBadge').innerHTML = `<i class="fas ${station.isAdminManaged ? 'fa-user-shield' : 'fa-user'}"></i> ${escapeHtml(sourceLabel)}`;
+
+            document.getElementById('stationRatingBadge').className = `station-pill station-pill-warning`;
+            document.getElementById('stationRatingBadge').innerHTML = `<i class="fas fa-star"></i> ${averageRating.toFixed(1)} / 5 (${reviews.length} đánh giá)`;
+
+            document.getElementById('metricPoleCount').textContent = poles.length;
+            document.getElementById('metricActivePoleCount').textContent = activePoleCount;
+            document.getElementById('metricAverageRating').textContent = averageRating.toFixed(1);
+            document.getElementById('metricReviewNote').textContent = `${reviews.length} lượt đánh giá.`;
+            document.getElementById('metricPrice').textContent = priceText;
+
+            document.getElementById('infoName').textContent = station.name || '-';
+            document.getElementById('infoArea').textContent = areaText;
+            document.getElementById('infoAddress').textContent = station.address || '-';
+            document.getElementById('infoSource').textContent = sourceLabel;
+            document.getElementById('infoLatitude').textContent = formatCoordinate(station.latitude);
+            document.getElementById('infoLongitude').textContent = formatCoordinate(station.longitude);
+            document.getElementById('infoStatus').textContent = station.status || '-';
+            document.getElementById('infoPower').textContent = powerText;
+            document.getElementById('infoSystemStatus').textContent = station.systemStatusText || station.systemStatus || '-';
+            document.getElementById('infoOperationStatus').textContent = station.operationStatusText || station.operationStatus || '-';
+
+            document.getElementById('editStationBtn').href = `/Admin/Station/Edit/${station.id}`;
+            document.getElementById('managePolesBtn').href = `/Admin/ChargingPole?stationId=${station.id}`;
+
+            renderPoles(poles);
+            renderReviews(reviews);
+            renderActivityLogs(logs || []);
+            await renderMap(station);
+        }
+
+        function renderPoles(poles) {
+            const tbody = document.getElementById('poleTableBody');
+            const badge = document.getElementById('poleCountBadge');
+            tbody.innerHTML = '';
+            badge.textContent = `${poles.length} trụ`;
+
+            if (!poles.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4">
+                            <div class="station-empty">Trạm này chưa có trụ sạc nào.</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = poles.map(pole => `
+                <tr>
+                    <td>
+                        <div class="station-row-main">${escapeHtml(pole.poleCode || `Trụ #${pole.id}`)}</div>
+                        <div class="station-row-sub">Thứ tự: ${pole.sortOrder || 0}</div>
+                    </td>
+                    <td>${escapeHtml(pole.maxPower || 'Chưa cấu hình')}</td>
+                    <td><span class="station-pill ${getStatusPillClass(pole.status)}">${escapeHtml(pole.status || '-')}</span></td>
+                    <td>${escapeHtml(pole.note || '-')}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderReviews(reviews) {
+            const wrap = document.getElementById('reviewList');
+            const badge = document.getElementById('reviewCountBadge');
+            badge.textContent = `${reviews.length} đánh giá`;
+
+            if (!reviews.length) {
+                wrap.innerHTML = `<div class="station-empty">Trạm này chưa có đánh giá nào.</div>`;
+                return;
+            }
+
+            wrap.innerHTML = reviews.slice(0, 6).map(review => `
+                <div class="station-review-item">
+                    <div class="station-review-top">
+                        <div>
+                            <div class="station-review-user">${escapeHtml(review.userName || 'Ẩn danh')}</div>
+                            <div class="station-review-meta">
+                                ${formatDateTime(review.updatedAt || review.createdAt)}${review.isEdited ? ' · đã chỉnh sửa' : ''}
+                            </div>
+                        </div>
+                        <span class="station-rating-badge">
+                            <i class="fas fa-star"></i> ${Number(review.rating || 0).toFixed(1)}
+                        </span>
+                    </div>
+                    <div class="station-review-comment">${escapeHtml(review.comment || 'Không có nội dung nhận xét.')}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderActivityLogs(logs) {
+            const wrap = document.getElementById('activityLogList');
+            const badge = document.getElementById('activityCountBadge');
+            badge.textContent = `${logs.length} log`;
+
+            if (!logs.length) {
+                wrap.innerHTML = `<div class="station-empty">Chưa có lịch sử thao tác cho trạm này.</div>`;
+                return;
+            }
+
+            wrap.innerHTML = logs.slice(0, 20).map(log => `
+                <div class="station-activity-item">
+                    <div class="station-activity-head">
+                        <div class="station-activity-action">${escapeHtml(formatActionType(log.actionType))}</div>
+                        <div class="station-activity-meta">${escapeHtml(log.userName || 'Hệ thống/Admin')} · ${formatDateTime(log.createdAt)}</div>
+                    </div>
+                    <div class="station-activity-change">
+                        ${log.oldValue ? `<div><strong>Cũ:</strong> ${escapeHtml(log.oldValue)}</div>` : ''}
+                        ${log.newValue ? `<div><strong>Mới:</strong> ${escapeHtml(log.newValue)}</div>` : ''}
+                        ${log.description ? `<div><strong>Ghi chú:</strong> ${escapeHtml(log.description)}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatActionType(actionType) {
+            const map = {
+                update_operation_status: 'Cập nhật trạng thái vận hành',
+                add_charging_pole: 'Thêm trụ sạc',
+                update_charging_pole: 'Sửa thông tin trụ',
+                delete_charging_pole: 'Xóa trụ sạc',
+                update_station_info: 'Cập nhật thông tin trạm',
+                registration_paid: 'Thanh toán phí đăng ký',
+                maintenance_paid: 'Thanh toán phí duy trì',
+                admin_lock: 'Admin khóa trạm',
+                admin_unlock: 'Admin mở khóa trạm',
+                admin_hide: 'Admin ẩn trạm',
+                admin_show: 'Admin mở hiển thị trạm'
+            };
+            return map[actionType] || actionType || 'Thao tác';
+        }
+
+        async function renderMap(station) {
+            const mapContainer = document.getElementById('stationMap');
+            const lat = Number(station.latitude);
+            const lng = Number(station.longitude);
+
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                mapContainer.innerHTML = '<div class="station-empty h-100 d-flex align-items-center justify-content-center">Trạm chưa có tọa độ hợp lệ để hiển thị bản đồ.</div>';
+                return;
+            }
+
+            try {
+                await TramSacMap4D.ensureSdk(MAP4D_API_KEY);
+
+                const center = { lat, lng };
+                mapInstance = new map4d.Map(mapContainer, {
+                    center,
+                    zoom: 16,
+                    controls: true
+                });
+
+                stationMarker = TramSacMap4D.createMarker(mapInstance, {
+                    position: center,
+                    title: station.name || 'Trạm sạc'
+                });
+            } catch (error) {
+                console.error('Map4D error:', error);
+                mapContainer.innerHTML = '<div class="station-empty h-100 d-flex align-items-center justify-content-center">Không tải được bản đồ Map4D.</div>';
+            }
+        }
+
+        function getStatusPillClass(status) {
+            const value = normalizeStatus(status);
+            if (value === 'Đang hoạt động') return 'station-pill-success';
+            if (value === 'Bảo trì') return 'station-pill-warning';
+            if (value === 'Không hoạt động' || value === 'Lỗi') return 'station-pill-danger';
+            return 'station-pill-light';
+        }
+
+        function normalizeStatus(status) {
+            return (status || '').toString().trim();
+        }
+
+        function extractArea(address) {
+            if (!address) return 'Chưa xác định';
+            const parts = address.split(',').map(x => x.trim()).filter(Boolean);
+            if (parts.length >= 2) {
+                return parts.slice(parts.length - 2).join(', ');
+            }
+            return address;
+        }
+
+        function formatCoordinate(value) {
+            const num = Number(value);
+            return Number.isFinite(num) ? num.toFixed(6) : '-';
+        }
+
+        function formatCurrency(value) {
+            const num = Number(value || 0);
+            return `${num.toLocaleString('vi-VN')}đ`;
+        }
+
+        function formatDateTime(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '-';
+            return date.toLocaleString('vi-VN');
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+    </script>
+}

@@ -1,0 +1,211 @@
+﻿@{
+    ViewData["Title"] = "Liên hệ hỗ trợ";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/user-contact-page.css" asp-append-version="true" />
+}
+
+<div class="sub_banner_outer position-relative user-header-shell" id="contactPageTop">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<main class="contact-page enterprise-contact-page">
+    @* <section class="contact-hero-section">
+        <div class="container">
+            <div class="contact-hero-card">
+                <div>
+                    <span class="contact-eyebrow">Hỗ trợ người dùng TramSac99</span>
+                    <h1 class="contact-title">Liên hệ hỗ trợ và theo dõi phản hồi trong cùng một nơi.</h1>
+                    <p class="contact-description">
+                        Trang này được tối ưu cho người dùng cuối: gửi yêu cầu nhanh, xem tình trạng xử lý rõ ràng,
+                        không phải nhắn lại nhiều lần để kiểm tra tiến độ.
+                    </p>
+                </div>
+
+                <div class="contact-service-points">
+                    <div class="contact-service-chip"><i class="fa-solid fa-circle-check"></i><span>Gửi ticket trực tiếp trong app</span></div>
+                    <div class="contact-service-chip"><i class="fa-solid fa-circle-check"></i><span>Theo dõi trạng thái theo thời gian</span></div>
+                    <div class="contact-service-chip"><i class="fa-solid fa-circle-check"></i><span>Nhận phản hồi ngay khi admin xử lý</span></div>
+                </div>
+            </div>
+        </div>
+    </section> *@
+
+    <section class="contact-main-section">
+        <div class="container">
+            <div class="contact-main-grid">
+                <article class="contact-panel-card contact-info-panel">
+                    <div class="contact-panel-head">
+                        <span class="contact-section-kicker">Kênh liên hệ</span>
+                        <h2 class="contact-panel-title">Thông tin hỗ trợ</h2>
+                        @* <p class="contact-panel-subtitle">Những thông tin người dùng cần thấy ngay ở lần đầu truy cập.</p> *@
+                    </div>
+
+                    <div class="contact-info-list">
+                        <div class="contact-info-item">
+                            <div class="contact-info-icon"><i class="fa-solid fa-phone"></i></div>
+                            <div>
+                                <div class="contact-info-label">Hotline</div>
+                                <div class="contact-info-value">1900 9999</div>
+                                @* <div class="contact-info-note">Hỗ trợ trong giờ vận hành hệ thống.</div> *@
+                            </div>
+                        </div>
+
+                        <div class="contact-info-item">
+                            <div class="contact-info-icon"><i class="fa-solid fa-envelope"></i></div>
+                            <div>
+                                <div class="contact-info-label">Email</div>
+                                <div class="contact-info-value">support@tramsac99.vn</div>
+                                @* <div class="contact-info-note">Dùng cho các nội dung cần đối chiếu lâu dài.</div> *@
+                            </div>
+                        </div>
+
+                        <div class="contact-info-item">
+                            <div class="contact-info-icon"><i class="fa-solid fa-location-dot"></i></div>
+                            <div>
+                                <div class="contact-info-label">Địa chỉ</div>
+                                <div class="contact-info-value">TP. Bắc Ninh, Việt Nam</div>
+                                @* <div class="contact-info-note">Điểm tiếp nhận và điều phối vận hành.</div> *@
+                            </div>
+                        </div>
+
+                        <div class="contact-info-item">
+                            <div class="contact-info-icon"><i class="fa-solid fa-clock"></i></div>
+                            <div>
+                                <div class="contact-info-label">Khung giờ hỗ trợ</div>
+                                <div class="contact-info-value">08:00 - 22:00 hằng ngày</div>
+                                @* <div class="contact-info-note">Ticket gửi ngoài giờ vẫn được lưu đầy đủ trong hệ thống.</div> *@
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="contact-standard-box">
+                        <div class="contact-standard-title">Cam kết trải nghiệm</div>
+                        <ul class="contact-standard-list">
+                            <li>Thông tin gửi đi được lưu lại để người dùng theo dõi lịch sử hỗ trợ.</li>
+                            <li>Khi ticket được xử lý xong, hệ thống hiển thị thông báo rõ ràng tại mục Liên hệ.</li>
+                            <li>Giao diện ưu tiên đọc nhanh, không rối, phù hợp cho cả desktop lẫn mobile.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <article class="contact-panel-card contact-form-panel">
+                    <div class="contact-panel-head">
+                        <span class="contact-section-kicker">Tạo yêu cầu mới</span>
+                        <h2 class="contact-panel-title">Gửi ticket hỗ trợ</h2>
+                        @* <p class="contact-panel-subtitle">Yêu cầu sẽ được đưa trực tiếp sang trang quản trị Hỗ trợ của admin.</p> *@
+                    </div>
+
+                    @if (User.Identity != null && User.Identity.IsAuthenticated)
+                    {
+                        <div class="contact-login-state contact-login-state-success">
+                            Bạn đang đăng nhập. Ticket sau khi gửi sẽ hiển thị ngay trong lịch sử hỗ trợ bên dưới.
+                        </div>
+
+                        <form id="contactForm" class="contact-form">
+                            <div class="contact-form-grid">
+                                <div class="form-group mb-0">
+                                    <label class="contact-label" for="fullName">Họ và tên</label>
+                                    <input type="text" class="form-control" id="fullName" placeholder="Nhập họ và tên" />
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="contact-label" for="email">Email</label>
+                                    <input type="email" class="form-control" id="email" placeholder="Nhập email" />
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="contact-label" for="phoneNumber">Số điện thoại</label>
+                                    <input type="text" class="form-control" id="phoneNumber" placeholder="Không bắt buộc" />
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="contact-label" for="subject">Tiêu đề</label>
+                                    <input type="text" class="form-control" id="subject" placeholder="Ví dụ: Không mở được chỉ đường" />
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label class="contact-label" for="message">Nội dung cần hỗ trợ</label>
+                                <textarea class="form-control" id="message" placeholder="Mô tả vấn đề càng rõ thì việc xử lý càng nhanh."></textarea>
+                            </div>
+
+                            <div class="contact-form-actions">
+                                <button type="submit" id="contactSubmitBtn" class="contact-submit-btn">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    <span>Gửi yêu cầu hỗ trợ</span>
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="contact-login-state contact-login-state-warning">
+                            Bạn cần đăng nhập để gửi ticket hỗ trợ và theo dõi trạng thái trực tiếp trong hệ thống.
+                        </div>
+
+                        <a asp-area="User" asp-controller="Account" asp-action="Login" class="contact-login-btn">
+                            <i class="fa-solid fa-right-to-bracket"></i>
+                            <span>Đăng nhập để gửi yêu cầu</span>
+                        </a>
+                    }
+
+                    <div id="contactResult" class="contact-result-box" style="display:none;"></div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <section class="contact-ticket-section">
+            <div class="container">
+                <div class="contact-ticket-shell">
+                    <div class="contact-ticket-summary-grid">
+                        <article class="contact-summary-card">
+                            <div class="contact-summary-label">Tổng yêu cầu</div>
+                            <div id="ticketSummaryTotal" class="contact-summary-value">0</div>
+                            @* <div class="contact-summary-note">Số ticket đã tạo.</div> *@
+                        </article>
+
+                        <article class="contact-summary-card">
+                            <div class="contact-summary-label">Đang xử lý</div>
+                            <div id="ticketSummaryOpen" class="contact-summary-value">0</div>
+                            @* <div class="contact-summary-note">Ticket chưa hoàn tất.</div> *@
+                        </article>
+
+                        <article class="contact-summary-card">
+                            <div class="contact-summary-label">Thông báo mới</div>
+                            <div id="ticketSummaryUnread" class="contact-summary-value">0</div>
+                            @* <div class="contact-summary-note">Admin đã phản hồi nhưng bạn chưa xem.</div> *@
+                        </article>
+                    </div>
+
+                    <article class="contact-panel-card contact-ticket-panel">
+                        <div class="contact-panel-head">
+                            <span class="contact-section-kicker">Theo dõi lịch sử</span>
+                            <h2 class="contact-panel-title">Ticket của tôi</h2>
+                            @* <p class="contact-panel-subtitle">Lịch sử hỗ trợ được trình bày rõ ràng, giúp người dùng theo dõi mà không bị rối.</p> *@
+                        </div>
+
+                        <div id="ticketList" class="contact-ticket-list">
+                            <div class="contact-ticket-empty">Đang tải yêu cầu của bạn...</div>
+                        </div>
+
+                        <div class="contact-ticket-footer">
+                            <div id="ticketPageInfo" class="text-muted small"></div>
+                            <div id="ticketPager"></div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+    }
+</main>
+
+@section Scripts {
+    <script>
+        window.tramSacContactPage = {
+            isAuthenticated: @(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false")
+        };
+    </script>
+    <script src="~/js/user-contact-page.js" asp-append-version="true"></script>
+}

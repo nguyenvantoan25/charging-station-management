@@ -1,0 +1,774 @@
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = "Chỉnh sửa trạm sạc";
+    var stationId = ViewBag.StationId;
+}
+
+@section Styles {
+    <style>
+        /* Why changed: keep edit station screen aligned with create screen. */
+        .station-edit-page .card {
+            border: 0;
+            border-radius: 16px;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+        }
+
+        .station-edit-page .card-header {
+            background: linear-gradient(135deg, #0f172a 0%, #166534 100%);
+            color: #fff;
+            border-bottom: 0;
+            padding: 1rem 1.25rem;
+        }
+
+        .station-edit-page .card-title {
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .station-edit-page .card-subtitle {
+            margin: 0;
+            color: rgba(255,255,255,0.82);
+            font-size: 0.92rem;
+        }
+
+        .station-edit-page .card-body {
+            padding: 1.5rem;
+            background: #f8fafc;
+        }
+
+        .station-form-panel,
+        .station-info-panel {
+            background: #fff;
+            border: 1px solid #e8edf4;
+            border-radius: 14px;
+            padding: 1.25rem;
+            height: 100%;
+        }
+
+        .station-section-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 1rem;
+        }
+
+        .station-field-label {
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 0.45rem;
+        }
+
+        .station-edit-page .form-control,
+        .station-edit-page .custom-select,
+        .station-edit-page select {
+            height: 44px;
+            border-radius: 10px;
+            border: 1px solid #d7dee8;
+            box-shadow: none;
+        }
+
+            .station-edit-page .form-control:focus,
+            .station-edit-page select:focus {
+                border-color: #16a34a;
+                box-shadow: 0 0 0 0.16rem rgba(22, 163, 74, 0.12);
+            }
+
+        .station-input-note {
+            font-size: 0.83rem;
+            color: #64748b;
+            margin-top: 0.45rem;
+        }
+
+        .station-coordinate-box {
+            border: 1px dashed #cfd8e3;
+            border-radius: 12px;
+            padding: 1rem;
+            background: #f8fafc;
+            margin-bottom: 1rem;
+        }
+
+        .station-map {
+            height: 360px;
+            border-radius: 14px;
+            border: 1px solid #dbe4ee;
+            overflow: hidden;
+        }
+
+        .station-address-wrap {
+            position: relative;
+        }
+
+        .station-suggest-box {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 8px);
+            z-index: 30;
+            background: #fff;
+            border: 1px solid #dbe4ee;
+            border-radius: 12px;
+            box-shadow: 0 18px 36px rgba(15, 23, 42, 0.12);
+            overflow: hidden;
+            display: none;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .station-suggest-item {
+            width: 100%;
+            border: 0;
+            background: #fff;
+            text-align: left;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #eef2f7;
+            cursor: pointer;
+        }
+
+            .station-suggest-item:last-child {
+                border-bottom: 0;
+            }
+
+            .station-suggest-item:hover {
+                background: #f0fdf4;
+            }
+
+        .station-suggest-name {
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.2rem;
+        }
+
+        .station-suggest-address {
+            font-size: 0.86rem;
+            color: #64748b;
+            line-height: 1.45;
+        }
+
+        .station-suggest-empty {
+            padding: 0.9rem 1rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+
+        .station-info-list {
+            margin: 0;
+            padding-left: 1rem;
+            color: #475569;
+        }
+
+            .station-info-list li + li {
+                margin-top: 0.55rem;
+            }
+
+        .station-form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 1.25rem;
+        }
+
+            .station-form-actions .btn {
+                min-width: 140px;
+                border-radius: 10px;
+                font-weight: 700;
+            }
+
+        .station-message {
+            margin-top: 1rem;
+        }
+
+        @@media (max-width: 991.98px) {
+            .station-map {
+                height: 300px;
+            }
+        }
+    </style>
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Chỉnh sửa trạm sạc</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="Station" asp-action="Index">Quản lý trạm sạc</a>
+                    </li>
+                    <li class="breadcrumb-item active">Chỉnh sửa trạm sạc</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content station-edit-page">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Cập nhật trạm sạc</h3>
+                <p class="card-subtitle">Dùng màn hình này để sửa thông tin cơ bản của trạm mà không làm xung đột dữ liệu trụ sạc.</p>
+            </div>
+
+            <div class="card-body">
+                <form id="editStationForm" novalidate>
+                    <div class="row">
+                        <div class="col-lg-7 mb-4 mb-lg-0">
+                            <div class="station-form-panel">
+                                <div class="station-section-title">Thông tin trạm</div>
+
+                                <div class="form-group">
+                                    <label for="name" class="station-field-label">Tên trạm <span class="text-danger">*</span></label>
+                                    <input type="text" id="name" class="form-control" />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="address" class="station-field-label">Địa chỉ <span class="text-danger">*</span></label>
+                                    <div class="station-address-wrap">
+                                        <div class="input-group">
+                                            <input type="text" id="address" class="form-control" autocomplete="off" />
+                                            <div class="input-group-append">
+                                                <button type="button" id="geocodeBtn" class="btn btn-outline-success">Lấy tọa độ</button>
+                                            </div>
+                                        </div>
+                                        <div id="addressSuggestBox" class="station-suggest-box"></div>
+                                    </div>
+                                    @* <div class="station-input-note">Chọn gợi ý địa chỉ là map sẽ tự nhảy tới điểm đó, ghim marker và zoom gần ngay lập tức.</div> *@
+                                </div>
+
+                                <div class="station-coordinate-box">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-md-0">
+                                                <label for="latitude" class="station-field-label">Vĩ độ <span class="text-danger">*</span></label>
+                                                <input type="text" id="latitude" class="form-control" required inputmode="decimal" />
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mt-3 mt-md-0">
+                                            <div class="form-group mb-0">
+                                                <label for="longitude" class="station-field-label">Kinh độ <span class="text-danger">*</span></label>
+                                                <input type="text" id="longitude" class="form-control" required inputmode="decimal" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="status" class="station-field-label">Trạng thái</label>
+                                    <select id="status" class="form-control" required>
+                                        <option value="Đang hoạt động">Đang hoạt động</option>
+                                        <option value="Lỗi">Lỗi</option>
+                                        <option value="Bảo trì">Bảo trì</option>
+                                        <option value="Không hoạt động">Không hoạt động</option>
+                                    </select>
+                                </div>
+
+                                <div class="station-form-actions">
+                                    <button type="submit" id="submitBtn" class="btn btn-primary">
+                                        <i class="fas fa-save mr-1"></i> Lưu thay đổi
+                                    </button>
+                                    <a href="/Admin/Station" class="btn btn-outline-secondary">Quay lại</a>
+                                </div>
+
+                                <div id="formMessage" class="station-message"></div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-5">
+                            <div class="station-info-panel mb-4">
+                                <div class="station-section-title">Vị trí trên bản đồ</div>
+                                <div id="pickMap" class="station-map"></div>
+                                <div class="station-input-note">Bấm trực tiếp lên bản đồ để cập nhật tọa độ.</div>
+                            </div>
+
+                            <div class="station-info-panel">
+                                <div class="station-section-title">Nguyên tắc đồng bộ</div>
+                                <ul class="station-info-list">
+                                    <li>Trạm chỉ dùng 4 trạng thái: Đang hoạt động, Lỗi, Bảo trì, Không hoạt động.</li>
+                                    <li>Khi trạm chuyển sang Lỗi, Bảo trì hoặc Không hoạt động, các trụ con sẽ được đồng bộ theo trạng thái trạm.</li>
+                                    <li>Loại sạc và công suất được quản lý ở cấp trụ sạc để tránh xung đột dữ liệu.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const stationId = @stationId;
+        const MAP4D_API_KEY = '@(Configuration["Map4D:ApiKey"] ?? "")';
+        let pickMap;
+        let pickMarker;
+        let addressSuggestTimer;
+        let addressSuggestAbortController;
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            await initPickMap();
+            await loadStation();
+            bindAddressSuggest();
+            bindCoordinateInputs();
+            document.getElementById("editStationForm").addEventListener("submit", submitForm);
+            document.getElementById("geocodeBtn").addEventListener("click", geocodeAddress);
+        });
+
+        async function initPickMap(center, zoom) {
+            await TramSacMap4D.ensureSdk(MAP4D_API_KEY);
+            const point = makePoint(center?.lat ?? 21.028511, center?.lng ?? 105.804817);
+            buildPickMap(point, Number.isFinite(zoom) ? zoom : 13);
+        }
+
+        function buildPickMap(point, zoom) {
+            const container = document.getElementById('pickMap');
+            if (!container) {
+                return;
+            }
+
+            container.innerHTML = '';
+            pickMarker = null;
+            pickMap = new map4d.Map(container, {
+                center: makeLatLng(point.lat, point.lng),
+                zoom: zoom,
+                controls: true
+            });
+
+            bindPickMapClick();
+        }
+
+        function bindPickMapClick() {
+            if (!pickMap || typeof pickMap.addListener !== 'function') {
+                return;
+            }
+
+            pickMap.addListener('click', function (e) {
+                const point = extractPointFromMapEvent(e);
+                if (!point) {
+                    return;
+                }
+
+                updateCoordinates(point.lat, point.lng);
+                syncMapToPoint(point.lat, point.lng, 17, false);
+            });
+        }
+
+        function bindAddressSuggest() {
+            const addressInput = document.getElementById('address');
+            const suggestBox = document.getElementById('addressSuggestBox');
+
+            addressInput?.addEventListener('input', function () {
+                clearTimeout(addressSuggestTimer);
+                const keyword = (this.value || '').trim();
+
+                if (keyword.length < 3) {
+                    hideAddressSuggest();
+                    return;
+                }
+
+                addressSuggestTimer = setTimeout(function () {
+                    loadAddressSuggestions(keyword);
+                }, 220);
+            });
+
+            addressInput?.addEventListener('focus', function () {
+                const keyword = (this.value || '').trim();
+                if (keyword.length >= 3) {
+                    loadAddressSuggestions(keyword);
+                }
+            });
+
+            addressInput?.addEventListener('blur', function () {
+                const currentValue = (this.value || '').trim();
+                window.setTimeout(function () {
+                    hideAddressSuggest();
+                }, 150);
+                if (currentValue.length >= 3) {
+                    window.setTimeout(function () {
+                        geocodeAddress(true);
+                    }, 180);
+                }
+            });
+
+            suggestBox?.addEventListener('mousedown', function (event) {
+                const button = event.target.closest('.station-suggest-item');
+                if (!button) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const lat = Number(button.getAttribute('data-lat') || '0');
+                const lng = Number(button.getAttribute('data-lng') || '0');
+                const address = button.getAttribute('data-address') || '';
+                const name = button.getAttribute('data-name') || '';
+                const finalAddress = address || name;
+
+                addressInput.value = finalAddress;
+                updateCoordinates(lat, lng);
+                hideAddressSuggest();
+                syncMapToPoint(lat, lng, 17, true);
+                showMessage('success', 'Đã đồng bộ địa chỉ và đưa bản đồ tới đúng vị trí đã chọn.');
+            });
+
+            document.addEventListener('click', function (event) {
+                if (!event.target.closest('.station-address-wrap')) {
+                    hideAddressSuggest();
+                }
+            });
+        }
+
+        function bindCoordinateInputs() {
+            const latInput = document.getElementById('latitude');
+            const lngInput = document.getElementById('longitude');
+
+            function syncMarkerFromInputs() {
+                const lat = Number(String(latInput.value || '').replace(',', '.'));
+                const lng = Number(String(lngInput.value || '').replace(',', '.'));
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                    return;
+                }
+
+                syncMapToPoint(lat, lng, 17, true);
+            }
+
+            latInput?.addEventListener('change', syncMarkerFromInputs);
+            lngInput?.addEventListener('change', syncMarkerFromInputs);
+            latInput?.addEventListener('blur', syncMarkerFromInputs);
+            lngInput?.addEventListener('blur', syncMarkerFromInputs);
+        }
+
+        function makeLatLng(lat, lng) {
+            const latNum = Number(lat);
+            const lngNum = Number(lng);
+            if (window.map4d && typeof map4d.LatLng === 'function') {
+                return new map4d.LatLng(latNum, lngNum);
+            }
+            return { lat: latNum, lng: lngNum };
+        }
+
+        function makePoint(lat, lng) {
+            return {
+                lat: Number(Number(lat).toFixed(6)),
+                lng: Number(Number(lng).toFixed(6))
+            };
+        }
+
+        function updateCoordinates(lat, lng) {
+            document.getElementById('latitude').value = Number(lat).toFixed(6);
+            document.getElementById('longitude').value = Number(lng).toFixed(6);
+        }
+
+        function focusMapToPoint(lat, lng, zoom = 17) {
+            if (!pickMap) {
+                return;
+            }
+
+            const point = makeLatLng(lat, lng);
+            const applyFocus = function () {
+                try {
+                    pickMap.setCenter(point);
+                } catch (error) {
+                    console.error('Không setCenter được cho Map4D:', error);
+                }
+
+                try {
+                    pickMap.setZoom(zoom);
+                } catch (error) {
+                    console.error('Không setZoom được cho Map4D:', error);
+                }
+            };
+
+            applyFocus();
+            window.requestAnimationFrame(applyFocus);
+            [120, 260, 520].forEach(function (delay) {
+                window.setTimeout(applyFocus, delay);
+            });
+        }
+
+        function placeMarkerOnly(lat, lng) {
+            const point = makePoint(lat, lng);
+
+            if (pickMarker) {
+                TramSacMap4D.clearObject(pickMarker);
+            }
+
+            pickMarker = TramSacMap4D.createMarker(pickMap, {
+                position: point,
+                title: 'Vị trí trạm'
+            });
+        }
+
+        function syncMapToPoint(lat, lng, zoom = 17, hardRebuild = false) {
+            const point = makePoint(lat, lng);
+
+            if (!pickMap || hardRebuild) {
+                buildPickMap(point, zoom);
+                window.setTimeout(function () {
+                    placeMarkerOnly(point.lat, point.lng);
+                    focusMapToPoint(point.lat, point.lng, zoom);
+                }, 60);
+                window.setTimeout(function () {
+                    focusMapToPoint(point.lat, point.lng, zoom);
+                }, 220);
+                return;
+            }
+
+            placeMarkerOnly(point.lat, point.lng);
+            focusMapToPoint(point.lat, point.lng, zoom);
+        }
+
+        function extractPointFromMapEvent(e) {
+            if (!e) {
+                return null;
+            }
+
+            const source = e.location || e.latLng || e;
+            const lat = Number(source.lat ?? source.latitude ?? 0);
+            const lng = Number(source.lng ?? source.longitude ?? source.lon ?? 0);
+
+            if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
+                return null;
+            }
+
+            return makePoint(lat, lng);
+        }
+
+        async function loadStation() {
+            try {
+                const response = await fetch(`/Admin/api/stations/${stationId}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Lỗi API station detail:', errorText);
+                    showMessage('danger', `Không tải được dữ liệu trạm. HTTP ${response.status}`);
+                    return;
+                }
+
+                const station = await response.json();
+                document.getElementById('name').value = station.name || '';
+                document.getElementById('address').value = station.address || '';
+                document.getElementById('latitude').value = station.latitude != null ? String(station.latitude).replace(',', '.') : '';
+                document.getElementById('longitude').value = station.longitude != null ? String(station.longitude).replace(',', '.') : '';
+                document.getElementById('status').value = station.status || 'Đang hoạt động';
+
+                if (station.latitude !== null && station.latitude !== undefined && station.longitude !== null && station.longitude !== undefined) {
+                    syncMapToPoint(station.latitude, station.longitude, 17, true);
+                }
+            } catch (error) {
+                console.error('Lỗi tải trạm:', error);
+                showMessage('danger', 'Không tải được dữ liệu trạm.');
+            }
+        }
+
+        async function loadAddressSuggestions(keyword) {
+            try {
+                if (addressSuggestAbortController) {
+                    addressSuggestAbortController.abort();
+                }
+
+                addressSuggestAbortController = new AbortController();
+                const response = await fetch(`/User/Home/PlaceSuggest?keyword=${encodeURIComponent(keyword)}`, {
+                    signal: addressSuggestAbortController.signal
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const results = await response.json();
+                renderAddressSuggestions(Array.isArray(results) ? results : []);
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    return;
+                }
+
+                console.error('Lỗi lấy gợi ý địa chỉ:', error);
+                renderAddressSuggestions([], 'Không lấy được gợi ý địa chỉ từ Map4D.');
+            }
+        }
+
+        function renderAddressSuggestions(items, emptyMessage) {
+            const suggestBox = document.getElementById('addressSuggestBox');
+            if (!suggestBox) {
+                return;
+            }
+
+            if (!Array.isArray(items) || items.length === 0) {
+                if (emptyMessage) {
+                    suggestBox.innerHTML = `<div class="station-suggest-empty">${escapeHtml(emptyMessage)}</div>`;
+                    suggestBox.style.display = 'block';
+                } else {
+                    hideAddressSuggest();
+                }
+                return;
+            }
+
+            suggestBox.innerHTML = items
+                .filter(item => item && item.lat !== null && item.lng !== null)
+                .slice(0, 8)
+                .map(item => {
+                    const name = item.name || 'Địa điểm';
+                    const address = item.displayName || item.address || name;
+                    return `
+                        <button type="button" class="station-suggest-item" data-name="${escapeHtmlAttribute(name)}" data-address="${escapeHtmlAttribute(address)}" data-lat="${item.lat}" data-lng="${item.lng}">
+                            <div class="station-suggest-name">${escapeHtml(name)}</div>
+                            <div class="station-suggest-address">${escapeHtml(address)}</div>
+                        </button>
+                    `;
+                }).join('');
+
+            if (!suggestBox.innerHTML.trim()) {
+                suggestBox.innerHTML = '<div class="station-suggest-empty">Không tìm thấy gợi ý địa chỉ phù hợp.</div>';
+            }
+
+            suggestBox.style.display = 'block';
+        }
+
+        function hideAddressSuggest() {
+            const suggestBox = document.getElementById('addressSuggestBox');
+            if (!suggestBox) {
+                return;
+            }
+
+            suggestBox.style.display = 'none';
+            suggestBox.innerHTML = '';
+        }
+
+        async function geocodeAddress(silent = false) {
+            const address = document.getElementById('address').value.trim();
+            const geocodeBtn = document.getElementById('geocodeBtn');
+
+            if (!address) {
+                if (!silent) {
+                    showMessage('danger', 'Vui lòng nhập địa chỉ trước khi lấy tọa độ.');
+                }
+                return;
+            }
+
+            geocodeBtn.disabled = true;
+            geocodeBtn.innerHTML = 'Đang lấy...';
+
+            try {
+                const response = await fetch(`/User/Home/PlaceSuggest?keyword=${encodeURIComponent(address)}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const results = await response.json();
+                if (!Array.isArray(results) || !results.length || results[0].lat === null || results[0].lng === null) {
+                    if (!silent) {
+                        showMessage('warning', 'Không tìm thấy tọa độ phù hợp từ địa chỉ đã nhập.');
+                    }
+                    return;
+                }
+
+                const lat = Number(Number(results[0].lat).toFixed(6));
+                const lng = Number(Number(results[0].lng).toFixed(6));
+                const pickedAddress = results[0].displayName || results[0].address || address;
+
+                document.getElementById('address').value = pickedAddress;
+                updateCoordinates(lat, lng);
+                hideAddressSuggest();
+                syncMapToPoint(lat, lng, 17, true);
+                if (!silent) {
+                    showMessage('success', 'Đã cập nhật tọa độ và đưa bản đồ tới đúng địa chỉ.');
+                }
+            } catch (error) {
+                console.error('Lỗi geocode địa chỉ:', error);
+                if (!silent) {
+                    showMessage('danger', 'Không lấy được tọa độ từ địa chỉ.');
+                }
+            } finally {
+                geocodeBtn.disabled = false;
+                geocodeBtn.innerHTML = 'Lấy tọa độ';
+            }
+        }
+
+        function showMessage(type, message) {
+            document.getElementById('formMessage').innerHTML = `<div class="alert alert-${type} mb-0">${message}</div>`;
+        }
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeHtmlAttribute(value) {
+            return escapeHtml(value).replace(/`/g, '&#96;');
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+
+            const submitBtn = document.getElementById('submitBtn');
+            const name = document.getElementById('name').value.trim();
+            const address = document.getElementById('address').value.trim();
+            const latitude = parseFloat(document.getElementById('latitude').value.replace(',', '.'));
+            const longitude = parseFloat(document.getElementById('longitude').value.replace(',', '.'));
+            const status = document.getElementById('status').value;
+
+            if (!name || !address || Number.isNaN(latitude) || Number.isNaN(longitude)) {
+                showMessage('danger', 'Vui lòng nhập đầy đủ thông tin hợp lệ trước khi lưu.');
+                return;
+            }
+
+            const payload = {
+                name,
+                address,
+                latitude,
+                longitude,
+                status
+            };
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Đang lưu...';
+
+            try {
+                const response = await fetch(`/Admin/api/stations/${stationId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await readResponseSafely(response);
+                if (!response.ok) {
+                    throw new Error(result.message || `HTTP ${response.status}`);
+                }
+
+                showMessage('success', result.message || 'Đã cập nhật trạm sạc thành công.');
+            } catch (error) {
+                console.error('Lỗi cập nhật trạm:', error);
+                showMessage('danger', error.message || 'Không thể cập nhật trạm sạc.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-save mr-1"></i> Lưu thay đổi';
+            }
+        }
+
+        async function readResponseSafely(response) {
+            const raw = await response.text();
+            if (!raw) {
+                return {};
+            }
+
+            try {
+                return JSON.parse(raw);
+            } catch {
+                return { message: raw };
+            }
+        }
+    </script>
+}

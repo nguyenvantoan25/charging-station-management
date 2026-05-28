@@ -1,0 +1,855 @@
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@model tramsac99.Areas.User.ViewModels.StationDetailsViewModel
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Chi tiết trạm sạc";
+    var returnUrl = $"{Context.Request.Path}{Context.Request.QueryString}";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/user/assets/css/station-workflow.css" asp-append-version="true" />
+}
+
+@* @section Styles {
+    <style>
+        body {
+            background: linear-gradient(180deg, #f3f7f6 0%, #ffffff 100%);
+        }
+
+        .station-detail-page {
+            padding: 32px 0 52px;
+        }
+
+        .detail-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .detail-hero {
+            background: linear-gradient(135deg, #ffffff 0%, #f7fbf9 100%);
+            border: 1px solid #e8f0ec;
+            border-radius: 28px;
+            box-shadow: 0 18px 44px rgba(14, 28, 24, 0.08);
+            padding: 28px;
+        }
+
+        .detail-title-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .detail-title {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 10px;
+            color: #19241f;
+        }
+
+        .detail-address {
+            font-size: 18px;
+            color: #5c6f68;
+            margin-bottom: 0;
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            background: #eef7f2;
+            color: #166d43;
+            border: 1px solid #dbece2;
+        }
+
+            .hero-badge.badge-danger-soft {
+                background: #fff1f1;
+                color: #af2727;
+                border-color: #f2d0d0;
+            }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+            gap: 24px;
+        }
+
+        .detail-card {
+            background: #fff;
+            border-radius: 24px;
+            border: 1px solid #e8efec;
+            box-shadow: 0 14px 36px rgba(15, 25, 21, 0.07);
+            overflow: hidden;
+        }
+
+        .detail-card-header {
+            padding: 22px 24px 0;
+        }
+
+        .detail-card-title {
+            font-size: 30px;
+            font-weight: 800;
+            margin-bottom: 0;
+            color: #16211d;
+        }
+
+        .detail-card-subtitle {
+            font-size: 16px;
+            color: #667770;
+            margin-top: 8px;
+            margin-bottom: 0;
+        }
+
+        .detail-card-body {
+            padding: 24px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .info-box {
+            background: linear-gradient(180deg, #fcfefd 0%, #f7fbf9 100%);
+            border: 1px solid #e8f0ec;
+            border-radius: 20px;
+            padding: 18px;
+            min-height: 104px;
+        }
+
+        .info-label {
+            font-size: 15px;
+            color: #70817a;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            font-size: 27px;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #1b2722;
+            word-break: break-word;
+        }
+
+            .info-value.info-text {
+                font-size: 22px;
+            }
+
+            .info-value.info-sub {
+                font-size: 24px;
+            }
+
+        .summary-line {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .summary-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f7fbf9;
+            border: 1px solid #e6efeb;
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #30443c;
+        }
+
+        .action-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+            .action-stack .btn {
+                min-height: 50px;
+                border-radius: 16px;
+                font-size: 18px;
+                font-weight: 700;
+                box-shadow: none !important;
+            }
+
+        #detailMap {
+            width: 100%;
+            height: 360px;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid #e8efec;
+        }
+
+        .pole-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .pole-card {
+            border: 1px solid #e7efeb;
+            border-radius: 22px;
+            background: linear-gradient(180deg, #ffffff 0%, #fafdfb 100%);
+            overflow: hidden;
+        }
+
+        .pole-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #edf2ef;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .pole-title {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            color: #17231e;
+        }
+
+        .pole-meta {
+            font-size: 16px;
+            color: #667770;
+        }
+
+        .pole-status {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            background: #eef7f2;
+            color: #166d43;
+            border: 1px solid #dbece2;
+        }
+
+        .pole-body {
+            padding: 18px 20px 22px;
+        }
+
+        .pole-note {
+            margin-bottom: 14px;
+            font-size: 16px;
+            color: #51655d;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid #ebf0ee;
+            border-radius: 18px;
+        }
+
+        .port-table {
+            width: 100%;
+            margin-bottom: 0;
+            background: #fff;
+        }
+
+            .port-table thead th {
+                background: #f6faf8;
+                color: #30443c;
+                font-weight: 800;
+                border-bottom: 1px solid #e8efec;
+                padding: 14px 16px;
+                font-size: 16px;
+                white-space: nowrap;
+            }
+
+            .port-table tbody td {
+                padding: 14px 16px;
+                vertical-align: middle;
+                color: #24312c;
+                border-top: 1px solid #edf2ef;
+                font-size: 16px;
+            }
+
+        .port-state {
+            display: inline-flex;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 700;
+            background: #f7fbf9;
+            border: 1px solid #e6efeb;
+        }
+
+        .review-form-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+            .review-form-shell .form-control {
+                min-height: 52px;
+                border-radius: 16px;
+                border: 1px solid #dce7e2;
+                box-shadow: none !important;
+                font-size: 17px;
+            }
+
+            .review-form-shell textarea.form-control {
+                min-height: 150px;
+                resize: vertical;
+                padding-top: 12px;
+            }
+
+            .review-form-shell .btn {
+                min-height: 52px;
+                border-radius: 16px;
+                font-size: 18px;
+                font-weight: 700;
+                box-shadow: none !important;
+            }
+
+        .star-input {
+            direction: rtl;
+            display: inline-flex;
+            gap: 6px;
+        }
+
+            .star-input input {
+                display: none;
+            }
+
+            .star-input label {
+                font-size: 34px;
+                color: #d2d7d5;
+                cursor: pointer;
+                margin-bottom: 0;
+                transition: transform .15s ease, color .15s ease;
+            }
+
+                .star-input label:hover,
+                .star-input label:hover ~ label,
+                .star-input input:checked ~ label {
+                    color: #f4b400;
+                    transform: translateY(-1px);
+                }
+
+        .review-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .review-item {
+            border: 1px solid #e9efec;
+            border-radius: 20px;
+            background: linear-gradient(180deg, #ffffff 0%, #fafdfb 100%);
+            padding: 18px 20px;
+        }
+
+        .review-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .review-user {
+            font-size: 20px;
+            font-weight: 800;
+            color: #17231f;
+        }
+
+        .review-time {
+            font-size: 15px;
+            color: #6d7d76;
+        }
+
+        .review-rating {
+            font-size: 18px;
+            font-weight: 700;
+            color: #b77908;
+            margin-bottom: 10px;
+        }
+
+        .review-comment {
+            font-size: 17px;
+            color: #293733;
+            margin-bottom: 0;
+            white-space: pre-line;
+        }
+
+        .empty-box,
+        .login-box {
+            border-radius: 18px;
+            border: 1px dashed #d5e3dc;
+            background: #f8fbfa;
+            padding: 18px;
+            font-size: 17px;
+            color: #556963;
+        }
+
+        @@media (max-width: 991.98px) {
+            .detail-title {
+                font-size: 40px;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #detailMap {
+                height: 320px;
+            }
+        }
+    </style>
+} *@
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="station-detail-page">
+    <div class="container">
+        @Html.AntiForgeryToken()
+
+        <div class="detail-shell">
+            <div class="detail-hero">
+                <div class="detail-title-row">
+                    <div>
+                        <h1 class="detail-title">@Model.Name</h1>
+                        <p class="detail-address">@Model.Address</p>
+                    </div>
+
+                    <div class="hero-badges">
+                        <span class="hero-badge @(Model.Status == "Đang hoạt động" ? "" : "badge-danger-soft")">
+                            Trạng thái: @Model.Status
+                        </span>
+                        <span class="hero-badge">⭐ @Model.AverageRating.ToString("0.0")</span>
+                        <span class="hero-badge">@Model.ReviewCount đánh giá</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        <h2 class="detail-card-title">Thông tin trạm sạc</h2>
+                        <p class="detail-card-subtitle">Tổng quan nhanh về trạm và tình trạng sử dụng hiện tại.</p>
+                    </div>
+
+                    <div class="detail-card-body">
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <div class="info-label">Tổng trụ sạc</div>
+                                <div class="info-value">@Model.TotalPoleCount</div>
+                            </div>
+
+                            <div class="info-box">
+                                <div class="info-label">Trụ đang hoạt động</div>
+                                <div class="info-value">@Model.AvailablePoleCount</div>
+                            </div>
+
+                            <div class="info-box">
+                                <div class="info-label">Vĩ độ</div>
+                                <div class="info-value info-text">@Model.Latitude.ToString("0.######")</div>
+                            </div>
+
+                            <div class="info-box">
+                                <div class="info-label">Kinh độ</div>
+                                <div class="info-value info-text">@Model.Longitude.ToString("0.######")</div>
+                            </div>
+
+                            <div class="info-box">
+                                <div class="info-label">Google Maps</div>
+                                <div class="info-value info-sub">
+                                    <a href="@Model.GoogleMapUrl" target="_blank" rel="noopener noreferrer">Mở bản đồ</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="summary-line">
+                            <span class="summary-pill"><i class="fa-solid fa-bolt"></i> @Model.TotalPoleCount trụ sạc</span>
+                            <span class="summary-pill"><i class="fa-solid fa-circle-check"></i> @Model.AvailablePoleCount/@Model.TotalPoleCount trụ đang hoạt động</span>
+                            <span class="summary-pill"><i class="fa-solid fa-location-dot"></i> @Model.Latitude.ToString("0.######"), @Model.Longitude.ToString("0.######")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        <h2 class="detail-card-title">Thao tác nhanh</h2>
+                        <p class="detail-card-subtitle">Chỉ đường, lưu yêu thích và chuyển nhanh sang Google Maps.</p>
+                    </div>
+
+                    <div class="detail-card-body">
+                        <div class="action-stack">
+                            <a href="@($"https://www.google.com/maps/dir/?api=1&destination={Model.Latitude.ToString(CultureInfo.InvariantCulture)},{Model.Longitude.ToString(CultureInfo.InvariantCulture)}")"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-success">
+                                <i class="fa-solid fa-location-arrow mr-2"></i>Chỉ đường
+                            </a>
+
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <button id="btnToggleFavorite"
+                                        type="button"
+                                        class="btn @(Model.IsFavorite ? "btn-warning" : "btn-outline-warning")">
+                                    <i class="fa-solid fa-heart mr-2"></i>
+                                    @(Model.IsFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích")
+                                </button>
+
+                                <a asp-area="User"
+                                   asp-controller="Station"
+                                   asp-action="Favorites"
+                                   class="btn btn-outline-dark">
+                                    <i class="fa-solid fa-bookmark mr-2"></i>Xem trạm yêu thích
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-area="User"
+                                   asp-controller="Account"
+                                   asp-action="Login"
+                                   asp-route-returnUrl="@returnUrl"
+                                   class="btn btn-outline-warning">
+                                    <i class="fa-solid fa-heart mr-2"></i>Đăng nhập để yêu thích
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <h2 class="detail-card-title">Bản đồ trạm sạc</h2>
+                    <p class="detail-card-subtitle">Vị trí chính xác của trạm trên bản đồ.</p>
+                </div>
+
+                <div class="detail-card-body">
+                    <div id="detailMap"></div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <div class="detail-card-header">
+                    <h2 class="detail-card-title">Danh sách trụ sạc</h2>
+                    <p class="detail-card-subtitle">Chi tiết các trụ thuộc trạm này.</p>
+                </div>
+
+                <div class="detail-card-body">
+                    @if (Model.Poles.Any())
+                    {
+                        <div class="pole-list">
+                            @foreach (var pole in Model.Poles)
+                            {
+                                <div class="pole-card">
+                                    <div class="pole-header">
+                                        <div>
+                                            <div class="pole-title">@pole.PoleCode</div>
+                                            <div class="pole-meta">
+                                                Công suất tối đa: @(string.IsNullOrWhiteSpace(pole.MaxPower) ? "-" : pole.MaxPower)
+                                            </div>
+                                        </div>
+
+                                        <div class="pole-status">@pole.Status</div>
+                                    </div>
+
+                                    <div class="pole-body">
+                                        @if (!string.IsNullOrWhiteSpace(pole.Note))
+                                        {
+                                            <div class="pole-note">
+                                                <strong>Ghi chú:</strong> @pole.Note
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-box">Trạm này chưa có dữ liệu trụ sạc.</div>
+                    }
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        <h2 class="detail-card-title">Gửi đánh giá</h2>
+                        <p class="detail-card-subtitle">Chia sẻ trải nghiệm thực tế của bạn tại trạm sạc này.</p>
+                    </div>
+
+                    <div class="detail-card-body">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <form id="reviewForm" class="review-form-shell">
+                                <input type="hidden" id="StationId" name="StationId" value="@Model.Id" />
+
+                                @if (Model.HasReviewed)
+                                {
+                                    <div class="empty-box mb-3">
+                                        Bạn đã có đánh giá ở trạm này. Bạn có thể sửa lại ngay tại đây hoặc vào mục lịch sử đánh giá để chỉnh sửa sau.
+                                    </div>
+                                }
+
+                                <div>
+                                    <label class="font-weight-bold mb-2 d-block">Chấm sao</label>
+                                    <div class="star-input">
+                                        <input type="radio" id="star5" name="Rating" value="5" @(Model.CurrentUserRating == 5 ? "checked" : "") required />
+                                        <label for="star5"><i class="fa-solid fa-star"></i></label>
+
+                                        <input type="radio" id="star4" name="Rating" value="4" @(Model.CurrentUserRating == 4 ? "checked" : "") />
+                                        <label for="star4"><i class="fa-solid fa-star"></i></label>
+
+                                        <input type="radio" id="star3" name="Rating" value="3" @(Model.CurrentUserRating == 3 ? "checked" : "") />
+                                        <label for="star3"><i class="fa-solid fa-star"></i></label>
+
+                                        <input type="radio" id="star2" name="Rating" value="2" @(Model.CurrentUserRating == 2 ? "checked" : "") />
+                                        <label for="star2"><i class="fa-solid fa-star"></i></label>
+
+                                        <input type="radio" id="star1" name="Rating" value="1" @(Model.CurrentUserRating == 1 ? "checked" : "") />
+                                        <label for="star1"><i class="fa-solid fa-star"></i></label>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="font-weight-bold mb-2">Bình luận</label>
+                                    <textarea id="Comment"
+                                          name="Comment"
+                                          class="form-control"
+                                          rows="6"
+                                          placeholder="Chia sẻ trải nghiệm của bạn tại trạm này">@Model.CurrentUserComment</textarea>
+                                </div>
+
+                                <button id="btnSubmitReview" type="submit" class="btn btn-success">
+                                    <i class="fa-solid @(Model.HasReviewed ? "fa-pen-to-square" : "fa-paper-plane") mr-2"></i>@(Model.HasReviewed ? "Cập nhật đánh giá" : "Gửi đánh giá")
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="login-box">
+                                Bạn cần đăng nhập để gửi đánh giá cho trạm này.
+                            </div>
+
+                            <a asp-area="User"
+                               asp-controller="Account"
+                               asp-action="Login"
+                               asp-route-returnUrl="@returnUrl"
+                               class="btn btn-success btn-block mt-3">
+                                Đăng nhập ngay
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        <h2 class="detail-card-title">Đánh giá từ người dùng</h2>
+                        <p class="detail-card-subtitle">Những chia sẻ mới nhất từ người đã sử dụng trạm.</p>
+                    </div>
+
+                    <div class="detail-card-body">
+                        @if (Model.Reviews.Any())
+                        {
+                            <div class="review-list">
+                                @foreach (var review in Model.Reviews)
+                                {
+                                    <div class="review-item">
+                                        <div class="review-top">
+                                            <div class="review-user">@review.UserName</div>
+                                            <div class="review-time">
+                                                @((review.UpdatedAt ?? review.CreatedAt).ToString("dd/MM/yyyy HH:mm"))
+                                                @if (review.IsEdited)
+                                                {
+                                                    <span>- đã chỉnh sửa</span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="review-rating">⭐ @review.Rating</div>
+                                        <p class="review-comment">@review.Comment</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-box">Chưa có đánh giá nào cho trạm này.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="detailPageData"
+     data-station-id="@Model.Id"
+     data-lat="@Model.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+     data-lng="@Model.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+     data-name="@Model.Name"
+     data-address="@Model.Address">
+</div>
+
+@section Scripts {
+    <script>
+        const MAP4D_API_KEY = '@(Configuration["Map4D:ApiKey"] ?? "")';
+        // const stationLat = @Html.Raw(Model.Latitude.ToString(CultureInfo.InvariantCulture));
+        // const stationLng = @Html.Raw(Model.Longitude.ToString(CultureInfo.InvariantCulture));
+        // const stationName = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Name ?? ""));
+        // const stationAddress = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Address ?? ""));
+                // Why changed: read Razor values from data attributes to avoid JS parser warnings in .cshtml.
+        const detailPageData = document.getElementById('detailPageData');
+        const stationId = Number(detailPageData?.dataset.stationId || 0);
+        const stationLat = Number(detailPageData?.dataset.lat || 0);
+        const stationLng = Number(detailPageData?.dataset.lng || 0);
+        const stationName = detailPageData?.dataset.name || '';
+        const stationAddress = detailPageData?.dataset.address || '';
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            await initDetailMap();
+        });
+
+        async function initDetailMap() {
+            const mapElement = document.getElementById('detailMap');
+            if (!mapElement) return;
+
+            try {
+                await TramSacMap4D.ensureSdk(MAP4D_API_KEY);
+
+                const map = new map4d.Map(mapElement, {
+                    center: { lat: stationLat, lng: stationLng },
+                    zoom: 15,
+                    controls: true
+                });
+
+                const marker = TramSacMap4D.createMarker(map, {
+                    position: { lat: stationLat, lng: stationLng },
+                    title: stationName || 'Trạm sạc'
+                });
+
+                if (typeof marker.setTitle === 'function') {
+                    marker.setTitle(`${stationName} - ${stationAddress}`);
+                }
+            } catch (error) {
+                console.error(error);
+                mapElement.innerHTML = '<div class="empty-box">Không tải được bản đồ Map4D.</div>';
+            }
+        }
+
+        function escapeHtml(text) {
+            return String(text ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        const favoriteButton = document.getElementById('btnToggleFavorite');
+        if (favoriteButton) {
+            favoriteButton.addEventListener('click', toggleFavoriteDetail);
+        }
+
+        async function toggleFavoriteDetail() {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            if (!token) {
+                alert('Thiếu anti-forgery token.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/User/api/favorites/${stationId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token
+                    }
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    alert(result.message || 'Không thể cập nhật yêu thích.');
+                    return;
+                }
+
+                favoriteButton.innerHTML = result.isFavorite
+                    ? '<i class="fa-solid fa-heart mr-2"></i>Bỏ yêu thích'
+                    : '<i class="fa-solid fa-heart mr-2"></i>Thêm vào yêu thích';
+
+                favoriteButton.classList.remove('btn-warning', 'btn-outline-warning');
+                favoriteButton.classList.add(result.isFavorite ? 'btn-warning' : 'btn-outline-warning');
+            } catch (error) {
+                console.error(error);
+                alert('Có lỗi xảy ra khi cập nhật yêu thích.');
+            }
+        }
+
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                if (!token) {
+                    alert('Thiếu anti-forgery token.');
+                    return;
+                }
+
+                const formData = new FormData(reviewForm);
+
+                try {
+                    const response = await fetch('/User/Station/AddReviewAjax', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({
+                            StationId: Number(formData.get('StationId')),
+                            Rating: Number(formData.get('Rating')),
+                            Comment: formData.get('Comment')
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        alert(result.message || 'Có lỗi xảy ra khi gửi đánh giá.');
+                        return;
+                    }
+
+                    alert(result.message || 'Gửi đánh giá thành công.');
+                    window.location.reload();
+                } catch (error) {
+                    console.error(error);
+                    alert('Có lỗi xảy ra khi gửi đánh giá.');
+                }
+            });
+        }
+    </script>
+}

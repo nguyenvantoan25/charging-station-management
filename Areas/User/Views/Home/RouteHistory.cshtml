@@ -1,0 +1,674 @@
+@{
+    ViewData["Title"] = "Lịch sử lộ trình";
+}
+
+@section Styles {
+    <style>
+        body {
+            background: linear-gradient(180deg, #f4f7f6 0%, #ffffff 100%);
+        }
+
+        .route-history-page {
+            padding: 28px 0 48px;
+        }
+
+        .route-history-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .route-history-hero,
+        .route-history-summary-card,
+        .route-history-list-card {
+            background: #fff;
+            border: 1px solid #e4eee8;
+            border-radius: 26px;
+            box-shadow: 0 14px 36px rgba(15, 25, 21, 0.07);
+        }
+
+        .route-history-hero {
+            padding: 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .route-history-title {
+            font-size: 42px;
+            line-height: 1.1;
+            font-weight: 900;
+            margin: 0 0 10px;
+            color: #14231c;
+        }
+
+        .route-history-subtitle {
+            margin: 0;
+            color: #61756d;
+            font-size: 16px;
+            max-width: 790px;
+        }
+
+        .route-history-actions-top {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .route-history-btn,
+        .route-history-btn-soft,
+        .route-history-btn-danger,
+        .route-history-btn-warning {
+            min-height: 42px;
+            border-radius: 999px;
+            padding: 0 16px;
+            border: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 800;
+            text-decoration: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .route-history-btn {
+            background: #16a34a;
+            color: #fff;
+        }
+
+        .route-history-btn-soft {
+            background: #eef8f2;
+            color: #147c43;
+            border: 1px solid #cfe9d9;
+        }
+
+        .route-history-btn-warning {
+            background: #fff7dc;
+            color: #a16207;
+            border: 1px solid #fde68a;
+        }
+
+        .route-history-btn-danger {
+            background: #fff5f5;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .route-history-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .route-history-summary-card {
+            padding: 20px 22px;
+        }
+
+        .route-history-summary-label {
+            color: #6c7e77;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .route-history-summary-value {
+            color: #14231c;
+            font-size: 34px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .route-history-list-card {
+            padding: 22px;
+        }
+
+        .route-history-toolbar {
+            display: grid;
+            grid-template-columns: minmax(260px, 1fr) 210px 150px;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .route-history-input,
+        .route-history-select {
+            min-height: 48px;
+            border-radius: 16px;
+            border: 1px solid #dce8e2;
+            padding: 0 14px;
+            outline: none;
+            box-shadow: none;
+            background: #fff;
+            font-size: 15px;
+        }
+
+        .route-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .route-history-item {
+            border: 1px solid #e5eee8;
+            border-radius: 22px;
+            background: linear-gradient(180deg, #ffffff 0%, #f9fcfa 100%);
+            padding: 18px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .route-history-item-title-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .route-history-star {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff7dc;
+            color: #a16207;
+            border: 1px solid #fde68a;
+        }
+
+        .route-history-star.active {
+            background: #facc15;
+            color: #422006;
+            border-color: #facc15;
+        }
+
+        .route-history-name {
+            margin: 0;
+            font-size: 19px;
+            color: #14231c;
+            font-weight: 900;
+            word-break: break-word;
+        }
+
+        .route-history-path {
+            color: #52665e;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .route-history-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .route-history-chip {
+            background: #f2f7f4;
+            color: #385247;
+            border-radius: 999px;
+            padding: 7px 11px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .route-history-chip.shared {
+            background: #eafaf1;
+            color: #15803d;
+        }
+
+        .route-history-item-actions {
+            min-width: 360px;
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .route-history-empty,
+        .route-history-loading,
+        .route-history-error {
+            border-radius: 18px;
+            padding: 22px;
+            text-align: center;
+            background: #f8fbfa;
+            color: #63766e;
+            font-weight: 700;
+        }
+
+        .route-history-error {
+            background: #fff5f5;
+            color: #b42318;
+        }
+
+        .route-history-pagination {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .route-history-page-btn {
+            min-width: 42px;
+            min-height: 42px;
+            border-radius: 12px;
+            border: 1px solid #d7e7dc;
+            background: #fff;
+            color: #243a30;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .route-history-page-btn.active {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #fff;
+        }
+
+        @@media (max-width: 992px) {
+            .route-history-summary-grid,
+            .route-history-toolbar,
+            .route-history-item {
+                grid-template-columns: 1fr;
+            }
+
+            .route-history-item-actions {
+                min-width: 0;
+                justify-content: flex-start;
+            }
+        }
+    </style>
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="route-history-page">
+    <div class="container route-history-shell">
+        @Html.AntiForgeryToken()
+
+        <div class="route-history-hero">
+            <div>
+                <h1 class="route-history-title">Lịch sử lộ trình</h1>
+                <p class="route-history-subtitle">
+                    Danh sách dạng list giúp người dùng xem lại lộ trình đã đi, gắn sao yêu thích, dùng lại nhanh hoặc chia sẻ cho người khác.
+                </p>
+            </div>
+
+            <div class="route-history-actions-top">
+                <a asp-area="User" asp-controller="Home" asp-action="Route" class="route-history-btn-soft">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    Quay lại lộ trình
+                </a>
+                <button type="button" class="route-history-btn" onclick="loadRouteHistory()">
+                    <i class="fa-solid fa-rotate"></i>
+                    Tải lại
+                </button>
+            </div>
+        </div>
+
+        <div class="route-history-summary-grid">
+            <div class="route-history-summary-card">
+                <div class="route-history-summary-label">Tổng lộ trình</div>
+                <div id="routeHistoryTotal" class="route-history-summary-value">0</div>
+            </div>
+            <div class="route-history-summary-card">
+                <div class="route-history-summary-label">Đã gắn sao</div>
+                <div id="routeHistoryFavorite" class="route-history-summary-value">0</div>
+            </div>
+            <div class="route-history-summary-card">
+                <div class="route-history-summary-label">Đã chia sẻ</div>
+                <div id="routeHistoryShared" class="route-history-summary-value">0</div>
+            </div>
+            <div class="route-history-summary-card">
+                <div class="route-history-summary-label">Dùng gần đây</div>
+                <div id="routeHistoryRecent" class="route-history-summary-value">0</div>
+            </div>
+        </div>
+
+        <div class="route-history-list-card">
+            <div class="route-history-toolbar">
+                <input id="routeHistoryKeyword" class="route-history-input" placeholder="Tìm điểm đi, điểm đến, tên lộ trình..." />
+
+                <select id="routeHistoryFilter" class="route-history-select">
+                    <option value="all">Tất cả lộ trình</option>
+                    <option value="favorite">Lộ trình yêu thích</option>
+                    <option value="shared">Đã chia sẻ</option>
+                    <option value="recent">Dùng gần đây</option>
+                </select>
+
+                <select id="routeHistoryPageSize" class="route-history-select">
+                    <option value="5">5 dòng</option>
+                    <option value="10">10 dòng</option>
+                    <option value="20">20 dòng</option>
+                </select>
+            </div>
+
+            <div id="routeHistoryList" class="route-history-list">
+                <div class="route-history-loading">Đang tải lịch sử lộ trình...</div>
+            </div>
+
+            <div id="routeHistoryPagination" class="route-history-pagination"></div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const routeHistoryState = {
+            items: [],
+            keyword: '',
+            filter: 'all',
+            page: 1,
+            pageSize: 5
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('routeHistoryKeyword')?.addEventListener('input', function (event) {
+                routeHistoryState.keyword = String(event.target.value || '').trim();
+                routeHistoryState.page = 1;
+                renderRouteHistory();
+            });
+
+            document.getElementById('routeHistoryFilter')?.addEventListener('change', function (event) {
+                routeHistoryState.filter = String(event.target.value || 'all');
+                routeHistoryState.page = 1;
+                renderRouteHistory();
+            });
+
+            document.getElementById('routeHistoryPageSize')?.addEventListener('change', function (event) {
+                routeHistoryState.pageSize = Math.max(1, Number(event.target.value || 5));
+                routeHistoryState.page = 1;
+                renderRouteHistory();
+            });
+
+            loadRouteHistory();
+        });
+
+        async function loadRouteHistory() {
+            const container = document.getElementById('routeHistoryList');
+            container.innerHTML = '<div class="route-history-loading">Đang tải lịch sử lộ trình...</div>';
+
+            try {
+                const response = await fetch('/User/api/routes/my?take=120');
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Không tải được lịch sử lộ trình.');
+                }
+
+                routeHistoryState.items = Array.isArray(result.items) ? result.items : [];
+                routeHistoryState.page = 1;
+                renderRouteHistory();
+            } catch (error) {
+                container.innerHTML = `<div class="route-history-error">${escapeHtml(error.message || 'Không tải được lịch sử lộ trình.')}</div>`;
+            }
+        }
+
+        function renderRouteHistory() {
+            const items = getFilteredItems();
+            const totalPages = Math.max(1, Math.ceil(items.length / routeHistoryState.pageSize));
+            routeHistoryState.page = Math.min(Math.max(1, routeHistoryState.page), totalPages);
+
+            const startIndex = (routeHistoryState.page - 1) * routeHistoryState.pageSize;
+            const pageItems = items.slice(startIndex, startIndex + routeHistoryState.pageSize);
+
+            renderSummary();
+
+            const container = document.getElementById('routeHistoryList');
+            if (routeHistoryState.items.length === 0) {
+                container.innerHTML = '<div class="route-history-empty">Chưa có lịch sử lộ trình. Sau khi bạn lập lộ trình, hệ thống sẽ lưu tại đây.</div>';
+                document.getElementById('routeHistoryPagination').innerHTML = '';
+                return;
+            }
+
+            if (pageItems.length === 0) {
+                container.innerHTML = '<div class="route-history-empty">Không có lộ trình nào khớp bộ lọc hiện tại.</div>';
+                document.getElementById('routeHistoryPagination').innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = pageItems.map(buildRouteItemHtml).join('');
+            renderPagination(totalPages);
+        }
+
+        function getFilteredItems() {
+            const keyword = routeHistoryState.keyword.toLowerCase();
+            let items = [...routeHistoryState.items];
+
+            if (routeHistoryState.filter === 'favorite') {
+                items = items.filter(x => !!x.isFavorite);
+            }
+
+            if (routeHistoryState.filter === 'shared') {
+                items = items.filter(x => !!x.isShared);
+            }
+
+            items.sort((a, b) => {
+                const dateA = new Date(a.lastUsedAt || a.updatedAt || a.createdAt || 0).getTime();
+                const dateB = new Date(b.lastUsedAt || b.updatedAt || b.createdAt || 0).getTime();
+
+                if (routeHistoryState.filter !== 'recent' && Number(b.isFavorite) !== Number(a.isFavorite)) {
+                    return Number(b.isFavorite) - Number(a.isFavorite);
+                }
+
+                return dateB - dateA;
+            });
+
+            if (keyword) {
+                items = items.filter(item => {
+                    const text = `${item.routeName || ''} ${item.start?.displayName || ''} ${item.start?.address || ''} ${item.end?.displayName || ''} ${item.end?.address || ''}`.toLowerCase();
+                    return text.includes(keyword);
+                });
+            }
+
+            return items;
+        }
+
+        function renderSummary() {
+            const all = routeHistoryState.items;
+            document.getElementById('routeHistoryTotal').textContent = all.length;
+            document.getElementById('routeHistoryFavorite').textContent = all.filter(x => !!x.isFavorite).length;
+            document.getElementById('routeHistoryShared').textContent = all.filter(x => !!x.isShared).length;
+            document.getElementById('routeHistoryRecent').textContent = all.filter(x => x.lastUsedAt).length;
+        }
+
+        function buildRouteItemHtml(item) {
+            const id = Number(item.id || 0);
+            const routeName = item.routeName || `${item.start?.displayName || 'Điểm đi'} → ${item.end?.displayName || 'Điểm đến'}`;
+            const startText = item.start?.displayName || item.start?.address || 'Điểm đi';
+            const endText = item.end?.displayName || item.end?.address || 'Điểm đến';
+            const distance = Number(item.totalDistanceKm || 0).toFixed(0);
+            const stopCount = Number(item.stopCount || (Array.isArray(item.stops) ? item.stops.length : 0));
+            const lastUsed = formatDate(item.lastUsedAt || item.updatedAt || item.createdAt);
+
+            return `
+                <div class="route-history-item">
+                    <div>
+                        <div class="route-history-item-title-row">
+                            <span class="route-history-star ${item.isFavorite ? 'active' : ''}">
+                                <i class="fa-solid fa-star"></i>
+                            </span>
+                            <h3 class="route-history-name">${escapeHtml(routeName)}</h3>
+                            ${item.isShared ? '<span class="route-history-chip shared">Đã chia sẻ</span>' : ''}
+                        </div>
+
+                        <div class="route-history-path">
+                            ${escapeHtml(startText)} <i class="fa-solid fa-arrow-right mx-1"></i> ${escapeHtml(endText)}
+                        </div>
+
+                        <div class="route-history-meta">
+                            <span class="route-history-chip">${distance} km</span>
+                            <span class="route-history-chip">${stopCount} điểm dừng</span>
+                            <span class="route-history-chip">Pin ${Number(item.startBattery || 0)}%</span>
+                            <span class="route-history-chip">Dự phòng ${Number(item.reserveBattery || 0)}%</span>
+                            <span class="route-history-chip">Dùng gần nhất: ${escapeHtml(lastUsed)}</span>
+                        </div>
+                    </div>
+
+                    <div class="route-history-item-actions">
+                        <button type="button" class="route-history-btn" onclick="reuseRoute(${id})">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            Dùng lại
+                        </button>
+                        <button type="button" class="route-history-btn-warning" onclick="toggleFavorite(${id})">
+                            <i class="fa-solid fa-star"></i>
+                            ${item.isFavorite ? 'Bỏ sao' : 'Gắn sao'}
+                        </button>
+                        <button type="button" class="route-history-btn-soft" onclick="shareRoute(${id})">
+                            <i class="fa-solid fa-share-nodes"></i>
+                            Chia sẻ
+                        </button>
+                        <button type="button" class="route-history-btn-danger" onclick="deleteRoute(${id})">
+                            <i class="fa-solid fa-trash"></i>
+                            Xóa
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPagination(totalPages) {
+            const wrap = document.getElementById('routeHistoryPagination');
+            if (totalPages <= 1) {
+                wrap.innerHTML = '';
+                return;
+            }
+
+            let html = `
+                <button type="button" class="route-history-page-btn" onclick="goToPage(${Math.max(1, routeHistoryState.page - 1)})" ${routeHistoryState.page <= 1 ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+            `;
+
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button type="button" class="route-history-page-btn ${i === routeHistoryState.page ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+            }
+
+            html += `
+                <button type="button" class="route-history-page-btn" onclick="goToPage(${Math.min(totalPages, routeHistoryState.page + 1)})" ${routeHistoryState.page >= totalPages ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            `;
+
+            wrap.innerHTML = html;
+        }
+
+        function goToPage(page) {
+            routeHistoryState.page = Math.max(1, Number(page || 1));
+            renderRouteHistory();
+        }
+
+        async function reuseRoute(id) {
+            const item = routeHistoryState.items.find(x => Number(x.id) === Number(id));
+            if (!item) return;
+
+            sessionStorage.setItem('tramSacRouteReuse', JSON.stringify(item));
+
+            try {
+                await routeApiFetch(`/User/api/routes/${id}/used`, { method: 'POST' });
+            } catch {
+                // Không chặn người dùng dùng lại lộ trình nếu chỉ lỗi ghi nhận lượt dùng.
+            }
+
+            window.location.href = '/User/Home/Route?reuse=history';
+        }
+
+        async function toggleFavorite(id) {
+            try {
+                const result = await routeApiFetch(`/User/api/routes/${id}/favorite`, { method: 'POST' });
+                const index = routeHistoryState.items.findIndex(x => Number(x.id) === Number(id));
+                if (index >= 0 && result.item) {
+                    routeHistoryState.items[index] = result.item;
+                }
+                renderRouteHistory();
+            } catch (error) {
+                alert(error.message || 'Không cập nhật được trạng thái yêu thích.');
+            }
+        }
+
+        async function shareRoute(id) {
+            try {
+                const result = await routeApiFetch(`/User/api/routes/${id}/share`, { method: 'POST' });
+                const shareUrl = result.shareUrl || result.item?.shareUrl || '';
+                const index = routeHistoryState.items.findIndex(x => Number(x.id) === Number(id));
+                if (index >= 0 && result.item) {
+                    routeHistoryState.items[index] = result.item;
+                }
+                renderRouteHistory();
+
+                if (shareUrl && navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(shareUrl);
+                    alert('Đã sao chép link chia sẻ lộ trình.');
+                } else if (shareUrl) {
+                    prompt('Copy link chia sẻ:', shareUrl);
+                }
+            } catch (error) {
+                alert(error.message || 'Không chia sẻ được lộ trình.');
+            }
+        }
+
+        async function deleteRoute(id) {
+            if (!confirm('Bạn có chắc muốn xóa lộ trình này?')) return;
+
+            try {
+                await routeApiFetch(`/User/api/routes/${id}`, { method: 'DELETE' });
+                routeHistoryState.items = routeHistoryState.items.filter(x => Number(x.id) !== Number(id));
+                renderRouteHistory();
+            } catch (error) {
+                alert(error.message || 'Không xóa được lộ trình.');
+            }
+        }
+
+        async function routeApiFetch(url, options) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            const response = await fetch(url, {
+                ...(options || {}),
+                headers: {
+                    'RequestVerificationToken': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(options && options.headers ? options.headers : {})
+                }
+            });
+
+            const text = await response.text();
+            const result = text ? JSON.parse(text) : {};
+
+            if (!response.ok || result.success === false) {
+                throw new Error(result.message || 'Thao tác không thành công.');
+            }
+
+            return result;
+        }
+
+        function formatDate(value) {
+            if (!value) return '-';
+
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '-';
+
+            return date.toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+    </script>
+}

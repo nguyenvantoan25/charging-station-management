@@ -1,0 +1,1348 @@
+﻿@using System.Globalization
+@using System.Linq
+@model IEnumerable<tramsac99.Areas.User.ViewModels.StationListItemViewModel>
+
+@{
+    ViewData["Title"] = "Trạm yêu thích";
+
+    var stations = (Model ?? Enumerable.Empty<tramsac99.Areas.User.ViewModels.StationListItemViewModel>()).ToList();
+    var totalFavorites = stations.Count;
+    var activeStations = stations.Count(x => string.Equals(x.Status, "Đang hoạt động", System.StringComparison.OrdinalIgnoreCase));
+    var totalAvailablePoles = stations.Sum(x => x.AvailablePoleCount);
+    var totalPoles = stations.Sum(x => x.TotalPoleCount);
+    var averageRating = stations.Count > 0 ? stations.Average(x => x.AverageRating) : 0;
+    var nearestStation = stations.Where(x => x.DistanceKm.HasValue).OrderBy(x => x.DistanceKm!.Value).FirstOrDefault();
+    var viCulture = CultureInfo.GetCultureInfo("vi-VN");
+}
+
+@section Styles {
+    <style>
+        .favorites-page {
+            padding: 28px 0 56px;
+            background: radial-gradient(circle at top left, rgba(22, 163, 74, 0.08), transparent 28%), linear-gradient(180deg, #f4faf7 0%, #f8fbf9 26%, #ffffff 100%);
+        }
+
+            .favorites-page .container {
+                width: min(1360px, calc(100% - 32px));
+                max-width: 1360px;
+                margin: 0 auto;
+                padding: 0;
+            }
+
+        .favorites-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .favorites-top,
+        .favorites-toolbar,
+        .favorites-summary,
+        .favorites-list-item,
+        .favorites-empty,
+        .favorites-filter-empty {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(207, 223, 215, 0.94);
+            box-shadow: 0 18px 44px rgba(17, 42, 30, 0.07);
+            backdrop-filter: blur(10px);
+        }
+
+        .favorites-top {
+            border-radius: 34px;
+            padding: 28px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.65fr);
+            gap: 20px;
+            align-items: stretch;
+        }
+
+        .favorites-top-main,
+        .favorites-top-side {
+            min-width: 0;
+        }
+
+        .favorites-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(16, 131, 78, 0.08);
+            color: #0d7d4b;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .favorites-title {
+            margin: 0;
+            font-size: clamp(34px, 4vw, 56px);
+            line-height: 1.02;
+            letter-spacing: -0.035em;
+            font-weight: 900;
+            color: #10231a;
+        }
+
+        .favorites-subtitle {
+            margin: 16px 0 0;
+            max-width: 860px;
+            color: #5f7269;
+            font-size: 18px;
+            line-height: 1.82;
+        }
+
+        .favorites-top-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .favorites-btn,
+        .favorites-btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 52px;
+            padding: 0 22px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 800;
+            text-decoration: none;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .favorites-btn {
+            border: 1px solid #1aa35d;
+            background: linear-gradient(135deg, #1aaa60 0%, #118f51 100%);
+            color: #ffffff;
+            box-shadow: 0 16px 32px rgba(22, 163, 74, 0.18);
+        }
+
+            .favorites-btn:hover {
+                transform: translateY(-1px);
+                color: #ffffff;
+                text-decoration: none;
+                box-shadow: 0 18px 36px rgba(22, 163, 74, 0.22);
+            }
+
+        .favorites-btn-ghost {
+            border: 1px solid #dbe8e1;
+            background: #ffffff;
+            color: #173125;
+            box-shadow: 0 10px 28px rgba(18, 44, 31, 0.06);
+        }
+
+            .favorites-btn-ghost:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 14px 32px rgba(18, 44, 31, 0.09);
+                border-color: #bfd7cb;
+                color: #173125;
+                text-decoration: none;
+            }
+
+        .favorites-side-card {
+            height: 100%;
+            border-radius: 28px;
+            padding: 22px;
+            background: linear-gradient(180deg, #f8fcf9 0%, #f2f8f4 100%);
+            border: 1px solid #ddeae3;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+            .favorites-side-card::before {
+                content: "";
+                position: absolute;
+                right: -48px;
+                top: -40px;
+                width: 190px;
+                height: 190px;
+                border-radius: 50%;
+                background: radial-gradient(circle, rgba(22, 163, 74, 0.14), rgba(22, 163, 74, 0));
+                pointer-events: none;
+            }
+
+            .favorites-side-card > * {
+                position: relative;
+                z-index: 1;
+            }
+
+        .favorites-side-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: fit-content;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: #eef8f2;
+            color: #0d7d4b;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .favorites-side-title {
+            margin: 0;
+            color: #13241b;
+            font-size: 30px;
+            font-weight: 900;
+            line-height: 1.18;
+            letter-spacing: -0.03em;
+        }
+
+        .favorites-side-copy {
+            margin: 10px 0 0;
+            color: #60726a;
+            font-size: 16px;
+            line-height: 1.78;
+        }
+
+        .favorites-side-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .favorites-side-meta-item {
+            padding: 14px 15px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.82);
+            border: 1px solid #deebe4;
+        }
+
+        .favorites-side-meta-label {
+            color: #70827b;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .favorites-side-meta-value {
+            color: #11231a;
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1.15;
+            word-break: break-word;
+        }
+
+        .favorites-summary {
+            border-radius: 30px;
+            padding: 20px;
+        }
+
+        .favorites-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .favorites-summary-card {
+            border-radius: 24px;
+            padding: 20px;
+            border: 1px solid #deebe5;
+            background: linear-gradient(180deg, #ffffff 0%, #f7fbf8 100%);
+        }
+
+        .favorites-summary-label {
+            color: #70827b;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+        }
+
+        .favorites-summary-value {
+            font-size: clamp(32px, 3vw, 44px);
+            line-height: 1;
+            font-weight: 900;
+            color: #11231a;
+            letter-spacing: -0.035em;
+            margin-bottom: 12px;
+        }
+
+        .favorites-summary-copy {
+            color: #5f7269;
+            font-size: 15px;
+            line-height: 1.68;
+        }
+
+        .favorites-toolbar {
+            border-radius: 28px;
+            padding: 20px;
+        }
+
+        .favorites-toolbar-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) 220px 240px 220px;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .favorites-search,
+        .favorites-select {
+            width: 100%;
+            min-height: 56px;
+            border-radius: 18px;
+            border: 1px solid #dbe7e1;
+            background: #fbfdfc;
+            padding: 0 18px;
+            color: #20352b;
+            font-size: 16px;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+            .favorites-search:focus,
+            .favorites-select:focus {
+                border-color: #86c6a1;
+                box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.08);
+                background: #ffffff;
+            }
+
+        .favorites-quick-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .favorites-chip {
+            border: 1px solid #dbe7e0;
+            background: #fff;
+            color: #274137;
+            min-height: 40px;
+            padding: 0 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 800;
+            transition: all 0.2s ease;
+        }
+
+            .favorites-chip:hover,
+            .favorites-chip.is-active {
+                background: #153e2a;
+                border-color: #153e2a;
+                color: #ffffff;
+                box-shadow: 0 10px 24px rgba(21, 62, 42, 0.18);
+            }
+
+        .favorites-results-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+            color: #5f7269;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .favorites-results-text strong {
+            color: #153426;
+        }
+
+        .favorites-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .favorites-list-item {
+            border-radius: 28px;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .favorites-list-item::before {
+                content: "";
+                position: absolute;
+                inset: 0 auto auto 0;
+                width: 100%;
+                height: 5px;
+                background: linear-gradient(90deg, #18a85e 0%, #6fd6a1 100%);
+            }
+
+        .favorite-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.9fr) minmax(290px, 0.95fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .favorite-main,
+        .favorite-metrics,
+        .favorite-actions {
+            min-width: 0;
+        }
+
+        .favorite-topline {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .favorite-kicker {
+            color: #0c7c49;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .favorite-name {
+            margin: 0;
+            color: #13231b;
+            font-size: clamp(24px, 2vw, 30px);
+            font-weight: 900;
+            line-height: 1.18;
+            letter-spacing: -0.03em;
+            word-break: break-word;
+        }
+
+        .favorite-heart-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: #fff3f4;
+            border: 1px solid #f4d8dc;
+            color: #c14d62;
+            font-size: 14px;
+            font-weight: 800;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .favorite-address {
+            margin: 0;
+            color: #60726a;
+            font-size: 16px;
+            line-height: 1.75;
+        }
+
+        .favorite-inline-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .favorite-inline-pill,
+        .favorite-status-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 40px;
+            padding: 0 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .favorite-inline-pill {
+            background: #f7fbf8;
+            border: 1px solid #e0ebe5;
+            color: #284137;
+        }
+
+            .favorite-inline-pill strong {
+                color: #12281d;
+            }
+
+        .favorite-status-chip--active {
+            background: #edf9f2;
+            border: 1px solid #cfead7;
+            color: #0c7c49;
+        }
+
+        .favorite-status-chip--warning {
+            background: #fff8e9;
+            border: 1px solid #f3e2b7;
+            color: #9a6a00;
+        }
+
+        .favorite-status-chip--danger {
+            background: #fff2f2;
+            border: 1px solid #f0d6d6;
+            color: #b74b4b;
+        }
+
+        .favorite-status-chip--neutral {
+            background: #f5f7f6;
+            border: 1px solid #dfe7e3;
+            color: #61736c;
+        }
+
+        .favorite-main-copy {
+            margin: 14px 0 0;
+            color: #6a7c74;
+            font-size: 15px;
+            line-height: 1.8;
+        }
+
+        .favorite-metrics {
+            padding: 18px;
+            border-radius: 22px;
+            background: linear-gradient(180deg, #fbfdfc 0%, #f6faf8 100%);
+            border: 1px solid #e3ece7;
+        }
+
+        .favorite-metrics-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .favorite-metrics-title {
+            margin: 0;
+            color: #193127;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .favorite-metrics-caption {
+            color: #6b7d75;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .favorite-progress {
+            width: 100%;
+            height: 10px;
+            border-radius: 999px;
+            background: #dfeae4;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+            .favorite-progress > span {
+                display: block;
+                height: 100%;
+                border-radius: inherit;
+                background: linear-gradient(90deg, #16a34a 0%, #64d397 100%);
+            }
+
+        .favorite-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .favorite-stat-grid--compact {
+            margin-top: 2px;
+        }
+
+        .favorite-stat-box {
+            padding: 14px;
+            border-radius: 18px;
+            background: #ffffff;
+            border: 1px solid #e3ece7;
+        }
+
+        .favorite-stat-label {
+            color: #72827c;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .favorite-stat-value {
+            color: #14261d;
+            font-size: 22px;
+            line-height: 1.22;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            word-break: break-word;
+        }
+
+        .favorite-ready-note {
+            margin-top: 14px;
+            color: #667971;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .favorite-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            height: 100%;
+            justify-content: center;
+        }
+
+            .favorite-actions .btn {
+                min-height: 50px;
+                border-radius: 15px;
+                padding: 0 18px;
+                font-size: 15px;
+                font-weight: 800;
+                width: 100%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                box-shadow: none !important;
+            }
+
+        .btn-favorite-remove {
+            border-color: #f0d1d8 !important;
+            color: #b44f62 !important;
+            background: #fff7f8 !important;
+        }
+
+            .btn-favorite-remove:hover {
+                background: #ffecef !important;
+                color: #a84256 !important;
+            }
+
+        .favorites-filter-empty,
+        .favorites-empty {
+            border-radius: 28px;
+            padding: 34px 28px;
+            text-align: center;
+        }
+
+        .favorites-empty-icon,
+        .favorites-filter-empty-icon {
+            width: 76px;
+            height: 76px;
+            border-radius: 24px;
+            background: #edf8f2;
+            color: #0c7d49;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 18px;
+        }
+
+        .favorites-empty-title,
+        .favorites-filter-empty-title {
+            margin: 0 0 10px;
+            color: #15281e;
+            font-size: 28px;
+            line-height: 1.25;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+        }
+
+        .favorites-empty-copy,
+        .favorites-filter-empty-copy {
+            margin: 0 auto 20px;
+            max-width: 680px;
+            color: #60726a;
+            font-size: 17px;
+            line-height: 1.8;
+        }
+
+        .favorites-filter-empty {
+            display: none;
+        }
+
+        .favorites-list-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        #favoritesPageInfo {
+            color: #60726a;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        #favoritesPager .pagination {
+            gap: 6px;
+            margin: 0;
+        }
+
+        #favoritesPager .page-link {
+            min-width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px !important;
+            border: 1px solid #dbe7e1;
+            color: #1d3a2c;
+            font-weight: 800;
+            background: #ffffff;
+        }
+
+        #favoritesPager .page-item.active .page-link {
+            border-color: #153f2a;
+            background: #153f2a;
+            color: #ffffff;
+        }
+
+        #favoritesPager .page-item.disabled .page-link {
+            background: #f6f9f7;
+            color: #9aaca4;
+        }
+
+        @@media (max-width: 1399.98px) {
+            .favorites-summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .favorite-row {
+                grid-template-columns: 1fr;
+            }
+
+            .favorite-actions {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+                .favorite-actions .btn {
+                    flex: 1 1 220px;
+                }
+        }
+
+        @@media (max-width: 1199.98px) {
+            .favorites-page .container {
+                width: min(1120px, calc(100% - 24px));
+                max-width: 1120px;
+            }
+
+            .favorites-top {
+                grid-template-columns: 1fr;
+            }
+
+            .favorites-toolbar-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .favorites-page {
+                padding: 18px 0 44px;
+            }
+
+                .favorites-page .container {
+                    width: calc(100% - 20px);
+                    max-width: none;
+                }
+
+            .favorites-top,
+            .favorites-toolbar,
+            .favorites-summary,
+            .favorites-list-item,
+            .favorites-empty,
+            .favorites-filter-empty {
+                border-radius: 22px;
+            }
+
+            .favorites-top,
+            .favorites-toolbar,
+            .favorites-summary,
+            .favorites-list-item {
+                padding: 18px;
+            }
+
+            .favorites-title {
+                font-size: 36px;
+            }
+
+            .favorites-subtitle {
+                font-size: 16px;
+            }
+
+            .favorites-summary-grid,
+            .favorites-toolbar-row,
+            .favorites-side-meta,
+            .favorite-stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .favorite-topline,
+            .favorite-metrics-head,
+            .favorites-results-bar,
+            .favorites-list-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .favorite-actions {
+                flex-direction: column;
+            }
+
+                .favorites-btn,
+                .favorites-btn-ghost,
+                .favorite-actions .btn {
+                    width: 100%;
+                }
+        }
+    </style>
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="favorites-page">
+    <div class="container">
+        <div class="favorites-shell">
+            @* <div class="favorites-top">
+                <div class="favorites-top-main">
+                    <div class="favorites-eyebrow">
+                        <i class="fa-solid fa-heart-circle-check"></i>
+                        <span>Không gian cá nhân hóa</span>
+                    </div>
+                    <h1 class="favorites-title">Trạm yêu thích</h1>
+                    <p class="favorites-subtitle">
+                        Danh sách này được tối ưu theo hướng người dùng thật sự cần: nhìn bao quát, lọc nhanh, so sánh nhanh và mở đúng trạm ngay.
+                        Giao diện giờ chỉ giữ những gì còn thật sự hữu ích ở cấp độ trạm: trạng thái, khoảng cách, đánh giá và số trụ sẵn sàng để bạn quyết định nhanh hơn.
+                    </p>
+
+                    <div class="favorites-top-actions">
+                        <a asp-area="User" asp-controller="Station" asp-action="Index" class="favorites-btn">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <span>Tìm thêm trạm</span>
+                        </a>
+
+                        @if (nearestStation != null)
+                        {
+                            <a asp-area="User"
+                               asp-controller="Station"
+                               asp-action="Details"
+                               asp-route-id="@nearestStation.Id"
+                               class="favorites-btn-ghost">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>Mở trạm gần nhất</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <div class="favorites-top-side">
+                    <div class="favorites-side-card">
+                        @if (nearestStation != null)
+                        {
+                            <div>
+                                <div class="favorites-side-kicker">
+                                    <i class="fa-solid fa-location-arrow"></i>
+                                    <span>Gợi ý mở nhanh</span>
+                                </div>
+                                <h2 class="favorites-side-title">@nearestStation.Name</h2>
+                                <p class="favorites-side-copy">
+                                    Đây là trạm gần nhất trong danh sách hiện tại. Bạn có thể mở nhanh để kiểm tra trụ sẵn sàng và đi đường ngay mà không cần tìm lại từ đầu.
+                                </p>
+                            </div>
+
+                            <div class="favorites-side-meta">
+                                <div class="favorites-side-meta-item">
+                                    <div class="favorites-side-meta-label">Khoảng cách</div>
+                                    <div class="favorites-side-meta-value">@nearestStation.DistanceKm!.Value.ToString("0.0", viCulture) km</div>
+                                </div>
+                                <div class="favorites-side-meta-item">
+                                    <div class="favorites-side-meta-label">Trụ sẵn sàng</div>
+                                    <div class="favorites-side-meta-value">@nearestStation.AvailablePoleCount/@nearestStation.TotalPoleCount</div>
+                                </div>
+                                <div class="favorites-side-meta-item">
+                                    <div class="favorites-side-meta-label">Đánh giá</div>
+                                    <div class="favorites-side-meta-value">@nearestStation.AverageRating.ToString("0.0", viCulture) điểm</div>
+                                </div>
+                                <div class="favorites-side-meta-item">
+                                    <div class="favorites-side-meta-label">Trạng thái</div>
+                                    <div class="favorites-side-meta-value">@(string.IsNullOrWhiteSpace(nearestStation.Status) ? "Chưa cập nhật" : nearestStation.Status)</div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div>
+                                <div class="favorites-side-kicker">
+                                    <i class="fa-solid fa-compass"></i>
+                                    <span>Mẹo sử dụng</span>
+                                </div>
+                                <h2 class="favorites-side-title">Giữ danh sách gọn và thật sự hữu ích</h2>
+                                <p class="favorites-side-copy">
+                                    Chỉ nên lưu các trạm bạn thường ghé, gần tuyến đường hoặc có tỉ lệ trụ sẵn sàng cao để việc mở lại và ra quyết định nhanh hơn.
+                                </p>
+                            </div>
+
+                            <div class="favorites-side-meta">
+                                <div class="favorites-side-meta-item">
+                                    <div class="favorites-side-meta-label">Ưu tiên 1</div>
+                                    <div class="favorites-side-meta-value">Lưu trạm hay dùng</div>
+                                </div>
+                                <div class="favorites-side-meta-item">
+                                    <div class="favorites-side-meta-label">Ưu tiên 2</div>
+                                    <div class="favorites-side-meta-value">Ưu tiên trụ sẵn sàng</div>
+                                </div>
+                                <div class="favorites-side-meta-item">
+                                    <div class="favorites-side-meta-label">Ưu tiên 3</div>
+                                    <div class="favorites-side-meta-value">Gần tuyến di chuyển</div>
+                                </div>
+                                <div class="favorites-side-meta-item">
+                                    <div class="favorites-side-meta-label">Gợi ý</div>
+                                    <div class="favorites-side-meta-value">Xóa trạm ít dùng</div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div> *@
+
+            <div class="favorites-summary">
+                <div class="favorites-summary-grid">
+                    <div class="favorites-summary-card">
+                        <div class="favorites-summary-label">Tổng trạm đã lưu</div>
+                        <div class="favorites-summary-value">@totalFavorites</div>
+                        @* <div class="favorites-summary-copy">Số trạm bạn giữ lại để mở nhanh trong những lần sạc tiếp theo.</div> *@
+                    </div>
+
+                    <div class="favorites-summary-card">
+                        <div class="favorites-summary-label">Trạm đang hoạt động</div>
+                        <div class="favorites-summary-value">@activeStations</div>
+                        @* <div class="favorites-summary-copy">Các trạm nên được ưu tiên khi bạn cần quyết định nhanh và an toàn hơn.</div> *@
+                    </div>
+
+                    <div class="favorites-summary-card">
+                        <div class="favorites-summary-label">Trụ sẵn sàng</div>
+                        <div class="favorites-summary-value">@totalAvailablePoles/@totalPoles</div>
+                        @* <div class="favorites-summary-copy">Tổng số trụ hiện đang dùng được trong toàn bộ danh sách yêu thích.</div> *@
+                    </div>
+
+                    <div class="favorites-summary-card">
+                        <div class="favorites-summary-label">Đánh giá trung bình</div>
+                        <div class="favorites-summary-value">@averageRating.ToString("0.0", viCulture)</div>
+                        @* <div class="favorites-summary-copy">Mức đánh giá cộng đồng để bạn nhận biết trải nghiệm tổng thể của danh sách.</div> *@
+                    </div>
+                </div>
+            </div>
+
+            @Html.AntiForgeryToken()
+
+            @if (!stations.Any())
+            {
+                <div class="favorites-empty">
+                    <div class="favorites-empty-icon">
+                        <i class="fa-regular fa-heart"></i>
+                    </div>
+                    <h2 class="favorites-empty-title">Bạn chưa lưu trạm nào vào danh sách yêu thích</h2>
+                    <p class="favorites-empty-copy">
+                        Khi đang xem chi tiết hoặc tra cứu trạm, hãy bấm vào biểu tượng yêu thích để lưu lại.
+                        Sau đó bạn có thể quay về đây để mở nhanh, xem tình trạng và đi đường thuận tiện hơn.
+                    </p>
+                    <a asp-area="User" asp-controller="Station" asp-action="Index" class="favorites-btn">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Đi đến trang tra cứu trạm sạc</span>
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="favorites-toolbar">
+                    <div class="favorites-toolbar-row">
+                        <input type="text" id="favoritesSearchInput" class="favorites-search" placeholder="Tìm theo tên trạm hoặc địa chỉ..." />
+
+                        <select id="favoritesStatusFilter" class="favorites-select">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="Đang hoạt động">Đang hoạt động</option>
+                            <option value="Không hoạt động">Không hoạt động</option>
+                            <option value="Bảo trì">Bảo trì</option>
+                            <option value="Lỗi">Lỗi</option>
+                        </select>
+
+                        <select id="favoritesSortSelect" class="favorites-select">
+                            <option value="recommended">Sắp xếp: Gợi ý cho bạn</option>
+                            <option value="distance">Khoảng cách gần trước</option>
+                            <option value="rating">Đánh giá cao trước</option>
+                            <option value="availability">Trụ sẵn sàng nhiều trước</option>
+                            <option value="name">Tên A → Z</option>
+                        </select>
+
+                        <a asp-area="User" asp-controller="Station" asp-action="Index" class="favorites-btn-ghost">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Thêm trạm mới</span>
+                        </a>
+                    </div>
+
+                    <div class="favorites-quick-filters">
+                        <button type="button" class="favorites-chip is-active" data-quick-filter="all">Tất cả</button>
+                        <button type="button" class="favorites-chip" data-quick-filter="ready">Có trụ sẵn sàng</button>
+                        <button type="button" class="favorites-chip" data-quick-filter="active">Trạm đang hoạt động</button>
+                        <button type="button" class="favorites-chip" data-quick-filter="nearby">Gần bạn</button>
+                    </div>
+
+                    <div class="favorites-results-bar">
+                        @* <div class="favorites-results-text" id="favoritesResultsText">
+                            Đang hiển thị <strong>@stations.Count</strong> trạm phù hợp.
+                        </div> *@
+                        @* <div>Danh sách dạng list để bạn quét nhanh toàn bộ thông tin mà không bị rối như card quá lớn.</div> *@
+                    </div>
+                </div>
+
+                <div id="favoritesFilterEmpty" class="favorites-filter-empty">
+                    <div class="favorites-filter-empty-icon">
+                        <i class="fa-solid fa-filter-circle-xmark"></i>
+                    </div>
+                    <h2 class="favorites-filter-empty-title">Không có trạm nào khớp bộ lọc hiện tại</h2>
+                    <p class="favorites-filter-empty-copy">
+                        Bạn thử đổi từ khóa, đặt lại trạng thái hoặc tắt bộ lọc nhanh để xem lại toàn bộ danh sách yêu thích.
+                    </p>
+                </div>
+
+                <div class="favorites-list" id="favoritesList">
+                    @foreach (var station in stations)
+                    {
+                        var safeTotalPoles = station.TotalPoleCount <= 0 ? 0 : station.TotalPoleCount;
+                        var availabilityPercent = safeTotalPoles > 0
+                        ? Math.Max(0, Math.Min(100, (int)Math.Round((double)station.AvailablePoleCount / safeTotalPoles * 100)))
+                        : 0;
+
+                        var statusText = string.IsNullOrWhiteSpace(station.Status) ? "Chưa cập nhật" : station.Status!;
+                        var statusClass = "favorite-status-chip--neutral";
+
+                        if (string.Equals(statusText, "Đang hoạt động", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            statusClass = "favorite-status-chip--active";
+                        }
+                        else if (string.Equals(statusText, "Bảo trì", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            statusClass = "favorite-status-chip--warning";
+                        }
+                        else if (string.Equals(statusText, "Lỗi", System.StringComparison.OrdinalIgnoreCase) || string.Equals(statusText, "Không hoạt động", System.StringComparison.OrdinalIgnoreCase))
+                        {
+                            statusClass = "favorite-status-chip--danger";
+                        }
+
+                        var distanceValue = station.DistanceKm.HasValue ? station.DistanceKm.Value.ToString(CultureInfo.InvariantCulture) : "999999";
+                        var distanceText = station.DistanceKm.HasValue ? $"{station.DistanceKm.Value.ToString("0.0", viCulture)} km" : string.Empty;
+                        <article class="favorites-list-item"
+                                 data-name="@station.Name"
+                                 data-address="@station.Address"
+                                 data-status="@statusText"
+                                 data-distance="@distanceValue"
+                                 data-rating="@station.AverageRating.ToString(CultureInfo.InvariantCulture)"
+                                 data-available="@station.AvailablePoleCount"
+                                 data-total="@station.TotalPoleCount"
+                                 data-ready="@(station.AvailablePoleCount > 0 ? "1" : "0")"
+                                 data-hasdistance="@(station.DistanceKm.HasValue ? "1" : "0")">
+                            <div class="favorite-row">
+                                <div class="favorite-main">
+                                    <div class="favorite-topline">
+                                        <div>
+                                            <div class="favorite-kicker">Trạm đã lưu để mở nhanh</div>
+                                            <h2 class="favorite-name">@station.Name</h2>
+                                        </div>
+
+                                        <div class="favorite-heart-badge">
+                                            <i class="fa-solid fa-heart"></i>
+                                            <span>Yêu thích</span>
+                                        </div>
+                                    </div>
+
+                                    <p class="favorite-address">
+                                        <i class="fa-solid fa-location-dot mr-2"></i>@station.Address
+                                    </p>
+
+                                    <div class="favorite-inline-meta">
+                                        <span class="favorite-status-chip @statusClass">
+                                            <i class="fa-solid fa-signal"></i>
+                                            <span>@statusText</span>
+                                        </span>
+
+                                        @if (station.DistanceKm.HasValue)
+                                        {
+                                            <span class="favorite-inline-pill">
+                                                <i class="fa-solid fa-route"></i>
+                                                <strong>@distanceText</strong>
+                                            </span>
+                                        }
+
+                                        <span class="favorite-inline-pill">
+                                            <i class="fa-solid fa-star"></i>
+                                            <strong>@station.AverageRating.ToString("0.0", viCulture)</strong> (@station.ReviewCount)
+                                        </span>
+                                    </div>
+
+                                    @* <p class="favorite-main-copy">
+                                        Danh sách này tập trung vào khả năng dùng ngay: trạng thái hiện tại, khoảng cách, đánh giá cộng đồng và số trụ sẵn sàng để bạn mở nhanh đúng trạm cần dùng.
+                                    </p> *@
+                                </div>
+
+                                <div class="favorite-metrics">
+                                    <div class="favorite-metrics-head">
+                                        <h3 class="favorite-metrics-title">Mức độ sẵn sàng</h3>
+                                        <div class="favorite-metrics-caption">@station.AvailablePoleCount/@station.TotalPoleCount trụ có thể dùng ngay</div>
+                                    </div>
+
+                                    <div class="favorite-progress">
+                                        <span style="width:@availabilityPercent%"></span>
+                                    </div>
+
+                                    <div class="favorite-stat-grid favorite-stat-grid--compact">
+                                        <div class="favorite-stat-box">
+                                            <div class="favorite-stat-label">Trụ sẵn sàng</div>
+                                            <div class="favorite-stat-value">@station.AvailablePoleCount/@station.TotalPoleCount</div>
+                                        </div>
+
+                                        <div class="favorite-stat-box">
+                                            <div class="favorite-stat-label">Tổng số trụ</div>
+                                            <div class="favorite-stat-value">@station.TotalPoleCount</div>
+                                        </div>
+                                    </div>
+
+                                    @* <div class="favorite-ready-note">
+                                        Ưu tiên hiển thị số trụ có thể dùng ngay ở cấp độ trạm để bạn quyết định nhanh hơn mà không bị nhiễu bởi thông tin từng trụ riêng lẻ.
+                                    </div> *@
+                                </div>
+
+                                <div class="favorite-actions">
+                                    <a asp-area="User"
+                                       asp-controller="Station"
+                                       asp-action="Details"
+                                       asp-route-id="@station.Id"
+                                       class="btn btn-outline-secondary">
+                                        <i class="fa-solid fa-circle-info mr-2"></i>
+                                        Xem chi tiết
+                                    </a>
+
+                                    <a href="@($"https://www.google.com/maps/dir/?api=1&destination={station.Latitude.ToString(CultureInfo.InvariantCulture)},{station.Longitude.ToString(CultureInfo.InvariantCulture)}")"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="btn btn-success">
+                                        <i class="fa-solid fa-diamond-turn-right mr-2"></i>
+                                        Chỉ đường
+                                    </a>
+
+                                    <button type="button"
+                                            class="btn btn-favorite-remove btn-remove-favorite"
+                                            data-station-id="@station.Id">
+                                        <i class="fa-solid fa-heart-crack mr-2"></i>
+                                        Bỏ yêu thích
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                <div class="favorites-list-footer">
+                    <div id="favoritesPageInfo"></div>
+                    <div id="favoritesPager"></div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        let favoritesPager = null;
+        let favoriteItems = [];
+        let currentQuickFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', function () {
+            favoriteItems = Array.from(document.querySelectorAll('.favorites-list-item'));
+
+            if (favoriteItems.length) {
+                favoritesPager = TramSacPagination.createPager({
+                    pageSize: 6,
+                    paginationContainer: 'favoritesPager',
+                    infoContainer: 'favoritesPageInfo',
+                    onPageChange: renderFavoritesPage
+                });
+
+                document.getElementById('favoritesSearchInput')?.addEventListener('input', applyFavoriteFilters);
+                document.getElementById('favoritesStatusFilter')?.addEventListener('change', applyFavoriteFilters);
+                document.getElementById('favoritesSortSelect')?.addEventListener('change', applyFavoriteFilters);
+
+                document.querySelectorAll('.favorites-chip').forEach(button => {
+                    button.addEventListener('click', function () {
+                        document.querySelectorAll('.favorites-chip').forEach(chip => chip.classList.remove('is-active'));
+                        button.classList.add('is-active');
+                        currentQuickFilter = button.dataset.quickFilter || 'all';
+                        applyFavoriteFilters();
+                    });
+                });
+
+                applyFavoriteFilters();
+            }
+
+            document.querySelectorAll('.btn-remove-favorite').forEach(button => {
+                button.addEventListener('click', async function () {
+                    const stationId = button.dataset.stationId;
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+                    if (!token) {
+                        alert('Thiếu anti-forgery token.');
+                        return;
+                    }
+
+                    try {
+                        button.disabled = true;
+
+                        const response = await fetch(`/User/api/favorites/${stationId}/toggle`, {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': token
+                            }
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok || !result.success) {
+                            alert(result.message || 'Không thể cập nhật yêu thích.');
+                            button.disabled = false;
+                            return;
+                        }
+
+                        window.location.reload();
+                    } catch (error) {
+                        console.error(error);
+                        alert('Có lỗi xảy ra khi cập nhật yêu thích.');
+                        button.disabled = false;
+                    }
+                });
+            });
+        });
+
+        function renderFavoritesPage(items) {
+            favoriteItems.forEach(item => {
+                item.style.display = 'none';
+            });
+
+            items.forEach(item => {
+                item.style.display = '';
+            });
+        }
+
+        function applyFavoriteFilters() {
+            const keyword = (document.getElementById('favoritesSearchInput')?.value || '').trim().toLowerCase();
+            const status = document.getElementById('favoritesStatusFilter')?.value || 'all';
+            const sort = document.getElementById('favoritesSortSelect')?.value || 'recommended';
+
+            let filtered = favoriteItems.filter(item => {
+                const name = (item.dataset.name || '').toLowerCase();
+                const address = (item.dataset.address || '').toLowerCase();
+                const stationStatus = item.dataset.status || '';
+                const isReady = item.dataset.ready === '1';
+                const hasDistance = item.dataset.hasdistance === '1';
+                const distance = Number(item.dataset.distance || 999999);
+
+                const matchesKeyword = !keyword || name.includes(keyword) || address.includes(keyword);
+                const matchesStatus = status === 'all' || stationStatus === status;
+
+                let matchesQuickFilter = true;
+                if (currentQuickFilter === 'ready') {
+                    matchesQuickFilter = isReady;
+                } else if (currentQuickFilter === 'active') {
+                    matchesQuickFilter = stationStatus === 'Đang hoạt động';
+                } else if (currentQuickFilter === 'nearby') {
+                    matchesQuickFilter = hasDistance && distance <= 10;
+                }
+
+                return matchesKeyword && matchesStatus && matchesQuickFilter;
+            });
+
+            filtered.sort((a, b) => compareFavoriteItems(a, b, sort));
+
+            const emptyState = document.getElementById('favoritesFilterEmpty');
+            const list = document.getElementById('favoritesList');
+            const resultsText = document.getElementById('favoritesResultsText');
+            const pageInfo = document.getElementById('favoritesPageInfo');
+            const pager = document.getElementById('favoritesPager');
+
+            if (resultsText) {
+                resultsText.innerHTML = `Đang hiển thị <strong>${filtered.length}</strong> trạm phù hợp.`;
+            }
+
+            if (!filtered.length) {
+                favoriteItems.forEach(item => item.style.display = 'none');
+                if (list) list.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'block';
+                if (pageInfo) pageInfo.textContent = 'Không có dữ liệu.';
+                if (pager) pager.innerHTML = '';
+                return;
+            }
+
+            if (list) list.style.display = 'flex';
+            if (emptyState) emptyState.style.display = 'none';
+            favoritesPager.setItems(filtered);
+        }
+
+        function compareFavoriteItems(a, b, sort) {
+            const getNumber = (item, key, fallback = 0) => {
+                const value = Number(item.dataset[key]);
+                return Number.isFinite(value) ? value : fallback;
+            };
+
+            const getText = (item, key) => (item.dataset[key] || '').toLowerCase();
+            const getReadyRatio = (item) => {
+                const available = getNumber(item, 'available', 0);
+                const total = getNumber(item, 'total', 0);
+                return total > 0 ? available / total : 0;
+            };
+
+            if (sort === 'distance') {
+                return getNumber(a, 'distance', 999999) - getNumber(b, 'distance', 999999);
+            }
+
+            if (sort === 'rating') {
+                return getNumber(b, 'rating', 0) - getNumber(a, 'rating', 0);
+            }
+
+            if (sort === 'availability') {
+                const availabilityDiff = getReadyRatio(b) - getReadyRatio(a);
+                if (availabilityDiff !== 0) return availabilityDiff;
+                return getNumber(b, 'available', 0) - getNumber(a, 'available', 0);
+            }
+
+            if (sort === 'name') {
+                return getText(a, 'name').localeCompare(getText(b, 'name'), 'vi');
+            }
+
+            const readyDiff = getNumber(b, 'ready', 0) - getNumber(a, 'ready', 0);
+            if (readyDiff !== 0) return readyDiff;
+
+            const statusScore = (item) => {
+                const stationStatus = item.dataset.status || '';
+                if (stationStatus === 'Đang hoạt động') return 3;
+                if (stationStatus === 'Bảo trì') return 2;
+                if (stationStatus === 'Không hoạt động') return 1;
+                if (stationStatus === 'Lỗi') return 0;
+                return 1;
+            };
+
+            const scoreDiff = statusScore(b) - statusScore(a);
+            if (scoreDiff !== 0) return scoreDiff;
+
+            const ratingDiff = getNumber(b, 'rating', 0) - getNumber(a, 'rating', 0);
+            if (ratingDiff !== 0) return ratingDiff;
+
+            return getNumber(a, 'distance', 999999) - getNumber(b, 'distance', 999999);
+        }
+    </script>
+}

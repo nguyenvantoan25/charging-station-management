@@ -1,0 +1,200 @@
+﻿@{
+    ViewData["Title"] = "Hỗ trợ";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Hỗ trợ / Liên hệ từ người dùng</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active">Hỗ trợ</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content support-admin-page">
+    <div class="container-fluid">
+        @Html.AntiForgeryToken()
+
+        <div class="support-admin-hero card">
+            <div class="card-body">
+                <div class="support-admin-hero-head">
+                    <div>
+                        <div class="support-admin-kicker">Trung tâm xử lý ticket</div>
+                        @* <h2 class="support-admin-title">Quản lý yêu cầu hỗ trợ rõ ràng, gọn và nhất quán với giao diện admin.</h2> *@
+                        @* <p class="support-admin-subtitle">
+                            Trang này gom toàn bộ ticket từ người dùng, hỗ trợ lọc nhanh, xem chi tiết và phản hồi ngay trong một luồng làm việc.
+                        </p> *@
+                    </div>
+                </div>
+
+                <div class="support-admin-summary-grid">
+                    <article class="support-summary-card">
+                        <div class="support-summary-label">Tổng ticket</div>
+                        <div class="support-summary-value" id="supportSummaryTotal">0</div>
+                        @* <div class="support-summary-note">Tất cả yêu cầu đã ghi nhận.</div> *@
+                    </article>
+                    <article class="support-summary-card">
+                        <div class="support-summary-label">Mới</div>
+                        <div class="support-summary-value" id="supportSummaryNew">0</div>
+                        @* <div class="support-summary-note">Cần admin xem lần đầu.</div> *@
+                    </article>
+                    <article class="support-summary-card">
+                        <div class="support-summary-label">Đang xử lý</div>
+                        <div class="support-summary-value" id="supportSummaryProcessing">0</div>
+                        @* <div class="support-summary-note">Đã đọc nhưng chưa hoàn tất.</div> *@
+                    </article>
+                    <article class="support-summary-card">
+                        <div class="support-summary-label">User chưa xem</div>
+                        <div class="support-summary-value" id="supportSummaryUnreadByUser">0</div>
+                        @* <div class="support-summary-note">Đã xử lý nhưng người gửi chưa mở lại.</div> *@
+                    </article>
+                </div>
+            </div>
+        </div>
+
+        <div class="card support-filter-card">
+            <div class="card-header">
+                <h3 class="card-title">Bộ lọc tìm kiếm</h3>
+            </div>
+            <div class="card-body">
+                <div class="row support-filter-row">
+                    <div class="col-lg-3 col-md-6">
+                        <label class="support-filter-label" for="supportKeyword">Từ khóa</label>
+                        <input type="text" id="supportKeyword" class="form-control" placeholder="Tên, email, tiêu đề, nội dung..." />
+                    </div>
+
+                    <div class="col-lg-2 col-md-6">
+                        <label class="support-filter-label" for="supportStatus">Trạng thái</label>
+                        <select id="supportStatus" class="form-control">
+                            <option value="">Tất cả</option>
+                            <option value="Mới">Mới</option>
+                            <option value="Đã đọc">Đã đọc</option>
+                            <option value="Đã xử lý">Đã xử lý</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6">
+                        <label class="support-filter-label" for="supportRead">Đã đọc</label>
+                        <select id="supportRead" class="form-control">
+                            <option value="">Tất cả</option>
+                            <option value="yes">Đã đọc</option>
+                            <option value="no">Chưa đọc</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6">
+                        <label class="support-filter-label" for="supportCategory">Phân loại</label>
+                        <select id="supportCategory" class="form-control">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-3 col-md-12 support-filter-actions">
+                        <button type="button" id="supportReset" class="btn btn-outline-secondary">
+                            <i class="fas fa-undo-alt mr-1"></i>
+                            <span>Xóa bộ lọc</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card support-table-card">
+            <div class="card-header border-0">
+                <div class="support-table-head">
+                    <h3 class="card-title">Danh sách yêu cầu hỗ trợ</h3>
+                    <div class="support-table-head-badges">
+                        <span class="badge badge-info" id="supportResultCount">0 kết quả</span>
+                        <span class="badge badge-danger" id="supportUnreadUserCount">0 user chưa xem</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-0 support-table-wrap">
+                <table class="table support-admin-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Người gửi</th>
+                            <th>Nội dung yêu cầu</th>
+                            <th>Phân loại</th>
+                            <th>Trạng thái</th>
+                            <th>Thời gian</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="supportTableBody">
+                        <tr>
+                            <td colspan="6" class="support-table-empty">Đang tải dữ liệu hỗ trợ...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-footer bg-white support-table-footer">
+                <div id="supportPageInfo" class="text-muted small"></div>
+                <div id="supportPager"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="supportDetailModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+        <div class="modal-content support-modal-shell">
+            <div class="modal-header support-modal-header">
+                <div>
+                    <div class="support-modal-kicker">Chi tiết ticket</div>
+                    <h5 class="modal-title mb-0">Yêu cầu hỗ trợ từ người dùng</h5>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="supportDetailBody" class="support-detail-grid">
+                    <div class="support-detail-box full">
+                        Đang tải...
+                    </div>
+                </div>
+
+                <div class="support-reply-editor">
+                    <label class="support-filter-label" for="supportAdminReply">Phản hồi admin</label>
+                    <textarea id="supportAdminReply" class="form-control" rows="4" placeholder="Nhập nội dung phản hồi sẽ hiển thị cho người dùng khi đánh dấu xử lý xong."></textarea>
+                    <small class="text-muted d-block mt-2">Khi bấm “Xử lý xong”, phản hồi này sẽ được gửi vào ticket của người dùng.</small>
+                </div>
+            </div>
+            <div class="modal-footer support-modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" id="supportModalReadBtn" class="btn btn-outline-primary">
+                    <i class="fas fa-envelope-open-text mr-1"></i>
+                    <span>Đánh dấu đã đọc</span>
+                </button>
+                <button type="button" id="supportModalResolveBtn" class="btn btn-success">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    <span>Xử lý xong</span>
+                </button>
+                <button type="button" id="supportModalDeleteBtn" class="btn btn-outline-danger">
+                    <i class="fas fa-trash-alt mr-1"></i>
+                    <span>Xóa</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-support-page.css" asp-append-version="true" />
+}
+
+@section Scripts {
+    <script src="~/js/admin-support-page.js" asp-append-version="true"></script>
+}

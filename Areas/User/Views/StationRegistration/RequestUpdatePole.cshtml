@@ -1,0 +1,316 @@
+@model tramsac99.Areas.User.ViewModels.RequestUpdatePolePageViewModel
+@using tramsac99.Areas.Admin.Models
+
+@{
+    ViewData["Title"] = "Yêu cầu cập nhật trụ";
+}
+
+
+@section Styles {
+    <style>
+        .request-shell {
+            padding: 34px 0 72px;
+            background: linear-gradient(180deg, #f5fbf8 0%, #eef7f2 100%);
+        }
+
+        .request-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .request-hero {
+            border-radius: 28px;
+            padding: 28px 30px;
+            color: #fff;
+            background: linear-gradient(135deg, #073b33 0%, #0c5f51 48%, #1b8b6c 100%);
+            box-shadow: 0 26px 70px rgba(6, 66, 50, .18);
+        }
+
+        .request-breadcrumb {
+            font-size: 13px;
+            opacity: .85;
+            margin-bottom: 12px;
+        }
+
+            .request-breadcrumb a {
+                color: #fff;
+                text-decoration: none;
+            }
+
+        .request-hero h1 {
+            margin: 0 0 8px;
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .request-hero p {
+            margin: 0;
+            color: rgba(255,255,255,.88);
+            max-width: 760px;
+        }
+
+        .request-grid {
+            display: grid;
+            grid-template-columns: minmax(0, .88fr) minmax(320px, .62fr);
+            gap: 24px;
+        }
+
+        .request-card {
+            background: #fff;
+            border: 1px solid rgba(8,54,42,.08);
+            border-radius: 24px;
+            box-shadow: 0 18px 45px rgba(10,74,55,.06);
+        }
+
+        .request-card__head {
+            padding: 22px 24px 0;
+        }
+
+        .request-card__body {
+            padding: 22px 24px 24px;
+        }
+
+        .request-title {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 800;
+            color: #10211b;
+        }
+
+        .request-desc {
+            margin: 8px 0 0;
+            color: #66756f;
+        }
+
+        .request-info-list {
+            display: grid;
+            gap: 14px;
+        }
+
+        .request-info-item {
+            border-radius: 18px;
+            background: #f8fcfa;
+            border: 1px solid rgba(8,54,42,.06);
+            padding: 16px 18px;
+        }
+
+            .request-info-item span {
+                display: block;
+                color: #6a7973;
+                font-size: 13px;
+                margin-bottom: 7px;
+            }
+
+            .request-info-item strong {
+                color: #10211b;
+                font-size: 16px;
+            }
+
+        .request-form {
+            display: grid;
+            gap: 14px;
+        }
+
+        .request-label {
+            font-weight: 700;
+            color: #123327;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .request-input, .request-select, .request-textarea {
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid #d8e6df;
+            background: #fff;
+            color: #10211b;
+            padding: 14px 16px;
+            outline: none;
+        }
+
+        .request-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .request-btn-main, .request-btn-soft, .request-btn-danger {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .request-btn-main {
+            padding: 14px 18px;
+            background: #19a56d;
+            color: #fff;
+            box-shadow: 0 14px 30px rgba(25,165,109,.22);
+        }
+
+        .request-btn-soft {
+            padding: 13px 17px;
+            background: #fff;
+            color: #0c5f51;
+            border: 1px solid rgba(12,95,81,.12);
+        }
+
+        .request-btn-danger {
+            padding: 14px 18px;
+            background: #d63636;
+            color: #fff;
+        }
+
+        .request-chip {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 7px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            background: #edf8f2;
+            color: #14704f;
+        }
+
+        .request-note {
+            border-radius: 18px;
+            padding: 16px 18px;
+            background: #fff7e8;
+            color: #896000;
+            border: 1px solid rgba(137,96,0,.12);
+        }
+        @@media (max-width: 991.98px) {
+            .request-grid
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        }
+    </style>
+}
+
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="request-shell">
+    <div class="container request-stack">
+        <div class="request-hero">
+            <div class="request-breadcrumb">
+                <a asp-area="User" asp-controller="StationRegistration" asp-action="MyStations">Trạm của tôi</a>
+                <span> / </span>
+                <a asp-area="User" asp-controller="StationRegistration" asp-action="Details" asp-route-id="@Model.StationId" asp-route-historyPage="@Model.HistoryPage" asp-route-polePage="@Model.PolePage">@Model.StationName</a>
+                <span> / </span>
+                <span>Cập nhật trụ @Model.PoleCode</span>
+            </div>
+            <h1>Trang con chỉnh sửa trụ</h1>
+            <p>Bạn chỉnh thông tin ở trang riêng, gọn hơn và dễ nhìn hơn. Sau khi gửi, admin sẽ duyệt trước khi thay đổi được áp dụng.</p>
+        </div>
+
+        <div class="request-grid">
+            <div class="request-card">
+                <div class="request-card__head">
+                    <h2 class="request-title">Thông tin muốn cập nhật</h2>
+                    <p class="request-desc">Cập nhật mã trụ, công suất, trạng thái hoặc ghi chú rồi gửi chờ duyệt.</p>
+                </div>
+                <div class="request-card__body">
+                    <form asp-area="User" asp-controller="StationRegistration" asp-action="CreateUpdatePoleRequest" method="post" class="request-form">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="StationId" type="hidden" />
+                        <input asp-for="PoleId" type="hidden" />
+                        <input type="hidden" name="historyPage" value="@Model.HistoryPage" />
+                        <input type="hidden" name="polePage" value="@Model.PolePage" />
+
+                        <div>
+                            <label class="request-label">Mã trụ</label>
+                            <input asp-for="PoleCode" class="request-input" />
+                            <span asp-validation-for="PoleCode" class="text-danger"></span>
+                        </div>
+
+                        <div>
+                            <label class="request-label">Công suất</label>
+                            <input asp-for="MaxPower" class="request-input" placeholder="Ví dụ: 120" />
+                        </div>
+
+                        <div>
+                            <label class="request-label">Trạng thái mới</label>
+                            <select asp-for="RequestedStatus" class="request-select">
+                                <option value="@ChargingStatus.Active">@ChargingStatus.Active</option>
+                                <option value="@ChargingStatus.Inactive">@ChargingStatus.Inactive</option>
+                                <option value="@ChargingStatus.Maintenance">@ChargingStatus.Maintenance</option>
+                                <option value="@ChargingStatus.Error">@ChargingStatus.Error</option>
+                            </select>
+                            <span asp-validation-for="RequestedStatus" class="text-danger"></span>
+                        </div>
+
+                        <div>
+                            <label class="request-label">Ghi chú</label>
+                            <textarea asp-for="Note" class="request-textarea"></textarea>
+                            <span asp-validation-for="Note" class="text-danger"></span>
+                        </div>
+
+                        <div class="request-actions">
+                            <button type="submit" class="request-btn-main">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                Gửi hệ thống cập nhật ngay cập nhật
+                            </button>
+                            <a asp-area="User" asp-controller="StationRegistration" asp-action="Details" asp-route-id="@Model.StationId" asp-route-historyPage="@Model.HistoryPage" asp-route-polePage="@Model.PolePage" class="request-btn-soft">
+                                <i class="fa-solid fa-arrow-left"></i>
+                                Quay lại chi tiết trạm
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="request-card">
+                <div class="request-card__head">
+                    <h2 class="request-title">Thông tin hiện tại</h2>
+                    <p class="request-desc">Đối chiếu trước khi gửi yêu cầu cập nhật.</p>
+                </div>
+                <div class="request-card__body">
+                    <div class="request-info-list">
+                        <div class="request-info-item">
+                            <span>Trạm</span>
+                            <strong>@Model.StationName</strong>
+                        </div>
+                        <div class="request-info-item">
+                            <span>Địa chỉ</span>
+                            <strong>@Model.StationAddress</strong>
+                        </div>
+                        <div class="request-info-item">
+                            <span>Trạng thái trụ hiện tại</span>
+                            <strong>@Model.CurrentPoleStatus</strong>
+                        </div>
+                        <div class="request-info-item">
+                            <span>Công suất hiện tại</span>
+                            <strong>@(string.IsNullOrWhiteSpace(Model.CurrentPolePower) ? "-" : Model.CurrentPolePower)</strong>
+                        </div>
+                        <div class="request-info-item">
+                            <span>Ghi chú hiện tại</span>
+                            <strong>@(string.IsNullOrWhiteSpace(Model.CurrentPoleNote) ? "Không có" : Model.CurrentPoleNote)</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

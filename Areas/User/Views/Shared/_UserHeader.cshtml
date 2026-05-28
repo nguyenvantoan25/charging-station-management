@@ -1,0 +1,149 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    bool isHome = currentController == "Home" && currentAction == "Index";
+    bool isStation = currentController == "Station" && (currentAction == "Index" || currentAction == "Details");
+    bool isRoute = currentController == "Home" && currentAction == "Route";
+    bool isNews = currentController == "Home" && currentAction == "About";
+    bool isFavorites = currentController == "Station" && currentAction == "Favorites";
+    bool isContact = currentController == "Home" && currentAction == "Contact";
+}
+
+<header class="user-header">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg navbar-light p-0 user-navbar">
+            <a class="navbar-brand user-brand" asp-area="User" asp-controller="Home" asp-action="Index">
+                <img class="user-brand-logo" src="~/user/logo.png" alt="TramSac99" />
+            </a>
+
+            <button class="navbar-toggler user-navbar-toggler"
+                    type="button"
+                    data-toggle="collapse"
+                    data-target="#navbarUserShared"
+                    aria-controls="navbarUserShared"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="user-toggler-line"></span>
+                <span class="user-toggler-line"></span>
+                <span class="user-toggler-line"></span>
+            </button>
+
+            <div class="collapse navbar-collapse user-navbar-collapse" id="navbarUserShared">
+                <ul class="navbar-nav user-nav-list mx-auto">
+                    <li class="nav-item @(isHome ? "active" : "")">
+                        <a class="nav-link" asp-area="User" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                    </li>
+
+                    <li class="nav-item @(isStation ? "active" : "")">
+                        <a class="nav-link" asp-area="User" asp-controller="Station" asp-action="Index">Tra cứu trạm sạc</a>
+                    </li>
+
+                    <li class="nav-item @(isRoute ? "active" : "")">
+                        <a class="nav-link" asp-area="User" asp-controller="Home" asp-action="Route">Lộ trình</a>
+                    </li>
+
+                    <li class="nav-item @(isNews ? "active" : "")">
+                        <a class="nav-link" asp-area="User" asp-controller="Home" asp-action="About">Tin tức</a>
+                    </li>
+
+                    <li class="nav-item @(isFavorites ? "active" : "")">
+                        <a class="nav-link" asp-area="User" asp-controller="Station" asp-action="Favorites">Trạm yêu thích</a>
+                    </li>
+
+                    <li class="nav-item @(isContact ? "active" : "")">
+                        <a class="nav-link user-contact-link" id="userContactNavLink" asp-area="User" asp-controller="Home" asp-action="Contact">
+                            <span>Liên hệ</span>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <span id="supportNotificationBadge" class="user-notification-badge" style="display:none;">0</span>
+                            }
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="user-header-actions">
+                    <div class="user-menu-wrap">
+                        <button type="button" class="user-menu-trigger" aria-label="Mở menu người dùng" title="Mở menu người dùng">
+                            <svg class="user-menu-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-4.418 0-8 2.582-8 5.765 0 .682.553 1.235 1.235 1.235h13.53c.682 0 1.235-.553 1.235-1.235C20 16.582 16.418 14 12 14z" />
+                            </svg>
+                        </button>
+
+                        <div class="user-menu-dropdown">
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <a asp-area="User" asp-controller="Account" asp-action="UserInfo" class="user-menu-item">Thông tin người dùng</a>
+                                <a asp-area="User" asp-controller="Home" asp-action="ActivityHistory" class="user-menu-item">Lịch sử hoạt động</a>
+                                <a asp-area="User" asp-controller="StationRegistration" asp-action="Register" class="user-menu-item">Đăng ký thêm trạm</a>
+                                <a asp-area="User" asp-controller="StationRegistration" asp-action="MyStations" class="user-menu-item">Trạm của tôi</a>
+                            }
+                            else
+                            {
+                                <a asp-area="User" asp-controller="Account" asp-action="Login" class="user-menu-item">Đăng nhập</a>
+                                <a asp-area="User" asp-controller="Account" asp-action="Register" class="user-menu-item">Đăng ký</a>
+                            }
+                        </div>
+                    </div>
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <form asp-area="User" asp-controller="Account" asp-action="Logout" method="post" class="mb-0 user-auth-form">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="user-auth-btn border-0">
+                                <span>Đăng xuất</span>
+                                <svg class="user-auth-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M5 12h14"></path>
+                                    <path d="M13 6l6 6-6 6"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-area="User" asp-controller="Account" asp-action="Login" class="user-auth-btn">
+                            <span>Đăng nhập</span>
+                            <svg class="user-auth-arrow" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M5 12h14"></path>
+                                <path d="M13 6l6 6-6 6"></path>
+                            </svg>
+                        </a>
+                    }
+                </div>
+            </div>
+        </nav>
+    </div>
+</header>
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <script>
+        async function refreshSupportNotificationBadge() {
+            const badge = document.getElementById('supportNotificationBadge');
+            if (!badge) return;
+
+            try {
+                const response = await fetch('/User/api/home/support-notification-count');
+                if (!response.ok) {
+                    badge.style.display = 'none';
+                    return;
+                }
+
+                const result = await response.json();
+                const count = Number(result.count || 0);
+
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : String(count);
+                    badge.style.display = 'inline-flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } catch {
+                badge.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', refreshSupportNotificationBadge);
+        window.addEventListener('support-notification-updated', refreshSupportNotificationBadge);
+    </script>
+}

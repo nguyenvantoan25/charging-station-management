@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <title>Tra cứu trạm sạc | TramSac99</title>
+    <link href="assets/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet" type="text/css">
+    <link href="assets/css/responsive.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+    /* inline extra styles for search page */
+    .header {
+        background: #000;
+        position: relative;
+        z-index: 5;
+    }
+    .header::before {
+        content: "";
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 35%;
+        position: absolute;
+        background: url(assets/images/subbanner-backgroundimage.jpg);
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        z-index: -1;
+    }
+    .search-filter {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .station-card {
+        border: 1px solid #e4e4e4;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        padding: 15px;
+    }
+    .station-card .status {
+        font-weight: 600;
+    }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light p-0">
+                <a class="navbar-brand d-flex align-items-center" href="index.html">
+                    <img id="site-logo" src="logo.png" alt="TramSac 99" class="img-fluid">
+                    <!-- <span class="navbar-slogan ml-2 d-none d-lg-block">Hệ thống trạm sạc</span> -->
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSearch">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item"><a class="nav-link" href="index.html">Trang chủ</a></li>
+                        <li class="nav-item active"><a class="nav-link" href="search.html">Tra cứu trạm sạc</a></li>
+                        <li class="nav-item"><a class="nav-link" href="pricing.html">Giá cước</a></li>
+                        <li class="nav-item"><a class="nav-link" href="about.html">Về chúng tôi</a></li>
+                        <li class="nav-item"><a class="nav-link" href="faq.html">Câu hỏi thường gặp</a></li>
+                        <li class="nav-item"><a class="nav-link" href="contact.html">Liên hệ</a></li>
+                    </ul>
+                    <div class="last_list">
+                        <a class="search" href="#search"><i class="search-box fa-solid fa-magnifying-glass"></i></a>
+                        <a href="login.html" class="text-decoration-none get_started">Đăng nhập<i class="fa-solid fa-arrow-right"></i></a>
+                        <!-- <div class="phone_content">
+                            <span>Hotline 24/7</span>
+                            <a href="tel:1900xxxx" class="number text-decoration-none d-block">1900-xxxx</a>
+                        </div> -->
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <section class="search-main" style="padding: 60px 0;">
+        <div class="container">
+            <!-- map preview row -->
+            <div class="row mb-4" data-aos="fade-up">
+                <div class="col-12 text-center">
+                    <h5>Trạm sạc gần đây</h5>
+                    <p>Nhập địa chỉ bên dưới hoặc cho phép truy cập vị trí để tìm trạm trên bản đồ.</p>
+                    <input id="search-map-input" class="form-control mx-auto" style="max-width:400px" type="text" placeholder="Nhập địa chỉ" />
+                </div>
+                <div class="col-12">
+                    <iframe id="search-map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.6895999999994!2d106.68943049999999!3d10.762622!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x317529fc7c99999d%3A0x9999999999999999!2zVHLhuqduIFPhuqFjIDk5!5e0!3m2!1svi!2svn!4v1677772000000" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+            <div class="row">
+                <!-- filters column -->
+                <div class="col-lg-4">
+                    <div class="search-filter">
+                        <h5>Lọc trạm</h5>
+                        <form id="filterForm">
+                            <div class="form-group">
+                                <label>Trạng thái</label>
+                                <select class="form-control" name="status">
+                                    <option value="">Tất cả</option>
+                                    <option value="available">Sẵn sàng</option>
+                                    <option value="busy">Đang sử dụng</option>
+                                    <option value="maintenance">Bảo trì</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Vị trí (tỉnh/thành)</label>
+                                <input type="text" class="form-control" name="location" placeholder="Nhập địa điểm">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Áp dụng</button>
+                        </form>
+                    </div>
+                </div>
+                <!-- results column -->
+                <div class="col-lg-8">
+                    <div id="results">
+                        <!-- example station card -->
+                        <div class="station-card">
+                            <h5>Trạm Sạc ABC - Hà Nội</h5>
+                            <p class="mb-1">Cổng: 4 (2 sẵn sàng, 2 bận)</p>
+                            <p class="status text-success">Trạng thái: Sẵn sàng</p>
+                            <p><a href="#" class="btn btn-sm btn-outline-secondary">Xem đánh giá</a> <a href="#" class="btn btn-sm btn-success">Đặt chỗ</a></p>
+                        </div>
+                        <!-- more cards will be inserted by javascript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <section class="footer-con position-relative">
+        <div class="container position-relative">
+            <div class="copyright text-center">
+                <p class="mb-0">Copyright © 2024 TramSac99 All rights reserved.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- scripts -->
+    <script src="assets/js/jquery-3.7.1.min.js"></script>
+    <script src="assets/js/popper.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script>
+        // dummy filtering logic
+        $('#filterForm').on('submit', function(e){
+            e.preventDefault();
+            // here you would call backend API with parameters and rebuild results
+            alert('Filter function called (demo only)');
+        });
+    </script>
+</body>
+</html>

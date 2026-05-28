@@ -1,0 +1,573 @@
+﻿@using tramsac99.Areas.Admin.Models
+@{
+    ViewData["Title"] = "Quản lý trụ sạc";
+    var initialStationId = ViewBag.StationId != null ? ViewBag.StationId.ToString() : "";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Quản lý trụ sạc</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item active">Quản lý trụ sạc</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center flex-wrap" style="gap:12px;">
+                <div>
+                    <div class="font-weight-bold mb-1" style="font-size:1.35rem; line-height:1.2;">Bộ lọc</div>
+                    @* <div class="small text-muted">Nút thêm trụ trực tiếp chỉ áp dụng cho các trạm do admin tạo.</div> *@
+                </div>
+                <div class="d-flex align-items-center flex-wrap ml-auto" style="gap:10px;">
+                    @* <span class="badge badge-light text-secondary px-3 py-2" style="border-radius:999px; font-weight:700;">
+                        Trụ của trạm do user gửi yêu cầu vẫn quản lý được, nhưng không thêm trực tiếp từ đây
+                    </span> *@
+                    <button type="button" class="btn btn-success" id="openCreatePoleBtn" onclick="openCreateModal()">
+                        <i class="fas fa-plus mr-1"></i> Thêm trụ
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="form-group mb-0">
+                            <label class="font-weight-bold">Trạm sạc</label>
+                            <select id="stationFilter" class="form-control">
+                                <option value="">Tất cả trạm</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mt-3 mt-md-0">
+                        <div class="form-group mb-0">
+                            <label class="font-weight-bold">Trạng thái</label>
+                            <select id="statusFilter" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="Đang hoạt động">Đang hoạt động</option>
+                                <option value="Lỗi">Lỗi</option>
+                                <option value="Bảo trì">Bảo trì</option>
+                                <option value="Không hoạt động">Không hoạt động</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mt-3 mt-md-0 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary btn-block" id="resetFilterBtn">Xóa lọc</button>
+                    </div>
+                </div>
+                <div id="poleCreateHint" class="small text-muted mt-3"></div>
+            </div>
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap" style="gap:12px;">
+                <div id="polePageInfo" class="text-muted small"></div>
+                <div id="polePager"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            
+            <div class="card-header d-flex align-items-center flex-wrap" style="gap:12px;">
+                <div class="font-weight-bold mb-0" style="font-size:1.35rem; line-height:1.2;">
+                    Danh sách trụ sạc
+                </div>
+
+                <span id="resultCount" class="badge badge-info px-3 py-2 ml-auto">
+                    0 kết quả
+                </span>
+            </div>
+
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Trạm</th>
+                            <th>Nguồn trạm</th>
+                            <th>Mã trụ</th>
+                            <th>Loại sạc</th>
+                            <th>Công suất</th>
+                            <th>Trạng thái</th>
+                            <th>Ghi chú</th>
+                            <th style="width:260px;">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="poleTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="poleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Trụ sạc</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="poleId" />
+
+                <div class="form-group">
+                    <label>Trạm sạc</label>
+                    <select id="stationId" class="form-control">
+                        <option value="">Chọn trạm</option>
+                    </select>
+                    <small class="form-text text-muted">Khi thêm mới, chỉ chọn được các trạm do admin tạo trực tiếp.</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Mã trụ</label>
+                    <input type="text" id="poleCode" class="form-control" placeholder="Ví dụ: TRU-01" />
+                </div>
+
+                <div class="form-group">
+                    <label>Loại sạc</label>
+                    <select id="chargerType" class="form-control">
+                        <option value="">-- Chọn loại sạc --</option>
+                        @foreach (var option in ChargerTypeCatalog.Options)
+                        {
+                            <option value="@option">@option</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Công suất</label>
+                    <div class="input-group">
+                        <input type="number" id="maxPower" class="form-control" placeholder="Ví dụ: 120" min="0" />
+                        <div class="input-group-append">
+                            <span class="input-group-text">kW</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Trạng thái</label>
+                    <select id="status" class="form-control">
+                        <option value="Đang hoạt động">Đang hoạt động</option>
+                        <option value="Không hoạt động">Không hoạt động</option>
+                        <option value="Bảo trì">Bảo trì</option>
+                        <option value="Lỗi">Lỗi</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Thứ tự</label>
+                    <input type="number" id="sortOrder" class="form-control" value="0" min="0" />
+                </div>
+
+                <div class="form-group mb-0">
+                    <label>Ghi chú</label>
+                    <textarea id="note" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div id="modalMessage" class="mt-3"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="savePoleBtn" onclick="savePole()">Lưu</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const initialStationId = '@initialStationId';
+        const shouldOpenCreate = new URLSearchParams(window.location.search).get('openCreate') === '1';
+
+        let allStations = [];
+        let allPoles = [];
+        let polePager = null;
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            polePager = TramSacPagination.createPager({
+                pageSize: 15,
+                paginationContainer: 'polePager',
+                infoContainer: 'polePageInfo',
+                onPageChange: renderTablePage
+            });
+
+            bindEvents();
+            await loadStations();
+            await loadPoles();
+
+            if (shouldOpenCreate) {
+                openCreateModal();
+            }
+        });
+
+        function bindEvents() {
+            document.getElementById("stationFilter").addEventListener("change", async function () {
+                updateCreateButtonState();
+                await loadPoles();
+            });
+            document.getElementById("statusFilter").addEventListener("change", applyFilters);
+            document.getElementById("resetFilterBtn").addEventListener("click", async function () {
+                document.getElementById("stationFilter").value = "";
+                document.getElementById("statusFilter").value = "";
+                updateCreateButtonState();
+                await loadPoles();
+            });
+        }
+
+        async function loadStations() {
+            try {
+                const response = await fetch('/Admin/api/stations');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                allStations = await response.json() || [];
+                populateFilterStationOptions();
+                updateCreateButtonState();
+            } catch (error) {
+                console.error("Lỗi tải danh sách trạm:", error);
+                showTableError("Không tải được danh sách trạm.");
+            }
+        }
+
+        function populateFilterStationOptions() {
+            const stationFilter = document.getElementById("stationFilter");
+            stationFilter.innerHTML = `<option value="">Tất cả trạm</option>`;
+
+            allStations.forEach(s => {
+                const sourceLabel = s.isAdminManaged ? 'Admin tạo' : 'User gửi';
+                stationFilter.innerHTML += `<option value="${s.id}">${escapeHtml(s.name)} - ${escapeHtml(sourceLabel)}</option>`;
+            });
+
+            if (initialStationId) {
+                stationFilter.value = initialStationId;
+            }
+        }
+
+        function populateEditorStationOptions(selectedStationId, isCreateMode) {
+            const stationSelect = document.getElementById("stationId");
+            stationSelect.innerHTML = `<option value="">Chọn trạm</option>`;
+
+            allStations.forEach(s => {
+                const isCurrent = String(s.id) === String(selectedStationId || "");
+                const shouldDisable = !s.isAdminManaged && (isCreateMode || !isCurrent);
+                const sourceLabel = s.isAdminManaged ? 'Admin tạo' : 'User gửi';
+
+                stationSelect.innerHTML += `<option value="${s.id}" ${isCurrent ? 'selected' : ''} ${shouldDisable ? 'disabled' : ''}>${escapeHtml(s.name)} - ${escapeHtml(sourceLabel)}</option>`;
+            });
+        }
+
+        function updateCreateButtonState() {
+            const button = document.getElementById("openCreatePoleBtn");
+            const hint = document.getElementById("poleCreateHint");
+            const selectedStationId = document.getElementById("stationFilter").value;
+            const selectedStation = allStations.find(x => String(x.id) === String(selectedStationId));
+            const adminManagedStations = allStations.filter(x => x.isAdminManaged);
+
+            if (!adminManagedStations.length) {
+                button.disabled = true;
+                hint.textContent = "Hiện chưa có trạm nào do admin tạo trực tiếp để thêm trụ.";
+                return;
+            }
+
+            if (selectedStation && !selectedStation.isAdminManaged) {
+                button.disabled = true;
+                hint.textContent = "Bạn đang lọc theo trạm do user gửi yêu cầu. Ở đây chỉ thêm trụ trực tiếp cho trạm do admin tạo.";
+                return;
+            }
+
+            button.disabled = false;
+            hint.textContent = "";
+        }
+
+        async function loadPoles() {
+            try {
+                const stationId = document.getElementById("stationFilter").value;
+                const url = stationId
+                    ? `/Admin/api/poles?stationId=${encodeURIComponent(stationId)}`
+                    : '/Admin/api/poles';
+
+                const response = await fetch(url);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error("Lỗi API poles:", errorText);
+                    showTableError(`Không tải được dữ liệu trụ sạc. HTTP ${response.status}`);
+                    return;
+                }
+
+                allPoles = await response.json() || [];
+                applyFilters();
+            } catch (error) {
+                console.error("Lỗi tải danh sách trụ:", error);
+                showTableError("Có lỗi khi tải danh sách trụ sạc.");
+            }
+        }
+
+        function applyFilters() {
+            const status = document.getElementById("statusFilter").value;
+            let filtered = [...allPoles];
+
+            if (status) {
+                filtered = filtered.filter(x => x.status === status);
+            }
+
+            document.getElementById("resultCount").innerText = `${filtered.length} kết quả`;
+            polePager.setItems(filtered);
+        }
+
+        function renderTablePage(items) {
+            const tbody = document.getElementById("poleTableBody");
+            tbody.innerHTML = "";
+
+            if (!items.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">Không có dữ liệu.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            items.forEach(x => {
+                const badgeClass = getBadgeClass(x.status);
+                const sourceBadge = x.isAdminManaged
+                    ? '<span class="badge badge-success">Admin tạo</span>'
+                    : '<span class="badge badge-primary">User gửi yêu cầu</span>';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${escapeHtml(x.stationName || "")}</td>
+                        <td>${sourceBadge}</td>
+                        <td>${escapeHtml(x.poleCode || "")}</td>
+                        <td>${escapeHtml(x.chargerType || "-")}</td>
+                        <td>${formatPower(x.maxPower)}</td>
+                        <td><span class="badge ${badgeClass}">${escapeHtml(x.status || "")}</span></td>
+                        <td>${escapeHtml(x.note || "")}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-warning mr-1" onclick="openEditModal(${x.id})">Sửa</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="deletePole(${x.id}, '${jsEscape(x.poleCode || "")}')">Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function showTableError(message) {
+            document.getElementById("poleTableBody").innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-danger">${escapeHtml(message)}</td>
+                </tr>
+            `;
+            document.getElementById("resultCount").innerText = "0 kết quả";
+            document.getElementById("polePageInfo").textContent = "";
+            document.getElementById("polePager").innerHTML = "";
+        }
+
+        function openCreateModal() {
+            const adminManagedStations = allStations.filter(x => x.isAdminManaged);
+            if (!adminManagedStations.length) {
+                alert("Hiện chưa có trạm nào do admin tạo trực tiếp để thêm trụ.");
+                return;
+            }
+
+            const selectedStationId = document.getElementById("stationFilter").value;
+            const selectedStation = allStations.find(x => String(x.id) === String(selectedStationId));
+
+            if (selectedStation && !selectedStation.isAdminManaged) {
+                alert("Không thêm trụ trực tiếp cho trạm do user gửi yêu cầu. Hãy chọn trạm do admin tạo.");
+                return;
+            }
+
+            document.getElementById("poleId").value = "";
+            document.getElementById("poleCode").value = "";
+            document.getElementById("chargerType").value = "";
+            document.getElementById("maxPower").value = "";
+            document.getElementById("status").value = "Đang hoạt động";
+            document.getElementById("sortOrder").value = "0";
+            document.getElementById("note").value = "";
+            document.getElementById("modalMessage").innerHTML = "";
+
+            const defaultStationId = selectedStation && selectedStation.isAdminManaged
+                ? selectedStation.id
+                : adminManagedStations[0].id;
+
+            populateEditorStationOptions(defaultStationId, true);
+            document.getElementById("stationId").value = defaultStationId;
+            $('#poleModal').modal('show');
+        }
+
+        async function openEditModal(id) {
+            try {
+                const response = await fetch(`/Admin/api/poles/${id}`);
+                if (!response.ok) {
+                    alert(await readApiError(response));
+                    return;
+                }
+
+                const x = await response.json();
+                document.getElementById("poleId").value = x.id;
+                populateEditorStationOptions(x.stationId || "", false);
+                document.getElementById("stationId").value = x.stationId || "";
+                document.getElementById("poleCode").value = x.poleCode || "";
+                document.getElementById("chargerType").value = x.chargerType || "";
+                document.getElementById("maxPower").value = String(x.maxPower || '').replace(' kW', '');
+                document.getElementById("status").value = x.status || "Đang hoạt động";
+                document.getElementById("sortOrder").value = x.sortOrder || 0;
+                document.getElementById("note").value = x.note || "";
+                document.getElementById("modalMessage").innerHTML = x.isAdminManaged
+                    ? ""
+                    : `<div class="alert alert-info mb-0">Đây là trụ thuộc trạm do user gửi yêu cầu. Bạn có thể sửa nội dung hiện tại, nhưng không được thêm mới trực tiếp cho trạm này.</div>`;
+                $('#poleModal').modal('show');
+            } catch (error) {
+                console.error("Lỗi tải chi tiết trụ:", error);
+                alert("Có lỗi khi tải dữ liệu trụ sạc.");
+            }
+        }
+
+        async function savePole() {
+            const id = document.getElementById("poleId").value;
+            const isEdit = !!id;
+            const saveBtn = document.getElementById("savePoleBtn");
+
+            const commonPayload = {
+                stationId: parseInt(document.getElementById("stationId").value || "0"),
+                poleCode: document.getElementById("poleCode").value.trim(),
+                chargerType: document.getElementById("chargerType").value,
+                maxPower: document.getElementById("maxPower").value.trim(),
+                status: document.getElementById("status").value,
+                sortOrder: parseInt(document.getElementById("sortOrder").value || "0"),
+                note: document.getElementById("note").value.trim()
+            };
+
+            if (!commonPayload.stationId) {
+                showModalError("Vui lòng chọn trạm sạc.");
+                return;
+            }
+
+            if (!commonPayload.poleCode) {
+                showModalError("Vui lòng nhập mã trụ.");
+                return;
+            }
+
+            if (!commonPayload.chargerType) {
+                showModalError("Vui lòng chọn loại sạc.");
+                return;
+            }
+
+            let method = 'POST';
+            let url = '/Admin/api/poles';
+
+            if (isEdit) {
+                method = 'PUT';
+                url = `/Admin/api/poles/${id}`;
+            }
+
+            try {
+                saveBtn.disabled = true;
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(commonPayload)
+                });
+
+                if (!response.ok) {
+                    showModalError(await readApiError(response));
+                    return;
+                }
+
+                $('#poleModal').modal('hide');
+                await loadPoles();
+            } catch (error) {
+                console.error("Lỗi lưu trụ:", error);
+                showModalError("Có lỗi xảy ra khi lưu dữ liệu.");
+            } finally {
+                saveBtn.disabled = false;
+            }
+        }
+
+        async function deletePole(id, poleCode) {
+            const confirmed = confirm(`Bạn có chắc muốn xóa trụ "${poleCode}" không?`);
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`/Admin/api/poles/${id}`, { method: 'DELETE' });
+                if (!response.ok) {
+                    alert(await readApiError(response));
+                    return;
+                }
+
+                await loadPoles();
+            } catch (error) {
+                console.error("Lỗi xóa trụ:", error);
+                alert("Có lỗi xảy ra khi xóa trụ sạc.");
+            }
+        }
+
+        async function readApiError(response) {
+            try {
+                const result = await response.json();
+
+                if (result?.message) return result.message;
+                if (result?.title) return result.title;
+
+                if (result?.errors) {
+                    return Object.values(result.errors).flat().join(' ');
+                }
+            } catch {
+            }
+
+            try {
+                const text = await response.text();
+                if (text) return text;
+            } catch {
+            }
+
+            return 'Lưu thất bại.';
+        }
+
+        function showModalError(message) {
+            document.getElementById("modalMessage").innerHTML = `<div class="alert alert-danger mb-0">${escapeHtml(message)}</div>`;
+        }
+
+        function formatPower(value) {
+            const raw = String(value || "").trim();
+            if (!raw) return "-";
+            return raw.toLowerCase().includes("kw") ? escapeHtml(raw) : `${escapeHtml(raw)} kW`;
+        }
+
+        function getBadgeClass(status) {
+            if (status === "Đang hoạt động") return "badge-success";
+            if (status === "Bảo trì") return "badge-warning";
+            if (status === "Lỗi") return "badge-danger";
+            return "badge-secondary";
+        }
+
+        function escapeHtml(text) {
+            return String(text || "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function jsEscape(text) {
+            return String(text || "")
+                .replaceAll("\\", "\\\\")
+                .replaceAll("'", "\\'");
+        }
+    </script>
+}

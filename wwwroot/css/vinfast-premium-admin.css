@@ -1,0 +1,354 @@
+﻿:root {
+    --vf-admin-950: #061f18;
+    --vf-admin-900: #0a2a21;
+    --vf-admin-850: #10372d;
+    --vf-admin-800: #124335;
+    --vf-admin-700: #185845;
+    --vf-admin-600: #1f6d56;
+    --vf-admin-500: #2f8b6c;
+    --vf-admin-400: #49ac88;
+    --vf-admin-100: #e7f7f0;
+    --vf-admin-text: #16261f;
+    --vf-admin-muted: #64736d;
+    --vf-admin-border: rgba(10, 42, 33, 0.10);
+    --vf-admin-shadow-lg: 0 28px 60px rgba(6, 31, 24, 0.14);
+    --vf-admin-shadow-md: 0 18px 36px rgba(6, 31, 24, 0.10);
+    --vf-admin-shadow-sm: 0 10px 24px rgba(6, 31, 24, 0.07);
+}
+
+body.admin-theme-green,
+body.admin-theme-green button,
+body.admin-theme-green input,
+body.admin-theme-green select,
+body.admin-theme-green textarea,
+body.admin-theme-green label,
+body.admin-theme-green td,
+body.admin-theme-green th,
+body.admin-theme-green a,
+body.admin-theme-green span,
+body.admin-theme-green p,
+body.admin-theme-green li,
+body.admin-theme-green div,
+body.admin-theme-green small,
+body.admin-theme-green strong {
+    font-family: "Be Vietnam Pro", sans-serif !important;
+}
+
+    body.admin-theme-green h1,
+    body.admin-theme-green h2,
+    body.admin-theme-green h3,
+    body.admin-theme-green h4,
+    body.admin-theme-green h5,
+    body.admin-theme-green h6,
+    body.admin-theme-green .brand-text,
+    body.admin-theme-green .card-title {
+        font-family: "Montserrat", "Be Vietnam Pro", sans-serif !important;
+        letter-spacing: -0.02em;
+    }
+
+body.admin-theme-green {
+    background: linear-gradient(180deg, #f4fbf8 0%, #ffffff 100%);
+    color: var(--vf-admin-text);
+}
+
+    body.admin-theme-green .preloader {
+        background: #f4fbf8;
+    }
+
+    body.admin-theme-green .main-header.navbar {
+        background: rgba(255,255,255,.86) !important;
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--vf-admin-border);
+        box-shadow: 0 10px 26px rgba(8, 35, 27, 0.06);
+    }
+
+    body.admin-theme-green .main-sidebar {
+        background: radial-gradient(circle at top left, rgba(73,172,136,.18), transparent 30%), linear-gradient(180deg, var(--vf-admin-900) 0%, var(--vf-admin-800) 100%) !important;
+        box-shadow: 16px 0 30px rgba(6,31,24,.10);
+    }
+
+    body.admin-theme-green .brand-link {
+        border-bottom: 1px solid rgba(255,255,255,.08) !important;
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
+
+    body.admin-theme-green .brand-text,
+    body.admin-theme-green .user-panel .info a,
+    body.admin-theme-green .nav-sidebar .nav-link p,
+    body.admin-theme-green .nav-sidebar .nav-icon,
+    body.admin-theme-green .form-control-sidebar,
+    body.admin-theme-green .btn-sidebar {
+        color: #f4fffb !important;
+    }
+
+    body.admin-theme-green .nav-sidebar .nav-link {
+        margin: 6px 12px;
+        border-radius: 18px;
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+
+        body.admin-theme-green .nav-sidebar .nav-link.active,
+        body.admin-theme-green .nav-sidebar .nav-link:hover {
+            background: linear-gradient(135deg, rgba(49,159,122,.98), rgba(73,172,136,.94)) !important;
+            box-shadow: 0 16px 30px rgba(31,109,86,.28);
+        }
+
+    body.admin-theme-green .form-control-sidebar {
+        border-radius: 16px !important;
+        background: rgba(255,255,255,.10) !important;
+        border: 1px solid rgba(255,255,255,.10) !important;
+    }
+
+    body.admin-theme-green .content-wrapper {
+        background: radial-gradient(circle at top right, rgba(73,172,136,.12), transparent 26%), linear-gradient(180deg, #f4fbf8 0%, #ffffff 100%) !important;
+    }
+
+    body.admin-theme-green .content-header {
+        padding-top: 26px;
+    }
+
+    body.admin-theme-green .card,
+    body.admin-theme-green .small-box,
+    body.admin-theme-green .info-box,
+    body.admin-theme-green .profile-card,
+    body.admin-theme-green .profile-panel,
+    body.admin-theme-green .station-approve-card,
+    body.admin-theme-green .station-list-card,
+    body.admin-theme-green .station-dashboard-card {
+        border: 1px solid var(--vf-admin-border) !important;
+        border-radius: 28px !important;
+        box-shadow: var(--vf-admin-shadow-lg) !important;
+        overflow: hidden;
+    }
+
+    body.admin-theme-green .card,
+    body.admin-theme-green .profile-card,
+    body.admin-theme-green .profile-panel,
+    body.admin-theme-green .station-list-card,
+    body.admin-theme-green .station-dashboard-card,
+    body.admin-theme-green .station-approve-card {
+        background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(250,255,252,.98)) !important;
+    }
+
+    body.admin-theme-green .card-header,
+    body.admin-theme-green .small-box .inner {
+        border-bottom: 0 !important;
+    }
+
+    body.admin-theme-green .small-box {
+        min-height: 180px;
+        color: #fff !important;
+        background: linear-gradient(135deg, var(--vf-admin-700), var(--vf-admin-500)) !important;
+    }
+
+        body.admin-theme-green .small-box .icon {
+            opacity: .18;
+            top: 12px;
+            right: 18px;
+        }
+
+        body.admin-theme-green .small-box .inner h3 {
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
+
+        body.admin-theme-green .small-box .inner p {
+            font-size: 1rem;
+            opacity: .9;
+        }
+
+    body.admin-theme-green .btn,
+    body.admin-theme-green .admin-topbar-btn,
+    body.admin-theme-green .admin-topbar-logout,
+    body.admin-theme-green .admin-topbar-profile,
+    body.admin-theme-green .station-btn,
+    body.admin-theme-green .station-btn-outline,
+    body.admin-theme-green .station-btn-danger {
+        border-radius: 16px !important;
+    }
+
+    body.admin-theme-green .btn-primary,
+    body.admin-theme-green .btn-success,
+    body.admin-theme-green .admin-topbar-logout,
+    body.admin-theme-green .station-btn {
+        background: linear-gradient(135deg, var(--vf-admin-700), var(--vf-admin-500)) !important;
+        border-color: transparent !important;
+        box-shadow: 0 16px 30px rgba(31,109,86,.20) !important;
+    }
+
+        body.admin-theme-green .btn-primary:hover,
+        body.admin-theme-green .btn-success:hover,
+        body.admin-theme-green .admin-topbar-logout:hover,
+        body.admin-theme-green .station-btn:hover {
+            transform: translateY(-2px);
+        }
+
+    body.admin-theme-green .btn-outline-primary,
+    body.admin-theme-green .btn-outline-secondary,
+    body.admin-theme-green .btn-light,
+    body.admin-theme-green .station-btn-outline,
+    body.admin-theme-green .admin-topbar-btn,
+    body.admin-theme-green .admin-topbar-profile {
+        background: rgba(255,255,255,.9) !important;
+        border: 1px solid var(--vf-admin-border) !important;
+        color: var(--vf-admin-text) !important;
+        box-shadow: var(--vf-admin-shadow-sm) !important;
+    }
+
+    body.admin-theme-green .form-control,
+    body.admin-theme-green .custom-select,
+    body.admin-theme-green select,
+    body.admin-theme-green textarea,
+    body.admin-theme-green input {
+        border-radius: 16px !important;
+        border: 1px solid rgba(10,42,33,.12) !important;
+        box-shadow: none !important;
+    }
+
+        body.admin-theme-green .form-control:focus,
+        body.admin-theme-green .custom-select:focus,
+        body.admin-theme-green select:focus,
+        body.admin-theme-green textarea:focus,
+        body.admin-theme-green input:focus {
+            border-color: rgba(47,139,108,.30) !important;
+            box-shadow: 0 0 0 4px rgba(47,139,108,.10) !important;
+        }
+
+    body.admin-theme-green .table {
+        border-collapse: separate;
+        border-spacing: 0 12px;
+    }
+
+        body.admin-theme-green .table thead th {
+            border: 0 !important;
+            color: #53665f;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        body.admin-theme-green .table tbody tr {
+            background: rgba(255,255,255,.92);
+            box-shadow: var(--vf-admin-shadow-sm);
+        }
+
+        body.admin-theme-green .table tbody td {
+            padding-top: 18px;
+            padding-bottom: 18px;
+            border-top: 1px solid rgba(10,42,33,.06) !important;
+            border-bottom: 1px solid rgba(10,42,33,.06) !important;
+            vertical-align: middle;
+        }
+
+            body.admin-theme-green .table tbody td:first-child {
+                border-left: 1px solid rgba(10,42,33,.06) !important;
+                border-top-left-radius: 18px;
+                border-bottom-left-radius: 18px;
+            }
+
+            body.admin-theme-green .table tbody td:last-child {
+                border-right: 1px solid rgba(10,42,33,.06) !important;
+                border-top-right-radius: 18px;
+                border-bottom-right-radius: 18px;
+            }
+
+    body.admin-theme-green .breadcrumb {
+        background: transparent;
+        padding: 0;
+    }
+
+    body.admin-theme-green .breadcrumb-item a {
+        color: var(--vf-admin-700);
+        font-weight: 600;
+    }
+
+    body.admin-theme-green .pagination .page-link {
+        border-radius: 12px !important;
+        margin: 0 4px;
+        border: 1px solid rgba(10,42,33,.10);
+        color: var(--vf-admin-700);
+    }
+
+    body.admin-theme-green .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--vf-admin-700), var(--vf-admin-500));
+        border-color: transparent;
+    }
+
+    body.admin-theme-green .station-chip,
+    body.admin-theme-green .station-chip-warning,
+    body.admin-theme-green .station-chip-danger,
+    body.admin-theme-green .station-chip-blue,
+    body.admin-theme-green .station-chip-soft {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        border: 1px solid transparent;
+    }
+
+    body.admin-theme-green .station-chip {
+        background: rgba(31,109,86,.12);
+        color: var(--vf-admin-700);
+    }
+
+    body.admin-theme-green .station-chip-blue {
+        background: rgba(18,67,53,.12);
+        color: #124335;
+    }
+
+    body.admin-theme-green .station-chip-soft {
+        background: rgba(10,42,33,.07);
+        color: #566862;
+    }
+
+    body.admin-theme-green .station-chip-warning {
+        background: rgba(226,168,57,.16);
+        color: #8b6510;
+    }
+
+    body.admin-theme-green .station-chip-danger {
+        background: rgba(210,55,55,.12);
+        color: #a72828;
+    }
+
+    body.admin-theme-green .station-admin-request-card,
+    body.admin-theme-green .station-admin-note-box,
+    body.admin-theme-green .station-side-panel {
+        border-radius: 24px;
+        border: 1px solid rgba(10,42,33,.08);
+        background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(246,252,249,.95));
+        box-shadow: var(--vf-admin-shadow-sm);
+    }
+
+@media (max-width: 991.98px) {
+    body.admin-theme-green .main-sidebar {
+        box-shadow: none;
+    }
+}
+/* Bỏ padding mà OverlayScrollbars tự chèn trong sidebar admin */
+body.admin-theme-green .main-sidebar .os-padding,
+body.admin-theme-green .main-sidebar .os-viewport,
+body.admin-theme-green .main-sidebar .os-content {
+    padding: 0 !important;
+}
+
+/* Nếu muốn sidebar sát mép hơn nữa */
+body.admin-theme-green .main-sidebar .sidebar {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Giữ các khối trong sidebar không bị lệch do khoảng đệm cũ */
+body.admin-theme-green .main-sidebar .user-panel,
+body.admin-theme-green .main-sidebar .form-inline,
+body.admin-theme-green .main-sidebar .nav-sidebar,
+body.admin-theme-green .main-sidebar .nav-header {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}

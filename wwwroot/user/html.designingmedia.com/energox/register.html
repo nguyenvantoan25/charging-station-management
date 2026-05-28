@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <title>Đăng ký | TramSac99</title>
+    <link href="assets/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet" type="text/css">
+    <link href="assets/css/responsive.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light p-0">
+                <a class="navbar-brand d-flex align-items-center" href="index.html">
+                    <img id="site-logo" src="logo.png" alt="TramSac 99" class="img-fluid">
+                    <!-- <span class="navbar-slogan ml-2 d-none d-lg-block">Hệ thống trạm sạc</span> -->
+                </a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContentRegister" aria-controls="navbarSupportedContentRegister" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContentRegister">
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item"><a class="nav-link" href="index.html">Trang chủ</a></li>
+                        <li class="nav-item"><a class="nav-link" href="search.html">Tra cứu trạm sạc</a></li>
+                        <li class="nav-item"><a class="nav-link" href="pricing.html">Giá cước</a></li>
+                        <li class="nav-item"><a class="nav-link" href="faq.html">Câu hỏi thường gặp</a></li>
+                        <li class="nav-item"><a class="nav-link" href="contact.html">Liên hệ</a></li>
+                    </ul>
+                    <div class="last_list">
+                        <a class="search" href="#search"><i class="search-box fa-solid fa-magnifying-glass"></i></a>
+                        <a href="login.html" class="text-decoration-none get_started">Đăng nhập<i class="fa-solid fa-arrow-right"></i></a>
+                        <div class="phone_content">
+                            <span>Hotline 24/7</span>
+                            <a href="tel:1900xxxx" class="number text-decoration-none d-block">1900-xxxx</a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Registration form -->
+    <section class="register-section" style="padding: 80px 0; background: #f8f8f8;">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-8">
+                    <div class="card shadow">
+                        <div class="card-body p-4">
+                            <h2 class="text-center mb-4">Tạo tài khoản</h2>
+                            <form action="#" method="post" id="registerForm">
+                                <div class="form-group">
+                                    <label for="fullname">Họ tên</label>
+                                    <input type="text" class="form-control" id="fullname" name="fullname" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Số điện thoại</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                </div>
+                                <div class="form-group">
+                                    <label for="password">Mật khẩu</label>
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirm_password">Xác nhận mật khẩu</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-block">Đăng ký</button>
+                                <div class="mt-3 text-center">
+                                    <a href="login.html">Đã có tài khoản? Đăng nhập</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <section class="footer-con position-relative">
+        <div class="container position-relative">
+            <div class="copyright text-center">
+                <p class="mb-0">Copyright © 2024 TramSac99 All rights reserved.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- scripts -->
+    <script src="assets/js/jquery-3.7.1.min.js"></script>
+    <script src="assets/js/popper.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+</body>
+
+</html>

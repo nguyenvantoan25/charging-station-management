@@ -1,0 +1,429 @@
+﻿/* Why changed: unify all user-side pages with the greener visual language from Home/Index. */
+
+:root {
+    --user-theme-green-900: #0a4a34;
+    --user-theme-green-800: #0f6847;
+    --user-theme-green-700: #148858;
+    --user-theme-green-600: #1fa764;
+    --user-theme-green-500: #2ac172;
+    --user-theme-green-100: #eaf8f0;
+    --user-theme-green-050: #f4fbf7;
+    --user-theme-text: #13231c;
+    --user-theme-muted: #64766e;
+    --user-theme-border: rgba(15, 92, 61, 0.12);
+    --user-theme-shadow: 0 18px 42px rgba(11, 40, 28, 0.08);
+    --user-theme-shadow-soft: 0 12px 28px rgba(11, 40, 28, 0.06);
+    --user-theme-radius-xl: 30px;
+    --user-theme-radius-lg: 24px;
+    --user-theme-radius-md: 18px;
+}
+
+body.user-site-shell {
+    background: radial-gradient(circle at top left, rgba(42, 193, 114, 0.12), transparent 24%), radial-gradient(circle at top right, rgba(20, 136, 88, 0.08), transparent 22%), linear-gradient(180deg, #f5fbf7 0%, #ffffff 26%, #f6fbf8 100%) !important;
+    color: var(--user-theme-text);
+}
+
+    body.user-site-shell .container {
+        max-width: 1320px;
+    }
+
+    body.user-site-shell .user-header {
+        background: rgba(249, 254, 251, 0.94) !important;
+        border-bottom: 1px solid rgba(20, 136, 88, 0.10);
+        box-shadow: 0 10px 28px rgba(15, 44, 31, 0.06);
+    }
+
+        body.user-site-shell .user-header::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -1px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(31, 167, 100, 0.35), transparent);
+        }
+
+        body.user-site-shell .user-header .user-nav-list .nav-link,
+        body.user-site-shell .user-header .user-menu-trigger {
+            color: #173125 !important;
+            -webkit-text-fill-color: #173125 !important;
+        }
+
+            body.user-site-shell .user-header .user-nav-list .nav-link:hover,
+            body.user-site-shell .user-header .user-nav-list .nav-link:focus,
+            body.user-site-shell .user-header .user-nav-list .nav-item.active .nav-link,
+            body.user-site-shell .user-header .user-menu-trigger:hover,
+            body.user-site-shell .user-header .user-menu-trigger:focus {
+                color: var(--user-theme-green-700) !important;
+                -webkit-text-fill-color: var(--user-theme-green-700) !important;
+            }
+
+            body.user-site-shell .user-header .user-nav-list .nav-link::after {
+                height: 3px;
+                background: linear-gradient(90deg, var(--user-theme-green-700), var(--user-theme-green-500));
+            }
+
+    body.user-site-shell .user-navbar-toggler {
+        border-color: rgba(20, 136, 88, 0.14) !important;
+        background: linear-gradient(180deg, #ffffff 0%, #f5fbf7 100%) !important;
+    }
+
+    body.user-site-shell .user-auth-btn,
+    body.user-site-shell .contact-submit-btn,
+    body.user-site-shell .contact-login-btn,
+    body.user-site-shell .home-primary-btn,
+    body.user-site-shell .btn-success,
+    body.user-site-shell .btn-dark {
+        background: linear-gradient(135deg, var(--user-theme-green-700), var(--user-theme-green-500)) !important;
+        border-color: transparent !important;
+        color: #ffffff !important;
+        box-shadow: 0 14px 30px rgba(20, 136, 88, 0.18) !important;
+    }
+
+        body.user-site-shell .user-auth-btn:hover,
+        body.user-site-shell .contact-submit-btn:hover,
+        body.user-site-shell .contact-login-btn:hover,
+        body.user-site-shell .home-primary-btn:hover,
+        body.user-site-shell .btn-success:hover,
+        body.user-site-shell .btn-dark:hover {
+            background: linear-gradient(135deg, var(--user-theme-green-800), var(--user-theme-green-600)) !important;
+            color: #ffffff !important;
+            transform: translateY(-1px);
+        }
+
+    body.user-site-shell .btn,
+    body.user-site-shell .home-primary-btn,
+    body.user-site-shell .home-secondary-btn,
+    body.user-site-shell .contact-submit-btn,
+    body.user-site-shell .contact-login-btn,
+    body.user-site-shell .user-auth-btn {
+        border-radius: 16px !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease;
+    }
+
+    body.user-site-shell .btn-outline-success,
+    body.user-site-shell .btn-outline-secondary,
+    body.user-site-shell .btn-outline-dark,
+    body.user-site-shell .btn-outline-warning,
+    body.user-site-shell .home-secondary-btn,
+    body.user-site-shell .btn-light.border {
+        background: #ffffff !important;
+        border: 1px solid rgba(20, 136, 88, 0.16) !important;
+        color: var(--user-theme-green-800) !important;
+        box-shadow: var(--user-theme-shadow-soft) !important;
+    }
+
+        body.user-site-shell .btn-outline-success:hover,
+        body.user-site-shell .btn-outline-secondary:hover,
+        body.user-site-shell .btn-outline-dark:hover,
+        body.user-site-shell .btn-outline-warning:hover,
+        body.user-site-shell .home-secondary-btn:hover,
+        body.user-site-shell .btn-light.border:hover {
+            background: var(--user-theme-green-050) !important;
+            border-color: rgba(20, 136, 88, 0.24) !important;
+            color: var(--user-theme-green-800) !important;
+            transform: translateY(-1px);
+        }
+
+    body.user-site-shell .btn-warning {
+        background: linear-gradient(135deg, #f6d65f, #efb431) !important;
+        border-color: transparent !important;
+        color: #463500 !important;
+        box-shadow: 0 14px 30px rgba(214, 170, 53, 0.18) !important;
+    }
+
+    body.user-site-shell .form-control,
+    body.user-site-shell .custom-select {
+        border-radius: 16px !important;
+        border: 1px solid rgba(20, 136, 88, 0.14) !important;
+        background: rgba(255, 255, 255, 0.94) !important;
+        box-shadow: none !important;
+    }
+
+        body.user-site-shell .form-control:focus,
+        body.user-site-shell .custom-select:focus {
+            border-color: var(--user-theme-green-600) !important;
+            box-shadow: 0 0 0 4px rgba(31, 167, 100, 0.10) !important;
+        }
+
+    body.user-site-shell .contact-hero-card,
+    body.user-site-shell .news-hero,
+    body.user-site-shell .route-hero,
+    body.user-site-shell .detail-hero,
+    body.user-site-shell .favorites-hero,
+    body.user-site-shell .account-hero {
+        background: linear-gradient(135deg, #ffffff 0%, #f4fbf7 56%, #eef9f3 100%) !important;
+        border: 1px solid rgba(20, 136, 88, 0.12) !important;
+        border-radius: var(--user-theme-radius-xl) !important;
+        box-shadow: 0 20px 46px rgba(11, 42, 30, 0.08) !important;
+    }
+
+    body.user-site-shell .contact-panel-card,
+    body.user-site-shell .contact-summary-card,
+    body.user-site-shell .news-stat-card,
+    body.user-site-shell .news-section-card,
+    body.user-site-shell .route-plan-card,
+    body.user-site-shell .route-map-card,
+    body.user-site-shell .route-summary-card,
+    body.user-site-shell .route-stop-card,
+    body.user-site-shell .detail-card,
+    body.user-site-shell .pole-card,
+    body.user-site-shell .favorite-card,
+    body.user-site-shell .station-filter-card,
+    body.user-site-shell .station-map-card,
+    body.user-site-shell .station-result-card,
+    body.user-site-shell .station-kpi-card,
+    body.user-site-shell .account-sidebar,
+    body.user-site-shell .account-card,
+    body.user-site-shell .account-summary {
+        background: linear-gradient(180deg, #ffffff 0%, #fbfefc 100%) !important;
+        border: 1px solid rgba(20, 136, 88, 0.10) !important;
+        border-radius: 26px !important;
+        box-shadow: var(--user-theme-shadow) !important;
+    }
+
+    body.user-site-shell .contact-info-item,
+    body.user-site-shell .contact-service-chip,
+    body.user-site-shell .contact-standard-box,
+    body.user-site-shell .contact-login-state,
+    body.user-site-shell .contact-result-box,
+    body.user-site-shell .news-item,
+    body.user-site-shell .empty-box,
+    body.user-site-shell .history-item,
+    body.user-site-shell .summary-item,
+    body.user-site-shell .favorite-meta-box,
+    body.user-site-shell .favorite-rating,
+    body.user-site-shell .summary-pill,
+    body.user-site-shell .info-box,
+    body.user-site-shell .station-item,
+    body.user-site-shell .station-location-note,
+    body.user-site-shell .route-place-detail,
+    body.user-site-shell .route-empty,
+    body.user-site-shell .route-error,
+    body.user-site-shell .route-stop-item,
+    body.user-site-shell .route-map-chip {
+        border-radius: 20px !important;
+        border-color: rgba(20, 136, 88, 0.12) !important;
+        background: linear-gradient(180deg, #fbfefc 0%, #f5fbf7 100%) !important;
+    }
+
+    body.user-site-shell .contact-eyebrow,
+    body.user-site-shell .contact-section-kicker,
+    body.user-site-shell .news-refresh-note,
+    body.user-site-shell .news-source,
+    body.user-site-shell .route-tag,
+    body.user-site-shell .hero-badge,
+    body.user-site-shell .home-pill,
+    body.user-site-shell .home-section-kicker,
+    body.user-site-shell .home-tile-label,
+    body.user-site-shell .favorite-badge,
+    body.user-site-shell .summary-pill,
+    body.user-site-shell .contact-info-icon,
+    body.user-site-shell .account-tabs,
+    body.user-site-shell .route-count-badge,
+    body.user-site-shell .route-selected-badge {
+        background: rgba(31, 167, 100, 0.10) !important;
+        color: var(--user-theme-green-800) !important;
+        border-color: rgba(20, 136, 88, 0.14) !important;
+    }
+
+    body.user-site-shell .station-kpi-card,
+    body.user-site-shell .contact-summary-card,
+    body.user-site-shell .home-mini-stat {
+        position: relative;
+        overflow: hidden;
+    }
+
+        body.user-site-shell .station-kpi-card::before,
+        body.user-site-shell .contact-summary-card::before,
+        body.user-site-shell .home-mini-stat::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--user-theme-green-700), var(--user-theme-green-500));
+        }
+
+    body.user-site-shell .contact-title,
+    body.user-site-shell .news-title,
+    body.user-site-shell .route-title,
+    body.user-site-shell .detail-title,
+    body.user-site-shell .favorites-title,
+    body.user-site-shell .account-title,
+    body.user-site-shell .station-hero-title,
+    body.user-site-shell .station-card-title,
+    body.user-site-shell .detail-card-title,
+    body.user-site-shell .route-card-title,
+    body.user-site-shell .news-section-title,
+    body.user-site-shell .contact-panel-title,
+    body.user-site-shell .favorite-name,
+    body.user-site-shell .sidebar-name,
+    body.user-site-shell .account-card-title {
+        color: var(--user-theme-text) !important;
+    }
+
+    body.user-site-shell .contact-description,
+    body.user-site-shell .contact-panel-subtitle,
+    body.user-site-shell .news-subtitle,
+    body.user-site-shell .news-section-subtitle,
+    body.user-site-shell .route-subtitle,
+    body.user-site-shell .detail-address,
+    body.user-site-shell .favorites-subtitle,
+    body.user-site-shell .account-subtitle,
+    body.user-site-shell .account-card-subtitle,
+    body.user-site-shell .sidebar-meta,
+    body.user-site-shell .station-card-subtitle,
+    body.user-site-shell .station-address,
+    body.user-site-shell .history-time,
+    body.user-site-shell .history-comment,
+    body.user-site-shell .route-card-subtitle,
+    body.user-site-shell .route-note,
+    body.user-site-shell .contact-info-note,
+    body.user-site-shell .contact-summary-note,
+    body.user-site-shell .news-summary {
+        color: var(--user-theme-muted) !important;
+    }
+
+    body.user-site-shell .sidebar-menu-link,
+    body.user-site-shell .account-tab {
+        border-radius: 16px !important;
+    }
+
+        body.user-site-shell .sidebar-menu-link:hover,
+        body.user-site-shell .sidebar-menu-link.active,
+        body.user-site-shell .account-tab:hover,
+        body.user-site-shell .account-tab.active {
+            background: linear-gradient(135deg, var(--user-theme-green-700), var(--user-theme-green-500)) !important;
+            border-color: transparent !important;
+            color: #ffffff !important;
+        }
+
+    body.user-site-shell .sidebar-avatar,
+    body.user-site-shell .sidebar-avatar-fallback,
+    body.user-site-shell .avatar-preview-box,
+    body.user-site-shell .avatar-preview-fallback {
+        border-radius: 22px !important;
+        border-color: rgba(20, 136, 88, 0.14) !important;
+        background: linear-gradient(180deg, #f5fbf7 0%, #eef8f2 100%) !important;
+    }
+
+    body.user-site-shell .account-page {
+        position: relative;
+        padding: 44px 0 70px !important;
+        background: radial-gradient(circle at top left, rgba(42, 193, 114, 0.12), transparent 28%), linear-gradient(180deg, #f5fbf7 0%, #ffffff 42%, #f6fbf8 100%) !important;
+        background-image: radial-gradient(circle at top left, rgba(42, 193, 114, 0.12), transparent 28%), linear-gradient(180deg, #f5fbf7 0%, #ffffff 42%, #f6fbf8 100%) !important;
+    }
+
+        body.user-site-shell .account-page::before {
+            background: linear-gradient(135deg, rgba(10, 74, 52, 0.05), rgba(42, 193, 114, 0.02)) !important;
+        }
+
+        body.user-site-shell .account-page .account-card {
+            max-width: 100%;
+        }
+
+        body.user-site-shell .account-page .text-center.mt-3,
+        body.user-site-shell .account-page .text-center.mt-3 a {
+            color: var(--user-theme-muted) !important;
+        }
+
+            body.user-site-shell .account-page .text-center.mt-3 a {
+                font-weight: 700;
+                color: var(--user-theme-green-800) !important;
+            }
+
+        body.user-site-shell .account-page .alert-success,
+        body.user-site-shell .account-alert {
+            border-radius: 18px !important;
+            background: #f1fbf5 !important;
+            border: 1px solid #cce7d6 !important;
+            color: #17633c !important;
+        }
+
+    body.user-site-shell .footer-con,
+    body.user-site-shell .home-footer-simple {
+        margin-top: 16px;
+        padding: 18px 0 30px;
+        background: transparent !important;
+    }
+
+        body.user-site-shell .footer-con .copyright,
+        body.user-site-shell .home-footer-simple .container {
+            padding: 18px 24px;
+            border-top: 1px solid rgba(20, 136, 88, 0.10);
+        }
+
+        body.user-site-shell .footer-con p,
+        body.user-site-shell .home-footer-simple p {
+            margin: 0;
+            font-size: 15px;
+            color: var(--user-theme-muted);
+        }
+
+    body.user-site-shell .leaflet-container,
+    body.user-site-shell #detailMap,
+    body.user-site-shell #stationMap,
+    body.user-site-shell #routeMap {
+        border-radius: 24px !important;
+        border: 1px solid rgba(20, 136, 88, 0.10) !important;
+        overflow: hidden;
+    }
+
+@media (max-width: 991.98px) {
+    body.user-site-shell .contact-title,
+    body.user-site-shell .news-title,
+    body.user-site-shell .route-title,
+    body.user-site-shell .detail-title,
+    body.user-site-shell .favorites-title,
+    body.user-site-shell .account-title {
+        font-size: 38px !important;
+    }
+
+    body.user-site-shell .contact-hero-card,
+    body.user-site-shell .detail-hero,
+    body.user-site-shell .route-hero,
+    body.user-site-shell .favorites-hero,
+    body.user-site-shell .news-hero,
+    body.user-site-shell .account-hero {
+        padding: 24px !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    body.user-site-shell .contact-title,
+    body.user-site-shell .news-title,
+    body.user-site-shell .route-title,
+    body.user-site-shell .detail-title,
+    body.user-site-shell .favorites-title,
+    body.user-site-shell .account-title {
+        font-size: 30px !important;
+    }
+
+    body.user-site-shell .contact-panel-card,
+    body.user-site-shell .contact-summary-card,
+    body.user-site-shell .news-stat-card,
+    body.user-site-shell .news-section-card,
+    body.user-site-shell .route-plan-card,
+    body.user-site-shell .route-map-card,
+    body.user-site-shell .route-summary-card,
+    body.user-site-shell .route-stop-card,
+    body.user-site-shell .detail-card,
+    body.user-site-shell .pole-card,
+    body.user-site-shell .favorite-card,
+    body.user-site-shell .station-filter-card,
+    body.user-site-shell .station-map-card,
+    body.user-site-shell .station-result-card,
+    body.user-site-shell .station-kpi-card,
+    body.user-site-shell .account-sidebar,
+    body.user-site-shell .account-card,
+    body.user-site-shell .account-summary {
+        border-radius: 22px !important;
+    }
+
+    body.user-site-shell .account-page {
+        padding-top: 26px !important;
+        padding-bottom: 40px !important;
+    }
+}

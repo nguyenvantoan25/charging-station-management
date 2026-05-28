@@ -1,0 +1,465 @@
+﻿/* Why changed: shared account styles for both UserInfo and ReviewHistory pages */
+body {
+    background: #f4f6f5;
+}
+
+.account-page {
+    padding: 32px 0 52px;
+}
+
+/* Why changed: one consistent layout for both pages */
+.account-shell {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.account-sidebar,
+.account-card,
+.account-summary {
+    background: #ffffff;
+    border: 1px solid #e0e7e2;
+    border-radius: 6px;
+    box-shadow: 0 12px 28px rgba(16, 24, 20, 0.05);
+}
+
+.account-sidebar {
+    padding: 24px;
+    height: fit-content;
+    position: sticky;
+    top: 96px;
+}
+
+.sidebar-avatar,
+.sidebar-avatar-fallback {
+    width: 108px;
+    height: 108px;
+    border-radius: 6px;
+    border: 1px solid #dbe4de;
+    margin-bottom: 16px;
+    background: #f7faf8;
+    overflow: hidden;
+}
+
+    .sidebar-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+.sidebar-avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: 800;
+    color: #2b3d36;
+}
+
+.sidebar-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: #17211d;
+    margin-bottom: 6px;
+    word-break: break-word;
+}
+
+.sidebar-meta {
+    font-size: 14px;
+    color: #6d7b75;
+    margin-bottom: 20px;
+    word-break: break-word;
+}
+
+/* Why changed: make switching between 2 pages faster and visually clear */
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 14px;
+    border: 1px solid #dbe4de;
+    border-radius: 4px;
+    color: #24332d !important;
+    background: #ffffff;
+    text-decoration: none !important;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all .18s ease;
+}
+
+    .sidebar-menu-link:hover,
+    .sidebar-menu-link.active {
+        border-color: #197247;
+        background: #197247;
+        color: #ffffff !important;
+    }
+
+.account-main {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.account-hero {
+    background: #ffffff;
+    border: 1px solid #e0e7e2;
+    border-radius: 6px;
+    box-shadow: 0 12px 28px rgba(16, 24, 20, 0.05);
+    padding: 26px 28px;
+}
+
+.account-hero-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.account-title {
+    font-size: 36px;
+    font-weight: 800;
+    color: #18221e;
+    margin-bottom: 8px;
+}
+
+.account-subtitle {
+    font-size: 16px;
+    color: #62706a;
+    margin-bottom: 0;
+    max-width: 760px;
+}
+
+/* Why changed: top quick tabs for faster switching between the two pages */
+.account-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid #dbe4de;
+    border-radius: 4px;
+    background: #f7faf8;
+}
+
+.account-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: #24332d !important;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none !important;
+    transition: all .18s ease;
+    white-space: nowrap;
+}
+
+    .account-tab:hover,
+    .account-tab.active {
+        border-color: #197247;
+        background: #197247;
+        color: #ffffff !important;
+    }
+
+.account-main-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.account-card {
+    overflow: hidden;
+}
+
+.account-card-header {
+    padding: 22px 22px 0;
+}
+
+.account-card-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #17211d;
+    margin-bottom: 6px;
+}
+
+.account-card-subtitle {
+    font-size: 14px;
+    color: #6f7e77;
+    margin-bottom: 0;
+}
+
+.account-card-body {
+    padding: 22px;
+}
+
+.account-alert {
+    border-radius: 4px;
+}
+
+.avatar-preview-box,
+.avatar-preview-fallback {
+    width: 132px;
+    height: 132px;
+    border-radius: 6px;
+    border: 1px solid #dbe4de;
+    background: #f7faf8;
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+
+    .avatar-preview-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+.avatar-preview-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: 800;
+    color: #2b3d36;
+}
+
+.avatar-form,
+.profile-form,
+.password-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.summary-item {
+    border: 1px solid #e5ece8;
+    border-radius: 4px;
+    background: #fafcfb;
+    padding: 14px;
+}
+
+.summary-label {
+    font-size: 13px;
+    color: #6f7e77;
+    margin-bottom: 6px;
+}
+
+.summary-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e2c27;
+    word-break: break-word;
+}
+
+.input-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #22312b;
+}
+
+.form-control {
+    min-height: 46px;
+    border-radius: 4px !important;
+    border: 1px solid #d7e1db !important;
+    box-shadow: none !important;
+}
+
+    .form-control:focus {
+        border-color: #197247 !important;
+        box-shadow: 0 0 0 3px rgba(25, 114, 71, 0.08) !important;
+    }
+
+.btn-save,
+.btn-outline-save {
+    min-height: 46px;
+    padding: 0 18px;
+    border-radius: 4px !important;
+    font-size: 15px;
+    font-weight: 700;
+    transition: all .18s ease;
+}
+
+.btn-save {
+    border: 1px solid #197247 !important;
+    background: #197247 !important;
+    color: #ffffff !important;
+}
+
+    .btn-save:hover {
+        background: #145b39 !important;
+        border-color: #145b39 !important;
+        color: #ffffff !important;
+    }
+
+.btn-outline-save {
+    border: 1px solid #197247 !important;
+    background: #ffffff !important;
+    color: #197247 !important;
+}
+
+    .btn-outline-save:hover {
+        background: #197247 !important;
+        border-color: #197247 !important;
+        color: #ffffff !important;
+    }
+
+.account-summary {
+    padding: 20px 22px;
+}
+
+.account-summary-label {
+    font-size: 14px;
+    color: #72807a;
+    margin-bottom: 6px;
+}
+
+.account-summary-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: #16211d;
+    line-height: 1.1;
+}
+
+/* Why changed: use same card language for review history list */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.history-item {
+    border: 1px solid #e5ece8;
+    border-radius: 4px;
+    background: #fafcfb;
+    padding: 16px;
+}
+
+.history-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.history-station a {
+    font-size: 20px;
+    font-weight: 800;
+    color: #17231f;
+    text-decoration: none !important;
+}
+
+    .history-station a:hover {
+        color: #197247;
+    }
+
+.history-time {
+    font-size: 14px;
+    color: #6d7d76;
+}
+
+.history-rating {
+    color: #9b6200;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.history-comment {
+    font-size: 15px;
+    color: #2a3833;
+    margin-bottom: 0;
+    white-space: pre-line;
+}
+
+.empty-box {
+    border: 1px dashed #d3e0d9;
+    border-radius: 4px;
+    background: #f8fbfa;
+    padding: 18px;
+    color: #5d6e67;
+}
+
+@media (max-width: 1199.98px) {
+    .account-main-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .account-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .account-sidebar {
+        position: static;
+        top: auto;
+    }
+
+    .account-title {
+        font-size: 30px;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .account-page {
+        padding: 22px 0 40px;
+    }
+
+    .account-hero,
+    .account-card,
+    .account-summary,
+    .account-sidebar {
+        border-radius: 4px;
+    }
+
+    .account-hero {
+        padding: 22px 18px;
+    }
+
+    .account-card-header,
+    .account-card-body,
+    .account-summary,
+    .account-sidebar {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .account-tabs {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .account-tab {
+        flex: 1 1 50%;
+    }
+
+    .history-station a {
+        font-size: 18px;
+    }
+}

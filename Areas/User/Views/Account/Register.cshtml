@@ -1,0 +1,100 @@
+﻿@model tramsac99.Areas.User.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+@section Styles {
+    <style>
+        .account-page {
+            position: relative;
+            z-index: 10;
+            padding: 100px 0 70px;
+            /* Why changed: split background-size from background shorthand because 'cover' is not valid there. */
+            background: url('/user/assets/images/whatever.jpg') no-repeat center center;
+            background-size: cover;
+        }
+
+            .account-page::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: rgba(15, 23, 42, 0.6);
+                z-index: -1;
+            }
+
+        .account-card {
+            background: rgba(255,255,255,0.95);
+            padding: 35px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,.15);
+        }
+    </style>
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="account-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-9">
+                <div class="account-card">
+                    <h2 class="text-center mb-4">Đăng ký tài khoản</h2>
+
+                    <form asp-area="User" asp-controller="Account" asp-action="Register" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                        <div class="form-group mb-3">
+                            <label>Tên đăng nhập</label>
+                            <input asp-for="Username" class="form-control" />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Email</label>
+                            <input asp-for="Email" class="form-control" />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Họ tên</label>
+                            <input asp-for="FullName" class="form-control" />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Mật khẩu</label>
+                            <input asp-for="Password" type="password" class="form-control" />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label>Xác nhận mật khẩu</label>
+                            <input asp-for="ConfirmPassword" type="password" class="form-control" />
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100">
+                            Đăng ký
+                        </button>
+
+                        <div class="text-center mt-3">
+                            Đã có tài khoản?
+                            <a asp-area="User" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="footer-con position-relative">
+    <div class="container position-relative">
+        <div class="copyright text-center">
+            <p class="mb-0">© 2026 TramSac99. All rights reserved.</p>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,228 @@
+﻿@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+@section Styles {
+    <link href="~/css/home-ev-green.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="home-ev-page">
+    @await Html.PartialAsync("_UserHeader")
+
+    <div class="home-hero-shell">
+        <section class="home-hero">
+            <div class="container">
+                <div class="home-hero-grid">
+                    <div class="home-hero-copy" data-aos="fade-right">
+                        <span class="home-pill">
+                            <i class="fa-solid fa-bolt"></i>
+                            EV Charging • Bản đồ
+                        </span>
+
+                        <h1>Đi xe điện thoải mái hơn, sạc nhanh hơn</h1>
+                        <p>
+                            Tìm trạm sạc phù hợp, xem đánh giá thực tế và mở lộ trình chỉ trong vài chạm.
+                        </p>
+
+                        <div class="home-hero-actions">
+                            <a asp-area="User" asp-controller="Station" asp-action="Index" class="home-primary-btn">
+                                Tra cứu trạm sạc
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                            <a asp-area="User" asp-controller="Home" asp-action="Route" class="home-secondary-btn">
+                                Lên lộ trình
+                            </a>
+                        </div>
+
+                        <div class="home-mini-stats">
+                            <div class="home-mini-stat">
+                                <strong id="heroLiveStationCount">--</strong>
+                                <span>trạm đang hoạt động</span>
+                            </div>
+                            <div class="home-mini-stat">
+                                <strong id="heroReviewCount">--</strong>
+                                <span>đánh giá thực tế</span>
+                            </div>
+                            <div class="home-mini-stat">
+                                <strong>24/7</strong>
+                                <span>tra cứu mọi lúc</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="home-hero-visual" data-aos="fade-left">
+                        <div class="home-hero-card card-a">
+                            <img src="~/user/assets/images/feature-image.png" alt="Tra cứu trạm sạc EV trực quan">
+                            <div class="home-card-tag">Bản đồ trực quan</div>
+                        </div>
+
+                        <div class="home-hero-card card-b">
+                            <img src="~/user/assets/images/choose-image.jpg" alt="Người dùng xe điện trên hành trình">
+                            <div class="home-card-tag">Đi xa vẫn chủ động</div>
+                        </div>
+
+                        <div class="home-hero-card card-c">
+                            <img src="~/user/assets/images/service2-image2.jpg" alt="Trải nghiệm sạc EV hiện đại">
+                            <div class="home-card-tag">Sạc nhanh hơn</div>
+                        </div>
+
+                        <a href="https://www.google.com/maps"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="home-floating-chip chip-1 home-floating-link"
+                           aria-label="Mở Google Maps ngay">
+                            <i class="fa-solid fa-location-dot"></i>
+                            Mở Google Maps ngay
+                        </a>
+
+                        <a asp-area="User"
+                           asp-controller="Station"
+                           asp-action="Index"
+                           class="home-floating-chip chip-2 home-floating-link"
+                           aria-label="Xem review thật trước khi đi">
+                            <i class="fa-solid fa-star"></i>
+                            Xem review thật trước khi đi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <section class="home-promo-gallery">
+        <div class="container">
+            <div class="home-promo-grid">
+                <article class="home-promo-tile tile-large tile-green">
+                    <div class="home-promo-content">
+                        <span class="home-tile-label" style="color: #1fcf8e !important">EV Lifestyle</span>
+                        <h2 style="color: white">Điện hoá hành trình mỗi ngày</h2>
+                        <a asp-area="User" asp-controller="Station" asp-action="Index" class="home-inline-link" style="color: #1fcf8e !important">
+                            Khám phá trạm gần bạn
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </div>
+                    <img src="~/user/assets/images/banner3-image.jpg" alt="Phong cách sống cùng xe điện">
+                </article>
+
+                <article class="home-promo-tile tile-small">
+                    <div class="home-promo-content">
+                        <span class="home-tile-label" style="color: #1fcf8e !important">Nhanh gọn</span>
+                        <h3 style="color: white">Xem trạm, xem giá, đi ngay</h3>
+                    </div>
+                    <img src="~/user/assets/images/service2-image1.jpg" alt="Tra cứu EV nhanh gọn">
+                </article>
+
+                <article class="home-promo-tile tile-small tile-dark">
+                    <div class="home-promo-content">
+                        <span class="home-tile-label" style="color: #1fcf8e !important">Trải nghiệm thật</span>
+                        <h3>Ưu tiên nơi dễ tìm và dễ sạc</h3>
+                    </div>
+                    <img src="~/user/assets/images/service2-image3.jpg" alt="Đánh giá trạm sạc thực tế">
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-quick-actions">
+        <div class="container">
+            <div class="home-section-head compact-head">
+                <div></div>
+            </div>
+
+            <div class="home-action-grid">
+                <a asp-area="User" asp-controller="Station" asp-action="Index" class="home-action-card">
+                    <span class="home-action-icon"><i class="fa-solid fa-magnifying-glass-location"></i></span>
+                    <strong>Tìm trạm gần bạn</strong>
+                    <small>Tra cứu nhanh theo khu vực và nhu cầu sạc.</small>
+                </a>
+
+                <a asp-area="User" asp-controller="Home" asp-action="Route" class="home-action-card">
+                    <span class="home-action-icon"><i class="fa-solid fa-route"></i></span>
+                    <strong>Lên lộ trình</strong>
+                    <small>Đi theo cung đường có trạm sạc phù hợp.</small>
+                </a>
+
+                <a asp-area="User" asp-controller="Station" asp-action="Favorites" class="home-action-card">
+                    <span class="home-action-icon"><i class="fa-solid fa-heart"></i></span>
+                    <strong>Lưu trạm yêu thích</strong>
+                    <small>Giữ lại những điểm sạc bạn hay ghé.</small>
+                </a>
+
+                <a asp-area="User" asp-controller="Home" asp-action="Contact" class="home-action-card">
+                    <span class="home-action-icon"><i class="fa-solid fa-headset"></i></span>
+                    <strong>Gửi hỗ trợ</strong>
+                    <small>Cần xử lý nhanh, gửi ticket ngay tại đây.</small>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-featured-section">
+        <div class="container">
+            <div class="home-section-head">
+                <div>
+                    <span class="home-section-kicker">Điểm sạc nổi bật</span>
+                    <h2>Chọn trạm nhìn là muốn ghé.</h2>
+                </div>
+                <a asp-area="User" asp-controller="Station" asp-action="Index" class="home-inline-link">
+                    Xem tất cả
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div id="homeFeaturedStations" class="home-featured-grid">
+                <article class="home-station-card skeleton-card"></article>
+                <article class="home-station-card skeleton-card"></article>
+                <article class="home-station-card skeleton-card"></article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-news-section">
+        <div class="container">
+            <div class="home-section-head">
+                <div>
+                    <span class="home-section-kicker">Nhịp sống EV</span>
+                    <h2>Tin và cảm hứng cho người dùng xe điện</h2>
+                </div>
+                <a asp-area="User" asp-controller="Home" asp-action="About" class="home-inline-link">
+                    Xem thêm tin tức
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div id="homeEvNews" class="home-news-grid">
+                <article class="home-news-card skeleton-card"></article>
+                <article class="home-news-card skeleton-card"></article>
+                <article class="home-news-card skeleton-card"></article>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-bottom-cta">
+        <div class="container">
+            <div class="home-bottom-cta-inner">
+                <div style="width: 70%">
+                    <span class="home-section-kicker light" style="color: #1fcf8e !important">Sẵn sàng lên đường</span>
+                    <h2>Tìm trạm đẹp, đi đường xanh, sạc thật nhanh</h2>
+                </div>
+                <div class="home-bottom-cta-actions">
+                    <a asp-area="User" asp-controller="Station" asp-action="Index" class="home-primary-btn light-btn">
+                        Bắt đầu tra cứu
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="home-footer-simple">
+        <div class="container">
+            <p>© 2026 TramSac99. Đồng hành cùng trải nghiệm sạc EV thuận tiện hơn mỗi ngày.</p>
+        </div>
+    </footer>
+</div>
+
+@section Scripts {
+    <script src="~/js/home-ev.js" asp-append-version="true"></script>
+}

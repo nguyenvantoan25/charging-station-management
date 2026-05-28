@@ -1,0 +1,86 @@
+@model tramsac99.Areas.User.ViewModels.MyStationDashboardViewModel
+@using tramsac99.Areas.Admin.Models
+
+@{
+    var approvedRegistrations = Model.RegistrationRequests.Count(x =>
+        x.CreatedStationId.HasValue || x.PaymentStatus == "Đã thanh toán");
+
+    var inactiveStations = Model.Stations.Count(x => StationOperationStatus.Normalize(x.OperationStatus) == StationOperationStatus.Inactive);
+    var totalPoles = Model.Stations.Sum(x => x.ChargingPoles.Count);
+}
+
+<div class="station-dashboard-card station-unified-hero mb-4">
+    <div class="card-body">
+        <div class="station-unified-hero__content">
+            <div class="station-unified-hero__left">
+                <span class="station-unified-hero__icon">
+                    <i class="fa-solid fa-charging-station"></i>
+                </span>
+                <div>
+                    <h1 class="station-page-title mb-2">Trạm của tôi</h1>
+                    <p class="station-page-subtitle mb-0">
+                        Theo dõi hồ sơ đăng ký, danh sách trạm sở hữu và lịch sử yêu cầu vận hành theo từng khu vực riêng để giao diện gọn hơn.
+                    </p>
+                </div>
+            </div>
+
+            <div class="station-unified-hero__actions">
+                <a asp-area="User" asp-controller="StationRegistration" asp-action="Register" class="station-btn text-decoration-none">
+                    <i class="fa-solid fa-plus"></i>
+                    Đăng ký thêm trạm
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="station-unified-stats mb-4">
+    <div class="station-stat-card">
+        <div class="station-unified-stat__icon is-blue">
+            <i class="fa-regular fa-building"></i>
+        </div>
+        <div class="station-stat-label">Tổng số trạm</div>
+        <div class="station-stat-value">@Model.TotalOwnedStations</div>
+    </div>
+
+    <div class="station-stat-card">
+        <div class="station-unified-stat__icon is-yellow">
+            <i class="fa-regular fa-clock"></i>
+        </div>
+        <div class="station-stat-label">Hồ sơ đang xử lý</div>
+        <div class="station-stat-value">@Model.PendingRegistrations</div>
+    </div>
+
+    <div class="station-stat-card">
+        <div class="station-unified-stat__icon is-green">
+            <i class="fa-regular fa-circle-check"></i>
+        </div>
+        <div class="station-stat-label">Đã được duyệt</div>
+        <div class="station-stat-value">@approvedRegistrations</div>
+    </div>
+
+    <div class="station-stat-card">
+        <div class="station-unified-stat__icon is-slate">
+            <i class="fa-solid fa-power-off"></i>
+        </div>
+        <div class="station-stat-label">Không hoạt động</div>
+        <div class="station-stat-value">@inactiveStations</div>
+    </div>
+
+    <div class="station-stat-card">
+        <div class="station-unified-stat__icon is-mint">
+            <i class="fa-solid fa-bolt"></i>
+        </div>
+        <div class="station-stat-label">Trụ đang hoạt động</div>
+        <div class="station-stat-value">@Model.ActivePoles</div>
+    </div>
+
+    <div class="station-stat-card">
+        <div class="station-unified-stat__icon is-dark">
+            <i class="fa-solid fa-charging-station"></i>
+        </div>
+        <div class="station-stat-label">Tổng số trụ</div>
+        <div class="station-stat-value">@totalPoles</div>
+    </div>
+</div>
+

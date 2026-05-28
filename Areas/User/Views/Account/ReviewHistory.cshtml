@@ -1,0 +1,571 @@
+﻿@model tramsac99.Areas.User.ViewModels.UserProfileViewModel
+
+@{
+    ViewData["Title"] = "Lịch sử đánh giá";
+    var initial = !string.IsNullOrWhiteSpace(Model.FullName)
+        ? Model.FullName.Trim()[0].ToString().ToUpper()
+        : (!string.IsNullOrWhiteSpace(Model.Username) ? Model.Username.Trim()[0].ToString().ToUpper() : "U");
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/user/assets/css/user-account.css" asp-append-version="true" />
+
+    <style>
+        .history-filter-bar {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) 180px 180px auto;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .history-filter-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+            .history-filter-actions .btn {
+                min-height: 46px;
+                padding: 0 18px;
+                border-radius: 12px !important;
+                font-weight: 700;
+            }
+
+        .history-reset-btn {
+            border: 1px solid #d7e1db !important;
+            background: #ffffff !important;
+            color: #24332d !important;
+        }
+
+            .history-reset-btn:hover {
+                border-color: #197247 !important;
+                color: #197247 !important;
+                background: #f7faf8 !important;
+            }
+
+        .history-hidden {
+            display: none !important;
+        }
+
+        .history-empty-filter {
+            display: none;
+            border: 1px dashed #d3e0d9;
+            border-radius: 12px;
+            background: #f8fbfa;
+            padding: 18px;
+            color: #5d6e67;
+            margin-top: 10px;
+        }
+
+        .history-item {
+            border: 1px solid #e1ebe5;
+            border-radius: 18px;
+            padding: 18px 20px;
+            background: #ffffff;
+            box-shadow: 0 10px 24px rgba(17, 51, 36, 0.04);
+        }
+
+            .history-item + .history-item {
+                margin-top: 14px;
+            }
+
+        .history-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .history-station a {
+            font-size: 20px;
+            font-weight: 800;
+            color: #173126;
+            text-decoration: none;
+        }
+
+        .history-time {
+            font-size: 14px;
+            color: #677b72;
+            font-weight: 600;
+        }
+
+        .history-rating {
+            font-size: 17px;
+            font-weight: 800;
+            color: #b77908;
+            margin-bottom: 10px;
+        }
+
+        .history-comment {
+            font-size: 16px;
+            line-height: 1.7;
+            color: #31413a;
+            margin-bottom: 14px;
+            white-space: pre-line;
+        }
+
+        .history-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+            .history-actions .btn {
+                min-height: 42px;
+                border-radius: 12px !important;
+                font-weight: 700;
+            }
+
+        .history-edit-btn {
+            border: 1px solid #cfe0d7;
+            background: #f8fbf9;
+            color: #1d6f49;
+        }
+
+            .history-edit-btn:hover {
+                border-color: #1d8a58;
+                background: #eef8f2;
+                color: #135b3b;
+            }
+
+        .history-modal-stars {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+
+            .history-modal-stars label {
+                margin-bottom: 0;
+            }
+
+            .history-modal-stars input[type="radio"] {
+                position: absolute;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+        .history-modal-star-option {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            border: 1px solid #d6e4dd;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 800;
+            color: #4c6258;
+            background: #fff;
+            transition: all .18s ease;
+        }
+
+        .history-modal-stars input[type="radio"]:checked + .history-modal-star-option {
+            border-color: #1aa059;
+            background: #eef9f2;
+            color: #146c44;
+            box-shadow: inset 0 0 0 1px rgba(26, 160, 89, .15);
+        }
+
+        @@media (max-width: 991.98px) {
+            .history-filter-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .history-filter-actions {
+                justify-content: stretch;
+            }
+
+                .history-filter-actions .btn {
+                    flex: 1 1 auto;
+                }
+        }
+    </style>
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="account-page">
+    <div class="container">
+        @Html.AntiForgeryToken()
+
+        <div class="account-shell">
+            <aside class="account-sidebar">
+                @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+                {
+                    <div class="sidebar-avatar">
+                        <img src="@Model.AvatarUrl" alt="Avatar người dùng">
+                    </div>
+                }
+                else
+                {
+                    <div class="sidebar-avatar-fallback">@initial</div>
+                }
+
+                <div class="sidebar-name">@(string.IsNullOrWhiteSpace(Model.FullName) ? Model.Username : Model.FullName)</div>
+                <div class="sidebar-meta">@Model.Email</div>
+
+                <div class="sidebar-menu">
+                    <a asp-area="User" asp-controller="Account" asp-action="UserInfo" class="sidebar-menu-link">
+                        <span>Thông tin người dùng</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a asp-area="User" asp-controller="Account" asp-action="ReviewHistory" class="sidebar-menu-link active">
+                        <span>Lịch sử đánh giá</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a asp-area="User" asp-controller="StationRegistration" asp-action="Register" class="sidebar-menu-link">
+                        <span>Đăng ký thêm trạm</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    <a asp-area="User" asp-controller="StationRegistration" asp-action="MyStations" class="sidebar-menu-link">
+                        <span>Trạm của tôi</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </aside>
+
+            <div class="account-main">
+                <div class="account-summary">
+                    <div class="account-summary-label">Tổng số đánh giá</div>
+                    <div class="account-summary-value">@Model.ReviewHistory.Count</div>
+                </div>
+
+                <div class="account-card">
+                    <div class="account-card-header">
+                        <h2 class="account-card-title">Danh sách đánh giá</h2>
+                        <p class="account-card-subtitle">Bạn có thể lọc nhanh và sửa lại chính đánh giá của mình ngay trong lịch sử đánh giá.</p>
+                    </div>
+
+                    <div class="account-card-body">
+                        @if (Model.ReviewHistory.Any())
+                        {
+                            <div class="history-filter-bar">
+                                <input type="text" id="historyKeyword" class="form-control" placeholder="Tìm theo tên trạm hoặc nội dung đánh giá..." />
+
+                                <select id="historyRating" class="form-control">
+                                    <option value="">Tất cả số sao</option>
+                                    <option value="5">5 sao</option>
+                                    <option value="4">4 sao</option>
+                                    <option value="3">3 sao</option>
+                                    <option value="2">2 sao</option>
+                                    <option value="1">1 sao</option>
+                                </select>
+
+                                <select id="historyEdited" class="form-control">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="edited">Đã chỉnh sửa</option>
+                                    <option value="original">Chưa chỉnh sửa</option>
+                                </select>
+
+                                <div class="history-filter-actions">
+                                    <button type="button" id="historyApplyFilter" class="btn btn-save">Lọc</button>
+                                    <button type="button" id="historyResetFilter" class="btn history-reset-btn">Đặt lại</button>
+                                </div>
+                            </div>
+
+                            <div class="history-list" id="historyList">
+                                @foreach (var item in Model.ReviewHistory)
+                                {
+                                    var normalizedComment = item.Comment ?? string.Empty;
+
+                                    <div class="history-item"
+                                         data-review-id="@item.Id"
+                                         data-station-id="@item.StationId"
+                                         data-station-name="@item.StationName"
+                                         data-current-comment="@normalizedComment"
+                                         data-station="@item.StationName.ToLowerInvariant()"
+                                         data-comment="@normalizedComment.ToLowerInvariant()"
+                                         data-rating="@item.Rating"
+                                         data-edited="@(item.IsEdited ? "edited" : "original")">
+                                        <div class="history-top">
+                                            <div class="history-station">
+                                                <a asp-area="User"
+                                                   asp-controller="Station"
+                                                   asp-action="Details"
+                                                   asp-route-id="@item.StationId">
+                                                    @item.StationName
+                                                </a>
+                                            </div>
+
+                                            <div class="history-time history-item-time">
+                                                @item.ActivityAt.ToString("dd/MM/yyyy HH:mm")
+                                                @if (item.IsEdited)
+                                                {
+                                                    <span>- đã chỉnh sửa</span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div class="history-rating history-item-rating">⭐ @item.Rating</div>
+                                        <p class="history-comment history-item-comment">@item.Comment</p>
+
+                                        <div class="history-actions">
+                                            <a asp-area="User"
+                                               asp-controller="Station"
+                                               asp-action="Details"
+                                               asp-route-id="@item.StationId"
+                                               class="btn btn-outline-success">
+                                                Xem trạm
+                                            </a>
+                                            <button type="button" class="btn history-edit-btn js-edit-review">
+                                                <i class="fas fa-pen mr-1"></i>Sửa đánh giá
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <div id="historyEmptyFilter" class="history-empty-filter">
+                                Không có đánh giá phù hợp với bộ lọc hiện tại.
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center flex-wrap mt-3" style="gap:12px;">
+                                <div id="reviewHistoryPageInfo" class="text-muted small"></div>
+                                <div id="reviewHistoryPager"></div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="empty-box">Bạn chưa có đánh giá nào.</div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="reviewHistoryEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sửa đánh giá của bạn</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Đóng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editReviewId" />
+                <div class="form-group">
+                    <label class="font-weight-bold">Trạm sạc</label>
+                    <input type="text" id="editReviewStationName" class="form-control" readonly />
+                </div>
+                <div class="form-group">
+                    <label class="font-weight-bold d-block mb-2">Số sao</label>
+                    <div class="history-modal-stars">
+                        <label>
+                            <input type="radio" name="editReviewRating" value="1" />
+                            <span class="history-modal-star-option">1 sao</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="editReviewRating" value="2" />
+                            <span class="history-modal-star-option">2 sao</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="editReviewRating" value="3" />
+                            <span class="history-modal-star-option">3 sao</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="editReviewRating" value="4" />
+                            <span class="history-modal-star-option">4 sao</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="editReviewRating" value="5" />
+                            <span class="history-modal-star-option">5 sao</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group mb-0">
+                    <label class="font-weight-bold">Bình luận</label>
+                    <textarea id="editReviewComment" class="form-control" rows="5" placeholder="Cập nhật lại trải nghiệm của bạn"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                <button type="button" id="saveReviewHistoryBtn" class="btn btn-success">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const historyList = document.getElementById('historyList');
+            const keywordInput = document.getElementById('historyKeyword');
+            const ratingSelect = document.getElementById('historyRating');
+            const editedSelect = document.getElementById('historyEdited');
+            const applyButton = document.getElementById('historyApplyFilter');
+            const resetButton = document.getElementById('historyResetFilter');
+            const emptyFilter = document.getElementById('historyEmptyFilter');
+            const saveReviewButton = document.getElementById('saveReviewHistoryBtn');
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            function attachPager() {
+                if (!historyList) {
+                    return;
+                }
+
+                TramSacPagination.attachDomPager({
+                    containerSelector: '#historyList',
+                    itemSelector: '.history-item:not(.history-hidden)',
+                    pageSize: 15,
+                    paginationContainer: 'reviewHistoryPager',
+                    infoContainer: 'reviewHistoryPageInfo'
+                });
+            }
+
+            function applyFilter() {
+                if (!historyList) {
+                    return;
+                }
+
+                const items = historyList.querySelectorAll('.history-item');
+                const keyword = (keywordInput?.value || '').trim().toLowerCase();
+                const rating = ratingSelect?.value || '';
+                const edited = editedSelect?.value || '';
+
+                let visibleCount = 0;
+
+                items.forEach(function (item) {
+                    const station = item.dataset.station || '';
+                    const comment = item.dataset.comment || '';
+                    const itemRating = item.dataset.rating || '';
+                    const itemEdited = item.dataset.edited || '';
+
+                    const matchKeyword = !keyword || station.includes(keyword) || comment.includes(keyword);
+                    const matchRating = !rating || itemRating === rating;
+                    const matchEdited = !edited || itemEdited === edited;
+
+                    if (matchKeyword && matchRating && matchEdited) {
+                        item.classList.remove('history-hidden');
+                        visibleCount++;
+                    } else {
+                        item.classList.add('history-hidden');
+                    }
+                });
+
+                if (emptyFilter) {
+                    emptyFilter.style.display = visibleCount === 0 ? 'block' : 'none';
+                }
+
+                attachPager();
+            }
+
+            function resetFilter() {
+                if (keywordInput) keywordInput.value = '';
+                if (ratingSelect) ratingSelect.value = '';
+                if (editedSelect) editedSelect.value = '';
+
+                const items = historyList?.querySelectorAll('.history-item') || [];
+                items.forEach(function (item) {
+                    item.classList.remove('history-hidden');
+                });
+
+                if (emptyFilter) {
+                    emptyFilter.style.display = 'none';
+                }
+
+                attachPager();
+            }
+
+            function openEditModal(item) {
+                const reviewId = item.dataset.reviewId || '';
+                const stationName = item.dataset.stationName || '';
+                const rating = item.dataset.rating || '';
+                const comment = item.dataset.currentComment || '';
+
+                document.getElementById('editReviewId').value = reviewId;
+                document.getElementById('editReviewStationName').value = stationName;
+                document.getElementById('editReviewComment').value = comment;
+
+                document.querySelectorAll('input[name="editReviewRating"]').forEach(function (input) {
+                    input.checked = input.value === rating;
+                });
+
+                $('#reviewHistoryEditModal').modal('show');
+            }
+
+            async function saveReviewChange() {
+                const reviewId = Number(document.getElementById('editReviewId').value || 0);
+                const selectedRating = document.querySelector('input[name="editReviewRating"]:checked');
+                const comment = document.getElementById('editReviewComment').value || '';
+
+                if (!reviewId) {
+                    alert('Không xác định được đánh giá cần sửa.');
+                    return;
+                }
+
+                if (!selectedRating) {
+                    alert('Vui lòng chọn số sao.');
+                    return;
+                }
+
+                if (!token) {
+                    alert('Thiếu anti-forgery token.');
+                    return;
+                }
+
+                saveReviewButton.disabled = true;
+
+                try {
+                    const response = await fetch('/User/Account/UpdateReviewHistoryAjax', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': token
+                        },
+                        body: JSON.stringify({
+                            reviewId: reviewId,
+                            rating: Number(selectedRating.value),
+                            comment: comment
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok || !result.success) {
+                        alert(result.message || 'Không thể cập nhật đánh giá.');
+                        return;
+                    }
+
+                    alert(result.message || 'Đã cập nhật đánh giá thành công.');
+                    window.location.reload();
+                } catch (error) {
+                    console.error(error);
+                    alert('Có lỗi xảy ra khi cập nhật đánh giá.');
+                } finally {
+                    saveReviewButton.disabled = false;
+                }
+            }
+
+            applyButton?.addEventListener('click', applyFilter);
+            resetButton?.addEventListener('click', resetFilter);
+            keywordInput?.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    applyFilter();
+                }
+            });
+
+            historyList?.addEventListener('click', function (event) {
+                const editButton = event.target.closest('.js-edit-review');
+                if (!editButton) {
+                    return;
+                }
+
+                const item = editButton.closest('.history-item');
+                if (!item) {
+                    return;
+                }
+
+                openEditModal(item);
+            });
+
+            saveReviewButton?.addEventListener('click', saveReviewChange);
+            attachPager();
+        });
+    </script>
+}

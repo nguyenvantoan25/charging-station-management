@@ -1,0 +1,199 @@
+﻿@using tramsac99.Areas.Admin.Models
+@{
+    ViewData["Title"] = "Sửa trụ sạc";
+    var poleId = ViewBag.PoleId;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Sửa trụ sạc</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-area="Admin" asp-controller="ChargingPole" asp-action="Index">Quản lý trụ sạc</a>
+                    </li>
+                    <li class="breadcrumb-item active">Sửa trụ sạc</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Thông tin trụ sạc</h3>
+            </div>
+            <div class="card-body">
+                <form id="editPoleForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Trạm sạc</label>
+                                <select id="stationId" class="form-control" required>
+                                    <option value="">Chọn trạm</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Mã trụ</label>
+                                <input type="text" id="poleCode" class="form-control" required />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Loại sạc</label>
+                                <select id="chargerType" class="form-control" required>
+                                    <option value="">-- Chọn loại sạc --</option>
+                                    @foreach (var option in ChargerTypeCatalog.Options)
+                                    {
+                                        <option value="@option">@option</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Công suất tối đa</label>
+                                <input type="text" id="maxPower" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Trạng thái</label>
+                                <select id="status" class="form-control" required>
+                                    <option value="Đang hoạt động">Đang hoạt động</option>
+                                    <option value="Lỗi">Lỗi</option>
+                                    <option value="Bảo trì">Bảo trì</option>
+                                    <option value="Không hoạt động">Không hoạt động</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Ghi chú</label>
+                                <textarea id="note" class="form-control" rows="4"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    <a href="/Admin/ChargingPole" class="btn btn-secondary">Quay lại</a>
+                </form>
+
+                <div id="formMessage" class="mt-3"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const poleId = @poleId;
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            await loadStations();
+            await loadPole();
+            document.getElementById("editPoleForm").addEventListener("submit", submitForm);
+        });
+
+        async function loadStations() {
+            try {
+                const response = await fetch('/Admin/api/stations');
+                const stations = await response.json();
+
+                const select = document.getElementById("stationId");
+                select.innerHTML = `<option value="">Chọn trạm</option>`;
+
+                stations.forEach(s => {
+                    select.innerHTML += `<option value="${s.id}">${escapeHtml(s.name)}</option>`;
+                });
+            } catch (error) {
+                console.error("Lỗi tải trạm:", error);
+            }
+        }
+
+        async function loadPole() {
+            try {
+                const response = await fetch(`/Admin/api/poles/${poleId}`);
+                const pole = await response.json();
+
+                document.getElementById("stationId").value = pole.stationId || "";
+                document.getElementById("poleCode").value = pole.poleCode || "";
+                document.getElementById("chargerType").value = pole.chargerType || "";
+                document.getElementById("maxPower").value = String(pole.maxPower || "").replace(" kW", "");
+                document.getElementById("status").value = pole.status || "Đang hoạt động";
+                document.getElementById("note").value = pole.note || "";
+            } catch (error) {
+                console.error("Lỗi tải trụ:", error);
+                document.getElementById("formMessage").innerHTML =
+                    `<div class="alert alert-danger">Không tải được dữ liệu trụ sạc.</div>`;
+            }
+        }
+
+        async function submitForm(e) {
+            e.preventDefault();
+
+            const payload = {
+                id: poleId,
+                stationId: parseInt(document.getElementById("stationId").value),
+                poleCode: document.getElementById("poleCode").value.trim(),
+                chargerType: document.getElementById("chargerType").value,
+                maxPower: document.getElementById("maxPower").value.trim(),
+                status: document.getElementById("status").value,
+                note: document.getElementById("note").value.trim()
+            };
+
+            try {
+                const response = await fetch(`/Admin/api/poles/${poleId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    document.getElementById("formMessage").innerHTML =
+                        `<div class="alert alert-danger">${result.message || "Cập nhật thất bại."}</div>`;
+                    return;
+                }
+
+                document.getElementById("formMessage").innerHTML =
+                    `<div class="alert alert-success">${result.message || "Cập nhật thành công."}</div>`;
+
+                setTimeout(() => {
+                    window.location.href = `/Admin/ChargingPole?stationId=${payload.stationId}`;
+                }, 800);
+            } catch (error) {
+                console.error("Lỗi cập nhật trụ:", error);
+                document.getElementById("formMessage").innerHTML =
+                    `<div class="alert alert-danger">Có lỗi xảy ra khi cập nhật trụ.</div>`;
+            }
+        }
+
+        function escapeHtml(text) {
+            return String(text)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+    </script>
+}

@@ -1,0 +1,886 @@
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = "Tra cứu trạm sạc";
+}
+
+@section Styles {
+    <style>
+        body {
+            background: linear-gradient(180deg, #f4f7f6 0%, #ffffff 100%);
+        }
+
+        .station-page {
+            padding: 28px 0 46px;
+        }
+
+        .station-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .station-hero,
+        .station-filter-card,
+        .station-map-card,
+        .station-result-card,
+        .station-kpi-card {
+            background: #fff;
+            border-radius: 24px;
+            border: 1px solid #e8efec;
+            box-shadow: 0 14px 36px rgba(15, 25, 21, 0.07);
+        }
+
+        .station-hero {
+            padding: 28px;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .station-hero-title {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.1;
+            color: #18221e;
+            margin-bottom: 10px;
+        }
+
+        .station-hero-subtitle {
+            font-size: 17px;
+            color: #64766f;
+            margin-bottom: 0;
+            max-width: 760px;
+        }
+
+        .station-hero-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            background: #eef8f2;
+            color: #177b46;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .station-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .station-kpi-card {
+            padding: 20px 22px;
+        }
+
+        .station-kpi-label {
+            font-size: 14px;
+            color: #71827b;
+            margin-bottom: 10px;
+        }
+
+        .station-kpi-value {
+            font-size: 34px;
+            font-weight: 800;
+            line-height: 1.05;
+            color: #17231f;
+        }
+
+        .station-filter-card {
+            padding: 22px;
+            position: sticky;
+            top: 18px;
+            display: flex;
+            flex-direction: column;
+            align-self: stretch;
+        }
+
+        .station-map-card {
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .station-map-topbar {
+            flex: 0 0 auto;
+        }
+
+
+        :root {
+            --station-main-height: 760px;
+        }
+
+        .station-main-grid {
+            display: grid;
+            grid-template-columns: 380px minmax(0, 1fr);
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .station-filter-card,
+        .station-map-card {
+            height: var(--station-main-height);
+            min-height: var(--station-main-height);
+            box-sizing: border-box;
+        }
+
+        .station-filter-card {
+            overflow: auto;
+        }
+
+            .station-filter-card::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .station-filter-card::-webkit-scrollbar-thumb {
+                background: #ccd9d3;
+                border-radius: 999px;
+            }
+
+        .station-map-card {
+            position: relative;
+        }
+
+        #stationMap {
+            width: 100%;
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .station-map-stage {
+            position: relative;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .station-map-info {
+            position: absolute;
+            left: 50%;
+            top: 18px;
+            transform: translateX(-50%);
+            z-index: 30;
+            width: min(420px, calc(100% - 36px));
+            border-radius: 18px;
+            border: 1px solid #e5eeea;
+            background: rgba(255,255,255,.98);
+            box-shadow: 0 18px 40px rgba(17, 32, 24, 0.14);
+            padding: 16px;
+            backdrop-filter: blur(8px);
+        }
+
+            .station-map-info.is-hidden {
+                display: none;
+            }
+
+        .station-map-popup-arrow {
+            position: absolute;
+            left: 50%;
+            bottom: -12px;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 12px solid rgba(255,255,255,.98);
+            filter: drop-shadow(0 6px 8px rgba(15, 25, 21, 0.10));
+        }
+
+        .station-map-info-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #16211d;
+            line-height: 1.3;
+            margin-bottom: 8px;
+            padding-right: 26px;
+        }
+
+        .station-map-info-address {
+            font-size: 14px;
+            color: #667871;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .station-map-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .station-map-info-box {
+            border-radius: 14px;
+            background: #f7faf8;
+            border: 1px solid #edf3ef;
+            padding: 10px 12px;
+        }
+
+        .station-map-info-label {
+            font-size: 12px;
+            color: #71817a;
+            margin-bottom: 4px;
+        }
+
+        .station-map-info-value {
+            font-size: 14px;
+            font-weight: 800;
+            color: #18231f;
+        }
+
+        .station-map-info-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .station-map-close {
+            position: absolute;
+            right: 12px;
+            top: 10px;
+            width: 28px;
+            height: 28px;
+            border-radius: 999px;
+            border: 0;
+            background: #eff6f2;
+            color: #446257;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .station-actions .btn,
+        .station-map-info-actions .btn {
+            min-height: 40px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: none !important;
+        }
+
+        .station-list-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        .station-item {
+            min-height: 100%;
+        }
+
+        .station-card-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #18231f;
+            margin-bottom: 8px;
+        }
+
+        .station-card-subtitle {
+            font-size: 15px;
+            color: #697a73;
+            margin-bottom: 20px;
+        }
+
+        .station-filter-group {
+            margin-bottom: 16px;
+        }
+
+        .station-filter-label {
+            display: block;
+            font-size: 15px;
+            font-weight: 700;
+            color: #22312c;
+            margin-bottom: 8px;
+        }
+
+        .station-filter-card .form-control,
+        .station-filter-card .custom-select {
+            min-height: 48px;
+            border-radius: 14px;
+            border: 1px solid #dce6e2;
+            box-shadow: none !important;
+            font-size: 15px;
+        }
+
+            .station-filter-card .form-control:focus,
+            .station-filter-card .custom-select:focus {
+                border-color: #1faa5f;
+            }
+
+        .station-filter-actions,
+        .station-filter-actions-secondary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+            .station-filter-actions .btn,
+            .station-filter-actions-secondary .btn {
+                min-height: 46px;
+                border-radius: 14px;
+                font-weight: 700;
+                box-shadow: none !important;
+            }
+
+        .station-location-note {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px dashed #d1e2da;
+            background: #f8fbfa;
+            font-size: 14px;
+            color: #5a6d66;
+        }
+
+
+        .station-smart-wrap {
+            position: relative;
+        }
+
+        .station-smart-hint {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #70817a;
+        }
+
+        .station-suggest-box {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            z-index: 1200;
+            display: none;
+            background: #fff;
+            border: 1px solid #dfe9e5;
+            border-radius: 18px;
+            box-shadow: 0 20px 40px rgba(15, 25, 21, 0.12);
+            overflow: hidden;
+            /* Added: limit height so suggestions stay compact and scrollable */
+            max-height: 320px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+        }
+
+            .station-suggest-box.is-open {
+                display: block;
+            }
+            /* Added: slim enterprise scrollbar for suggestion dropdown */
+            .station-suggest-box::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .station-suggest-box::-webkit-scrollbar-track {
+                background: #f3f7f5;
+                border-radius: 999px;
+            }
+
+            .station-suggest-box::-webkit-scrollbar-thumb {
+                background: #c7d8d0;
+                border-radius: 999px;
+            }
+
+                .station-suggest-box::-webkit-scrollbar-thumb:hover {
+                    background: #aebfb7;
+                }
+
+        .station-suggest-item {
+            width: 100%;
+            border: 0;
+            border-bottom: 1px solid #edf3f0;
+            background: #fff;
+            text-align: left;
+            padding: 13px 14px;
+            cursor: pointer;
+        }
+
+            .station-suggest-item:last-child {
+                border-bottom: 0;
+            }
+
+            .station-suggest-item:hover,
+            .station-suggest-item.is-active {
+                background: #f4fbf7;
+            }
+
+        .station-suggest-title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .station-suggest-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #1b2924;
+            line-height: 1.35;
+        }
+
+        .station-suggest-badge {
+            flex: 0 0 auto;
+            border-radius: 999px;
+            background: #e9f7ef;
+            color: #177b46;
+            padding: 4px 9px;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .station-suggest-address {
+            font-size: 13px;
+            color: #667871;
+            margin-bottom: 4px;
+            line-height: 1.45;
+        }
+
+        .station-suggest-meta {
+            font-size: 12px;
+            color: #7a8c85;
+        }
+
+        .station-suggest-empty {
+            padding: 13px 14px;
+            font-size: 13px;
+            color: #6d7f78;
+            background: #fff;
+        }
+
+        .station-map-topbar {
+            padding: 20px 22px;
+            border-bottom: 1px solid #eef3f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+            .station-map-topbar p {
+                margin: 0;
+                font-size: 14px;
+                color: #687a73;
+            }
+
+        .station-map-chip {
+            border-radius: 999px;
+            background: #f4f8f6;
+            color: #466359;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .station-result-card {
+            padding: 22px;
+        }
+
+        .station-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .station-result-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .station-inline-badge {
+            border-radius: 999px;
+            background: #eef8f2;
+            color: #177b46;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .station-item {
+            border: 1px solid #e8efec;
+            border-radius: 22px;
+            background: linear-gradient(180deg, #ffffff 0%, #fafdfb 100%);
+            padding: 18px;
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+            cursor: pointer;
+        }
+
+            .station-item:hover,
+            .station-item.active {
+                transform: translateY(-2px);
+                border-color: #89d2aa;
+                box-shadow: 0 14px 26px rgba(16, 110, 62, 0.10);
+            }
+
+        .station-item-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .station-item-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #18231f;
+            margin-bottom: 0;
+            line-height: 1.3;
+        }
+
+        .station-address {
+            font-size: 14px;
+            color: #667871;
+            margin-bottom: 12px;
+        }
+
+        .station-status-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .station-status-active {
+            background: #e8f8ef;
+            color: #168b4b;
+        }
+
+        .station-status-inactive {
+            background: #fdecec;
+            color: #b42318;
+        }
+
+        .station-distance {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #177b46;
+        }
+
+        .station-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .station-meta-box {
+            border-radius: 16px;
+            background: #f7faf9;
+            border: 1px solid #edf2ef;
+            padding: 10px 12px;
+        }
+
+        .station-meta-label {
+            font-size: 12px;
+            color: #708079;
+            margin-bottom: 4px;
+        }
+
+        .station-meta-value {
+            font-size: 14px;
+            font-weight: 800;
+            color: #182722;
+            line-height: 1.35;
+        }
+
+        .station-rating-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+            flex-wrap: wrap;
+        }
+
+        .station-rating {
+            color: #b77700;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .station-price {
+            color: #17231f;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .station-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+            .station-actions .btn {
+                min-height: 40px;
+                border-radius: 999px;
+                font-size: 13px;
+                font-weight: 700;
+                box-shadow: none !important;
+            }
+
+        .station-empty,
+        .station-loading,
+        .station-error {
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .station-empty,
+        .station-loading {
+            background: #f7faf9;
+            color: #556861;
+            border: 1px dashed #d3e2db;
+        }
+
+        .station-error {
+            background: #fff5f5;
+            color: #b42318;
+            border: 1px dashed #f0c2c2;
+        }
+
+        .station-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        @@media (max-width: 1199.98px) {
+            .station-kpi-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .station-main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .station-filter-card,
+            .station-map-card {
+                position: static;
+                height: auto;
+                min-height: 0;
+            }
+
+            #stationMap {
+                min-height: 560px;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .station-page {
+                padding-top: 20px;
+            }
+
+            .station-hero-title {
+                font-size: 34px;
+            }
+
+            .station-kpi-grid,
+            .station-list-grid,
+            .station-meta-grid,
+            .station-filter-actions,
+            .station-filter-actions-secondary,
+            .station-map-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .station-map-info {
+                width: calc(100% - 24px);
+                left: 12px;
+                right: 12px;
+                top: 12px;
+            }
+
+            #stationMap {
+                height: 460px;
+                min-height: 460px;
+            }
+        }
+    </style>
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="station-page">
+    <div class="container">
+        <div class="station-shell">
+            @* <div class="station-hero">
+                <div>
+                    <h1 class="station-hero-title">Tra cứu trạm sạc</h1>
+                    <p class="station-hero-subtitle">Thiết kế lại theo hướng doanh nghiệp: bộ lọc riêng, bản đồ lớn, danh sách phân trang rõ ràng và phần tổng quan để người dùng không phải kéo một cột dài.</p>
+                </div>
+                <div class="station-hero-tag">
+                    <i class="fa-solid fa-building"></i>
+                    Bản tra cứu chuẩn vận hành
+                </div>
+            </div> *@
+
+            <div class="station-kpi-grid">
+                <div class="station-kpi-card">
+                    <div class="station-kpi-label">Số trạm đang hiển thị</div>
+                    <div id="kpiTotalStations" class="station-kpi-value">0</div>
+                </div>
+                <div class="station-kpi-card">
+                    <div class="station-kpi-label">Trạm hoạt động</div>
+                    <div id="kpiActiveStations" class="station-kpi-value">0</div>
+                </div>
+                <div class="station-kpi-card">
+                    <div class="station-kpi-label">Tổng trụ</div>
+                    <div id="kpiActivePoles" class="station-kpi-value">0</div>
+                </div>
+                <div class="station-kpi-card">
+                    <div class="station-kpi-label">Trụ đang hoạt động</div>
+                    <div id="kpiAvailablePoles" class="station-kpi-value">0</div>
+                </div>
+            </div>
+
+            <div class="station-main-grid">
+                <aside class="station-filter-card">
+                    @Html.AntiForgeryToken()
+
+                    <h2 class="station-card-title">Bộ lọc</h2>
+                    @* <p class="station-card-subtitle">Tìm theo tên, địa chỉ, trạng thái và vị trí hiện tại.</p> *@
+
+                    <div class="station-filter-group">
+                        <label class="station-filter-label">Từ khóa</label>
+                        <div class="station-smart-wrap">
+                            <input type="text" id="keyword" class="form-control" placeholder="Tên trạm, quận/huyện hoặc địa chỉ..." autocomplete="off" />
+                            <div id="keywordSuggestBox" class="station-suggest-box"></div>
+                        </div>
+                        @* <div class="station-smart-hint">Gõ ngắn cũng được. Hệ thống sẽ gợi ý theo tên trạm, địa chỉ, loại sạc và công suất.</div> *@
+                    </div>
+
+                    <div class="station-filter-group">
+                        <label class="station-filter-label">Khu vực</label>
+                        <input type="text" id="location" class="form-control" placeholder="Ví dụ: Hà Nội, Bắc Ninh..." />
+                    </div>
+
+                    <div class="station-filter-group">
+                        <label class="station-filter-label">Trạng thái</label>
+                        <select id="status" class="custom-select">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="Đang hoạt động">Đang hoạt động</option>
+                            <option value="Không hoạt động">Không hoạt động</option>
+                        </select>
+                    </div>
+
+                    <div class="station-filter-group">
+                        <label class="station-filter-label">Sắp xếp</label>
+                        <select id="sortBy" class="custom-select">
+                            <option value="smart" selected>Phù hợp nhất</option>
+                            <option value="name">Theo tên A-Z</option>
+                            <option value="rating">Đánh giá cao nhất</option>
+                            <option value="available">Trụ hoạt động nhiều nhất</option>
+                            <option value="nearest">Gần bạn nhất</option>
+                        </select>
+                    </div>
+
+                    <div class="station-filter-group">
+                        <label class="station-filter-label">Bán kính gần bạn</label>
+                        <select id="radiusKm" class="custom-select">
+                            <option value="1">1 km</option>
+                            <option value="2">2 km</option>
+                            <option value="3" selected>3 km</option>
+                            <option value="4">4 km</option>
+                            <option value="5">5 km</option>
+                        </select>
+                    </div>
+
+                    <div class="station-filter-actions mb-3">
+                        <button type="button" id="btnApplyFilter" class="btn btn-success">
+                            <i class="fa-solid fa-magnifying-glass mr-2"></i>Áp dụng
+                        </button>
+                        <button type="button" id="btnUseLocation" class="btn btn-outline-success">
+                            <i class="fa-solid fa-location-dot mr-2"></i>Gần tôi
+                        </button>
+                    </div>
+
+                    <div class="station-filter-actions-secondary">
+                        <button type="button" id="btnLoadAll" class="btn btn-outline-secondary">
+                            <i class="fa-solid fa-table-cells-large mr-2"></i>Tất cả trạm
+                        </button>
+                        <button type="button" id="btnResetFilter" class="btn btn-light border">
+                            <i class="fa-solid fa-rotate-left mr-2"></i>Làm mới
+                        </button>
+                    </div>
+
+                    <div id="locationNote" class="station-location-note">
+                        Chưa dùng vị trí hiện tại. Khi bấm <strong>Gần tôi</strong>, bản đồ sẽ chỉ zoom gần về vị trí của bạn theo bán kính đã chọn.
+                    </div>
+                </aside>
+
+                <div class="station-map-card">
+                    <div class="station-map-topbar">
+                        <div>
+                            <h2 class="station-card-title mb-1">Bản đồ trạm sạc</h2>
+                            <p id="mapHint">Đang hiển thị toàn bộ trạm trong hệ thống.</p>
+                        </div>
+                        <div class="station-map-chip" id="mapChip">0 trạm trên bản đồ</div>
+                    </div>
+                    <div class="station-map-stage">
+                        <div id="stationMapInfo" class="station-map-info is-hidden"></div>
+                        <div id="stationMap"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="station-result-card">
+                <div class="station-result-header">
+                    <div>
+                        <h2 class="station-card-title mb-1">Danh sách trạm</h2>
+
+                    </div>
+                    <div class="station-result-toolbar">
+                        <div class="station-inline-badge" id="resultBadge">0 kết quả</div>
+                        <div class="station-inline-badge" id="pageBadge">Trang 1 / 1</div>
+                    </div>
+                </div>
+
+                <div id="stationList" class="station-list-grid">
+                    <div class="station-loading">Đang tải dữ liệu...</div>
+                </div>
+
+                <div class="station-footer">
+                    <div id="stationPageInfo" class="text-muted small"></div>
+                    <div id="stationPager"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        window.stationPageConfig = {
+            apiKey: "@(Configuration["Map4D:ApiKey"] ?? "")",
+            isAuthenticated: @(User.Identity != null && User.Identity.IsAuthenticated ? "true" : "false")
+        };
+    </script>
+
+    <script src="~/js/map4d-common.js" asp-append-version="true"></script>
+    <script src="~/js/user-station-index.js" asp-append-version="true"></script>
+}

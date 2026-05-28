@@ -1,0 +1,224 @@
+﻿@model tramsac99.Areas.Admin.ViewModels.UserEditViewModel
+@{
+    ViewData["Title"] = Model.IsSelf ? "Thông tin admin" : "Cập nhật người dùng";
+
+    var displayName = !string.IsNullOrWhiteSpace(Model.FullName)
+        ? Model.FullName
+        : Model.Username;
+
+    var initial = !string.IsNullOrWhiteSpace(displayName)
+        ? displayName.Trim()[0].ToString().ToUpper()
+        : "U";
+}
+
+<section class="content pt-3 pb-4 admin-user-edit-page">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                @TempData["SuccessMessage"]
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+        }
+
+        <div class="profile-shell">
+            <div class="profile-card">
+                @if (!string.IsNullOrWhiteSpace(Model.AvatarUrl))
+                {
+                    <div class="profile-avatar">
+                        <img src="@Model.AvatarUrl" alt="Avatar">
+                    </div>
+                }
+                else
+                {
+                    <div class="profile-avatar-fallback">@initial</div>
+                }
+
+                <div class="profile-name">@displayName</div>
+                <div class="profile-subtext">@(Model.IsSelf ? "Tài khoản quản trị đang đăng nhập" : "Thông tin người dùng trong hệ thống")</div>
+
+                <div class="profile-badge-row">
+                    <span class="profile-chip">
+                        <i class="fas fa-user-shield"></i>
+                        @Model.Role
+                    </span>
+
+                    @if (Model.IsBlocked)
+                    {
+                        <span class="profile-chip text-danger">
+                            <i class="fas fa-lock"></i>
+                            Đã khóa
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="profile-chip text-success">
+                            <i class="fas fa-check-circle"></i>
+                            Hoạt động
+                        </span>
+                    }
+                </div>
+
+                <div class="summary-box">
+                    <div class="summary-label">Tên đăng nhập</div>
+                    <div class="summary-value">@Model.Username</div>
+                </div>
+
+                <div class="summary-box">
+                    <div class="summary-label">Email</div>
+                    <div class="summary-value">@Model.Email</div>
+                </div>
+
+                <div class="summary-box">
+                    <div class="summary-label">Ngày tạo</div>
+                    <div class="summary-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+            </div>
+
+            <div class="profile-panel">
+                <div class="profile-panel-header">
+                    <h3 class="profile-panel-title">@ViewData["Title"]</h3>
+                    @* <p class="profile-panel-subtitle">
+                        @if (Model.IsSelf)
+                        {
+                            <text>Cập nhật thông tin admin, ảnh đại diện và bảo mật tài khoản theo giao diện quản trị chuyên nghiệp.</text>
+                        }
+                        else
+                        {
+                            <text>Quản lý hồ sơ người dùng, ảnh đại diện, trạng thái tài khoản và mật khẩu từ một màn hình tập trung.</text>
+                        }
+                    </p> *@
+                </div>
+
+                <div class="profile-panel-body">
+                    <form asp-area="Admin" asp-controller="User" asp-action="Edit" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="Id" type="hidden" />
+                        <input asp-for="CreatedAt" type="hidden" />
+                        <input asp-for="AvatarUrl" type="hidden" />
+                        <input asp-for="IsSelf" type="hidden" />
+                        <input asp-for="Role" type="hidden" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="section-title">Ảnh đại diện</div>
+                        <div class="form-row">
+                            <div class="form-group col-lg-8">
+                                <label asp-for="AvatarFile"></label>
+                                <div class="custom-file">
+                                    <input asp-for="AvatarFile" class="custom-file-input" accept=".jpg,.jpeg,.png,.webp" />
+                                    <label class="custom-file-label" for="AvatarFile">Chọn ảnh đại diện mới</label>
+                                </div>
+                                <span asp-validation-for="AvatarFile" class="text-danger"></span>
+                                @* <small class="form-text text-muted">Định dạng hỗ trợ: JPG, JPEG, PNG, WEBP. Dung lượng tối đa 2MB.</small> *@
+                            </div>
+                            <div class="form-group col-lg-4 d-flex align-items-end">
+                                <div class="custom-control custom-checkbox mb-2">
+                                    <input asp-for="RemoveAvatar" class="custom-control-input" />
+                                    <label asp-for="RemoveAvatar" class="custom-control-label"></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="divider-line"></div>
+
+                        <div class="section-title">Thông tin tài khoản</div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="Username"></label>
+                                <input asp-for="Username" class="form-control" />
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label asp-for="Email"></label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="FullName"></label>
+                                <input asp-for="FullName" class="form-control" />
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group col-md-3">
+                                <label asp-for="Role"></label>
+                                <select class="custom-select" disabled>
+                                    <option selected>@Model.Role</option>
+                                </select>
+                                @* <small class="form-text text-muted">Vai trò chỉ hiển thị để xem. Hệ thống chỉ có 1 admin nên không chỉnh sửa tại màn hình này.</small> *@
+                            </div>
+
+                            <div class="form-group col-md-3 d-flex align-items-end">
+                                @if (Model.IsSelf)
+                                {
+                                    <input asp-for="IsBlocked" type="hidden" />
+                                    @* <div class="alert alert-light border w-100 mb-0">Tài khoản hiện tại luôn ở trạng thái hoạt động.</div> *@
+                                }
+                                else
+                                {
+                                    <div class="custom-control custom-switch mb-2">
+                                        <input asp-for="IsBlocked" class="custom-control-input" />
+                                        <label asp-for="IsBlocked" class="custom-control-label"></label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="divider-line"></div>
+
+                        <div class="section-title">Đặt lại mật khẩu</div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="NewPassword"></label>
+                                <input asp-for="NewPassword" class="form-control" type="password" autocomplete="new-password" />
+                                <span asp-validation-for="NewPassword" class="text-danger"></span>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label asp-for="ConfirmNewPassword"></label>
+                                <input asp-for="ConfirmNewPassword" class="form-control" type="password" autocomplete="new-password" />
+                                <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted mb-4">Để trống nếu bạn không muốn thay đổi mật khẩu hiện tại.</small>
+
+                        <div class="profile-action-row">
+                            <button type="submit" class="btn btn-success btn-save">
+                                <i class="fas fa-save mr-2"></i>Lưu thay đổi
+                            </button>
+
+                            <a asp-area="Admin" asp-controller="User" asp-action="Index" class="btn btn-light-border">
+                                <i class="fas fa-arrow-left mr-2"></i>Quay lại danh sách
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const fileInput = document.getElementById('AvatarFile');
+            if (!fileInput) return;
+
+            fileInput.addEventListener('change', function () {
+                const label = this.nextElementSibling;
+                if (!label) return;
+
+                const fileName = this.files && this.files.length
+                    ? this.files[0].name
+                    : 'Chọn ảnh đại diện mới';
+
+                label.textContent = fileName;
+            });
+        });
+    </script>
+}

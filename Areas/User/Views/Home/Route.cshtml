@@ -1,0 +1,4623 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    ViewData["Title"] = "Lộ trình";
+}
+
+@section Styles {
+    <style>
+        body {
+            background: linear-gradient(180deg, #f4f7f6 0%, #ffffff 100%);
+        }
+
+        .route-page {
+            padding: 28px 0 46px;
+        }
+
+        .route-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .route-hero,
+        .route-plan-card,
+        .route-map-card,
+        .route-summary-card,
+        .route-stop-card {
+            background: #fff;
+            border-radius: 24px;
+            border: 1px solid #e8efec;
+            box-shadow: 0 14px 36px rgba(15, 25, 21, 0.07);
+        }
+
+        .route-hero {
+            padding: 28px;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .route-hero-content {
+            min-width: 0;
+            flex: 1 1 560px;
+        }
+
+        .route-hero-side {
+            flex: 0 1 620px;
+            max-width: 620px;
+            min-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .route-title {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.1;
+            color: #18221e;
+            margin-bottom: 10px;
+        }
+
+        .route-subtitle {
+            font-size: 17px;
+            color: #64766f;
+            margin-bottom: 0;
+            max-width: 760px;
+        }
+
+        .route-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            background: #eef8f2;
+            color: #177b46;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .route-main-grid {
+            display: grid;
+            grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .route-plan-card,
+        .route-map-card {
+            overflow: hidden;
+            min-height: 720px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .route-plan-card {
+            padding: 22px;
+        }
+
+        .route-card-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #18231f;
+            margin-bottom: 8px;
+        }
+
+        .route-card-subtitle {
+            font-size: 15px;
+            color: #697a73;
+            margin-bottom: 20px;
+        }
+
+        .route-group {
+            margin-bottom: 16px;
+        }
+
+        .route-label {
+            display: block;
+            font-size: 15px;
+            font-weight: 700;
+            color: #22312c;
+            margin-bottom: 8px;
+        }
+
+        .route-plan-card .form-control,
+        .route-plan-card .custom-select {
+            min-height: 48px;
+            border-radius: 14px;
+            border: 1px solid #dce6e2;
+            box-shadow: none !important;
+            font-size: 15px;
+        }
+
+            .route-plan-card .form-control:focus,
+            .route-plan-card .custom-select:focus {
+                border-color: #1faa5f;
+            }
+
+        .route-place-wrap {
+            position: relative;
+        }
+
+        .route-start-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .route-location-btn {
+            min-height: 38px;
+            border-radius: 999px;
+            font-weight: 800;
+            padding-left: 16px;
+            padding-right: 16px;
+            box-shadow: none !important;
+        }
+
+        .route-place-detail {
+            margin-top: 8px;
+            display: none;
+            border-radius: 14px;
+            border: 1px solid #dce6e2;
+            background: #f8fbfa;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #4e635b;
+            line-height: 1.5;
+        }
+
+            .route-place-detail.is-visible {
+                display: block;
+            }
+
+            .route-place-detail strong {
+                color: #1c2a25;
+            }
+
+        .route-suggest-box {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            z-index: 40;
+            display: none;
+            max-height: 320px;
+            overflow: auto;
+            border-radius: 18px;
+            border: 1px solid #dfe8e4;
+            background: #ffffff;
+            box-shadow: 0 18px 44px rgba(15, 25, 21, 0.12);
+        }
+
+            .route-suggest-box.is-open {
+                display: block;
+            }
+
+        .route-suggest-item {
+            width: 100%;
+            border: 0;
+            background: transparent;
+            text-align: left;
+            padding: 12px 14px;
+            border-bottom: 1px solid #eef3f0;
+            cursor: pointer;
+        }
+
+            .route-suggest-item:last-child {
+                border-bottom: 0;
+            }
+
+            .route-suggest-item:hover,
+            .route-suggest-item:focus {
+                background: #f3faf6;
+                outline: none;
+            }
+
+        .route-suggest-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #1c2a25;
+            margin-bottom: 4px;
+        }
+
+        .route-suggest-address {
+            font-size: 12px;
+            color: #667871;
+            line-height: 1.5;
+        }
+
+        .route-suggest-empty {
+            padding: 14px;
+            font-size: 13px;
+            color: #667871;
+        }
+
+        .route-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .route-action-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+            .route-action-row .btn {
+                min-height: 48px;
+                border-radius: 14px;
+                font-weight: 700;
+                box-shadow: none !important;
+            }
+
+        .route-go-now-btn {
+            width: 100%;
+            min-height: 48px;
+            border-radius: 14px;
+            font-weight: 700;
+            margin-top: 12px;
+            display: none;
+            box-shadow: none !important;
+        }
+
+            .route-go-now-btn.is-visible {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+        .route-list-group-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #18231f;
+            margin: 4px 0 12px;
+        }
+
+        .route-note {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px dashed #d1e2da;
+            background: #f8fbfa;
+            font-size: 14px;
+            color: #5a6d66;
+        }
+
+        .route-map-topbar {
+            padding: 20px 22px;
+            border-bottom: 1px solid #eef3f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+            .route-map-topbar p {
+                margin: 0;
+                font-size: 14px;
+                color: #687a73;
+            }
+
+        .route-map-chip {
+            border-radius: 999px;
+            background: #f4f8f6;
+            color: #466359;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        #routeMap {
+            width: 100%;
+            flex: 1 1 auto;
+            min-height: 640px;
+            background: #f6faf8;
+        }
+
+            #routeMap.route-map-failed {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 24px;
+                background: #fff5f5;
+            }
+
+        .route-map-message {
+            max-width: 460px;
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.7;
+            color: #b42318;
+        }
+
+        .route-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .route-summary-card {
+            padding: 20px 22px;
+        }
+
+        .route-summary-label {
+            font-size: 14px;
+            color: #71827b;
+            margin-bottom: 10px;
+        }
+
+        .route-summary-value {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.05;
+            color: #17231f;
+        }
+
+        .route-stop-card {
+            padding: 22px;
+        }
+
+        .route-stop-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .route-stop-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .route-stop-item {
+            border: 1px solid #e8efec;
+            border-radius: 20px;
+            background: linear-gradient(180deg, #ffffff 0%, #fafdfb 100%);
+            padding: 18px;
+        }
+
+        .route-stop-index {
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            background: #177b46;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .route-stop-row {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+
+        .route-stop-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #18231f;
+            margin-bottom: 6px;
+        }
+
+        .route-stop-address {
+            font-size: 14px;
+            color: #667871;
+            margin-bottom: 10px;
+        }
+
+        .route-stop-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .route-stop-pill {
+            border-radius: 999px;
+            background: #f4f8f6;
+            color: #466359;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .route-stop-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+            .route-stop-actions .btn {
+                min-height: 38px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 700;
+                box-shadow: none !important;
+                padding: 8px 14px;
+            }
+
+        .route-stop-selected-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .route-selected-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            background: #eef8f2;
+            color: #177b46;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .route-station-compact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .route-station-compact-item {
+            border: 1px solid #e8efec;
+            border-radius: 18px;
+            background: #fff;
+            padding: 14px 16px;
+        }
+
+        .route-station-compact-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 8px;
+        }
+
+        .route-station-main {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .route-station-compact-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #18231f;
+            margin-bottom: 4px;
+        }
+
+        .route-station-compact-address {
+            font-size: 14px;
+            color: #667871;
+            margin-bottom: 8px;
+        }
+
+        .route-station-compact-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .route-station-compact-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+            .route-station-compact-actions .btn {
+                min-height: 36px;
+                border-radius: 999px;
+                font-size: 12px;
+                font-weight: 700;
+                padding: 7px 14px;
+                box-shadow: none !important;
+            }
+
+        .route-stop-toolbar {
+            margin-bottom: 18px;
+            padding: 16px 18px;
+            border: 1px solid #e6efeb;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #fbfdfc 0%, #f7faf9 100%);
+        }
+
+        .route-toolbar-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.6fr) repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            align-items: end;
+        }
+
+        .route-toolbar-field {
+            min-width: 0;
+        }
+
+        .route-toolbar-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #51655d;
+            margin-bottom: 6px;
+        }
+
+        .route-stop-toolbar .form-control,
+        .route-stop-toolbar .custom-select,
+        .route-stop-toolbar .btn {
+            min-height: 44px;
+            border-radius: 12px;
+            box-shadow: none !important;
+        }
+
+        .route-stop-toolbar .form-control,
+        .route-stop-toolbar .custom-select {
+            border: 1px solid #dbe7e2;
+        }
+
+        .route-toolbar-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: end;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .route-stop-list-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+
+        .route-stop-list-meta-text {
+            font-size: 14px;
+            color: #63766e;
+        }
+
+        .route-count-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #eef7f2;
+            color: #177b46;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .route-section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .route-section-subtitle {
+            font-size: 13px;
+            color: #72847d;
+        }
+
+        .route-stop-list,
+        .route-station-compact-list,
+        .route-stop-selected-list {
+            gap: 12px;
+        }
+
+        .route-stop-item,
+        .route-station-compact-item {
+            box-shadow: 0 8px 18px rgba(15, 25, 21, 0.04);
+        }
+
+        .route-pagination {
+            margin-top: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+            .route-pagination .btn {
+                min-width: 40px;
+                height: 40px;
+                border-radius: 12px;
+                font-weight: 700;
+                box-shadow: none !important;
+            }
+
+        .route-pagination-status {
+            font-size: 13px;
+            color: #6b7d76;
+            margin: 0 4px;
+        }
+
+        /* Why changed: add route overview and stop timeline like the requested UI screenshot. */
+        .route-overview-panel,
+        .route-timeline-panel {
+            background: #fff;
+            border-radius: 24px;
+            border: 1px solid #e8efec;
+            box-shadow: 0 14px 36px rgba(15, 25, 21, 0.07);
+            padding: 24px;
+        }
+
+        .route-overview-title,
+        .route-timeline-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 20px;
+            font-size: 26px;
+            font-weight: 900;
+            color: #0f2019;
+            letter-spacing: -0.03em;
+        }
+
+            .route-overview-title i,
+            .route-timeline-title i {
+                color: #033a2d;
+                font-size: 20px;
+            }
+
+        .route-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .route-overview-metric {
+            min-height: 78px;
+            border: 1px solid #dfeae5;
+            background: linear-gradient(180deg, #fbfdfc 0%, #f8fbfa 100%);
+            border-radius: 22px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .route-overview-label {
+            font-size: 13px;
+            font-weight: 800;
+            color: #5d7068;
+            margin-bottom: 6px;
+        }
+
+        .route-overview-value {
+            font-size: 26px;
+            font-weight: 900;
+            line-height: 1.05;
+            color: #071a16;
+            letter-spacing: -0.03em;
+        }
+
+        .route-overview-status {
+            display: inline-flex;
+            width: fit-content;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 900;
+            background: #eef7f2;
+            color: #137a43;
+        }
+
+            .route-overview-status.is-danger {
+                background: #ffe4e1;
+                color: #b42318;
+            }
+
+            .route-overview-status.is-warning {
+                background: #fff3cf;
+                color: #9a5b00;
+            }
+
+            .route-overview-status.is-muted {
+                background: #eef3f0;
+                color: #52675e;
+            }
+
+        .route-timeline-list {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+            .route-timeline-list.has-items::before {
+                content: '';
+                position: absolute;
+                top: 44px;
+                bottom: 44px;
+                left: 22px;
+                width: 2px;
+                background: linear-gradient(180deg, #12a46a 0%, #1d7df2 100%);
+                border-radius: 999px;
+            }
+
+        .route-timeline-row {
+            position: relative;
+            display: grid;
+            grid-template-columns: 58px minmax(0, 1fr);
+            gap: 0;
+            align-items: stretch;
+        }
+
+        .route-timeline-number {
+            position: relative;
+            z-index: 2;
+            width: 46px;
+            height: 46px;
+            border-radius: 18px;
+            border: 2px solid #d6eee2;
+            background: #ffffff;
+            color: #04724a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 16px;
+            box-shadow: 0 8px 20px rgba(15, 25, 21, 0.06);
+        }
+
+        .route-timeline-card {
+            border: 1px solid #dfeae5;
+            border-radius: 22px;
+            background: #ffffff;
+            padding: 18px;
+            min-width: 0;
+        }
+
+            .route-timeline-card.is-station {
+                border-color: #bfdbfe;
+                background: linear-gradient(180deg, #f8fcff 0%, #f6fbff 100%);
+            }
+
+            .route-timeline-card.is-end {
+                border-color: #d6eee2;
+                background: linear-gradient(180deg, #fbfefc 0%, #f5fbf7 100%);
+            }
+
+        .route-timeline-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .route-timeline-name {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 900;
+            color: #13241e;
+            line-height: 1.25;
+        }
+
+        .route-timeline-address {
+            font-size: 13px;
+            color: #64766f;
+            line-height: 1.45;
+            margin-bottom: 12px;
+        }
+
+        .route-timeline-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .route-timeline-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 8px 11px;
+            background: #eef3f0;
+            color: #31453d;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .route-timeline-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+            .route-timeline-actions .btn {
+                min-height: 38px;
+                border-radius: 999px;
+                font-weight: 800;
+                font-size: 12px;
+                padding: 8px 14px;
+                box-shadow: none !important;
+            }
+
+        .route-timeline-status-chip {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 7px 11px;
+            background: #e9f8ef;
+            color: #117a45;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+
+
+        .route-hero-actions {
+            width: 100%;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+            .route-hero-actions .btn {
+                min-height: 42px;
+                border-radius: 999px;
+                font-weight: 800;
+                box-shadow: none !important;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+
+
+        .route-login-required {
+            width: 100%;
+            max-width: 620px;
+            border-radius: 18px;
+            border: 1px solid #fde68a;
+            background: #fff7dc;
+            color: #7c4a03;
+            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: 800;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .route-login-required.is-visible {
+                display: flex;
+            }
+
+        .route-share-box {
+            width: 100%;
+            max-width: 620px;
+            display: none;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid #dceee5;
+            border-radius: 18px;
+            background: #f8fcfa;
+            box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.03);
+            align-items: center;
+            min-width: 0;
+        }
+
+            .route-share-box.is-visible {
+                display: grid;
+            }
+
+        .route-share-input-wrap {
+            position: relative;
+            min-width: 0;
+        }
+
+            .route-share-input-wrap i {
+                position: absolute;
+                top: 50%;
+                left: 15px;
+                transform: translateY(-50%);
+                color: #0f7a4a;
+                font-size: 14px;
+                pointer-events: none;
+            }
+
+        .route-share-box input {
+            width: 100%;
+            min-height: 44px;
+            border-radius: 999px;
+            border: 1px solid #dce6e2;
+            padding: 0 15px 0 40px;
+            min-width: 0;
+            max-width: 100%;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1f332a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            background: #fff;
+            outline: none;
+            box-shadow: none !important;
+        }
+
+            .route-share-box input:focus {
+                border-color: #1faa5f;
+            }
+
+        .route-share-box .btn {
+            min-height: 44px;
+            border-radius: 999px;
+            font-weight: 900;
+            flex: 0 0 auto;
+            box-shadow: none !important;
+            white-space: nowrap;
+        }
+
+            .route-share-box .btn.is-copied {
+                background: #159957;
+                border-color: #159957;
+                color: #ffffff;
+            }
+
+
+        .route-history-shortcut {
+            background: #fff;
+            border-radius: 24px;
+            border: 1px solid #e8efec;
+            box-shadow: 0 14px 36px rgba(15, 25, 21, 0.07);
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+            .route-history-shortcut p {
+                margin: 0;
+                color: #63766e;
+                font-size: 15px;
+            }
+
+            .route-history-shortcut .btn {
+                border-radius: 999px;
+                font-weight: 800;
+                min-height: 44px;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+        .route-history-card {
+            background: #fff;
+            border-radius: 24px;
+            border: 1px solid #e8efec;
+            box-shadow: 0 14px 36px rgba(15, 25, 21, 0.07);
+            padding: 22px;
+        }
+
+        .route-history-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .route-history-tools {
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) 170px 130px;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+            .route-history-tools .form-control,
+            .route-history-tools .custom-select {
+                min-height: 44px;
+                border-radius: 14px;
+                border: 1px solid #dce6e2;
+                box-shadow: none !important;
+            }
+
+        .route-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .route-history-item {
+            border: 1px solid #e5eeea;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%);
+            border-radius: 20px;
+            padding: 16px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .route-history-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .route-history-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #18231f;
+            margin: 0;
+        }
+
+        .route-history-path {
+            font-size: 14px;
+            color: #50635c;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .route-history-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .route-history-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            min-width: 300px;
+        }
+
+            .route-history-actions .btn {
+                border-radius: 999px;
+                font-weight: 800;
+                min-height: 38px;
+                box-shadow: none !important;
+            }
+
+        .route-star-btn {
+            border: 0;
+            background: #fff7dc;
+            color: #a16207;
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 0 1px #fde68a;
+        }
+
+            .route-star-btn.is-active {
+                background: #facc15;
+                color: #422006;
+                box-shadow: none;
+            }
+
+        .route-history-status {
+            border-radius: 999px;
+            background: #eef8f2;
+            color: #177b46;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 900;
+        }
+
+        .route-empty,
+        .route-error,
+        .route-loading {
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .route-empty,
+        .route-loading {
+            background: #f7faf9;
+            color: #556861;
+            border: 1px dashed #d3e2db;
+        }
+
+        .route-error {
+            background: #fff5f5;
+            color: #b42318;
+            border: 1px dashed #f0c2c2;
+        }
+
+        .route-main-grid > *,
+        .route-summary-grid > *,
+        .route-overview-grid > *,
+        .route-timeline-card {
+            min-width: 0;
+        }
+
+        @@media (max-width: 1199.98px) {
+            .route-toolbar-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .route-main-grid,
+            .route-summary-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .route-overview-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @@media (max-width: 991.98px) {
+            .route-main-grid,
+            .route-summary-grid,
+            .route-toolbar-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .route-toolbar-actions {
+                justify-content: stretch;
+            }
+
+                .route-toolbar-actions .btn {
+                    width: 100%;
+                }
+
+            .route-history-tools,
+            .route-history-item {
+                grid-template-columns: 1fr;
+            }
+
+            .route-history-actions {
+                justify-content: stretch;
+                min-width: 0;
+            }
+
+                .route-history-actions .btn {
+                    flex: 1 1 120px;
+                }
+
+            .route-hero-side {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+                align-items: stretch;
+            }
+
+            .route-hero-actions {
+                justify-content: flex-start;
+            }
+
+            .route-share-box,
+            .route-login-required {
+                max-width: 100%;
+            }
+
+            .route-share-box {
+                grid-template-columns: 1fr;
+            }
+
+                .route-share-box .btn {
+                    width: 100%;
+                }
+
+            #routeMap {
+                height: 480px;
+            }
+        }
+
+        @@media (max-width: 767.98px) {
+            .route-page {
+                padding-top: 20px;
+            }
+
+            .route-title {
+                font-size: 34px;
+            }
+
+            .route-hero-actions .btn {
+                flex: 1 1 100%;
+            }
+
+            .route-grid-2,
+            .route-action-row,
+            .route-overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .route-start-actions {
+                justify-content: stretch;
+            }
+
+                .route-start-actions .btn {
+                    width: 100%;
+                }
+
+            .route-overview-panel,
+            .route-timeline-panel {
+                padding: 18px;
+            }
+
+            .route-timeline-row {
+                grid-template-columns: 44px minmax(0, 1fr);
+            }
+
+            .route-timeline-number {
+                width: 36px;
+                height: 36px;
+                border-radius: 14px;
+            }
+
+            .route-timeline-list.has-items::before {
+                left: 17px;
+            }
+
+            .route-stop-card,
+            .route-plan-card,
+            .route-summary-card,
+            .route-overview-metric,
+            .route-timeline-card {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .route-stop-actions,
+            .route-station-compact-actions,
+            .route-timeline-actions {
+                flex-direction: column;
+            }
+
+                .route-stop-actions .btn,
+                .route-station-compact-actions .btn,
+                .route-timeline-actions .btn {
+                    width: 100%;
+                }
+        }
+    </style>
+}
+
+<div class="sub_banner_outer position-relative user-header-shell">
+    @await Html.PartialAsync("_UserHeader")
+</div>
+
+<section class="route-page">
+    <div class="container">
+        @Html.AntiForgeryToken()
+        <div class="route-shell">
+            <div class="route-hero">
+                <div class="route-hero-content">
+                    <div class="route-tag mb-3"><i class="fa-solid fa-route"></i> Lộ trình thông minh</div>
+                    <h1 class="route-title">Lập, lưu và chia sẻ lộ trình sạc</h1>
+                    <p class="route-subtitle">
+                        Người dùng có thể xem lại lịch sử chuyến đi, bấm sao để lưu lộ trình hay dùng,
+                        mở lại lần sau và chia sẻ đường đi cho người khác bằng liên kết.
+                    </p>
+                </div>
+                <div class="route-hero-side">
+                    <div class="route-hero-actions">
+                        <button type="button" id="btnSaveCurrentRoute" class="btn btn-outline-success" disabled>
+                            <i class="fa-solid fa-floppy-disk mr-2"></i>Lưu lộ trình
+                        </button>
+                        <button type="button" id="btnFavoriteCurrentRoute" class="btn btn-outline-warning" disabled>
+                            <i class="fa-regular fa-star mr-2"></i>Yêu thích
+                        </button>
+                        <button type="button" id="btnShareCurrentRoute" class="btn btn-outline-dark" disabled>
+                            <i class="fa-solid fa-share-nodes mr-2"></i>Chia sẻ
+                        </button>
+                    </div>
+                    <div id="routeLoginRequired" class="route-login-required">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Bạn cần đăng nhập để lưu, gắn sao hoặc chia sẻ lộ trình.</span>
+                        <a asp-area="User" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Url.Action("Route", "Home", new { area = "User" })">Đăng nhập ngay</a>
+                    </div>
+                    <div id="routeShareBox" class="route-share-box">
+                        <div class="route-share-input-wrap">
+                            <i class="fa-solid fa-link"></i>
+                            <input id="routeShareInput" type="text" readonly placeholder="Liên kết chia sẻ sẽ hiển thị ở đây" />
+                        </div>
+                        <button type="button" id="btnCopyShareRoute" class="btn btn-dark">
+                            <i class="fa-regular fa-copy mr-2"></i>Copy link
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="route-main-grid">
+                <div class="route-plan-card">
+                    <h2 class="route-card-title">Thông tin chuyến đi</h2>
+                    @* <p class="route-card-subtitle">Nhập điểm đi, điểm đến và ngưỡng pin an toàn để hệ thống đề xuất trạm dừng.</p> *@
+
+                    <div class="route-group">
+                        <label class="route-label">Điểm đi</label>
+                        <div class="route-place-wrap">
+                            <input id="startPoint" type="text" class="form-control" placeholder="Ví dụ: Bắc Ninh" autocomplete="off" />
+                            <div id="startSuggestBox" class="route-suggest-box"></div>
+                        </div>
+                        <div class="route-start-actions">
+                            <button type="button" id="btnUseMyLocation" class="btn btn-outline-success route-location-btn">
+                                <i class="fa-solid fa-location-crosshairs mr-2"></i>Vị trí của tôi
+                            </button>
+                        </div>
+                        <div id="startPlaceDetail" class="route-place-detail"></div>
+                    </div>
+
+                    <div class="route-group">
+                        <label class="route-label">Điểm đến</label>
+                        <div class="route-place-wrap">
+                            <input id="endPoint" type="text" class="form-control" placeholder="Ví dụ: Nghệ An" autocomplete="off" />
+                            <div id="endSuggestBox" class="route-suggest-box"></div>
+                        </div>
+                        <div id="endPlaceDetail" class="route-place-detail"></div>
+                    </div>
+
+                    <div class="route-grid-2">
+                        <div class="route-group">
+                            <label class="route-label">Tầm hoạt động tối đa</label>
+                            <input id="vehicleRangeKm" type="number" min="100" max="1000" step="10" value="400" class="form-control" />
+                        </div>
+                        <div class="route-group">
+                            <label class="route-label">Pin hiện tại (%)</label>
+                            <input id="startBattery" type="number" min="10" max="100" step="5" value="80" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="route-grid-2">
+                        <div class="route-group">
+                            <label class="route-label">Pin dự phòng tối thiểu</label>
+                            <input id="reserveBattery" type="number" min="5" max="40" step="5" value="20" class="form-control" />
+                        </div>
+                        <div class="route-group">
+                            <label class="route-label">Lệch tối đa khỏi tuyến</label>
+                            <select id="maxDetourKm" class="custom-select">
+                                <option value="5">5 km</option>
+                                <option value="10" selected>10 km</option>
+                                <option value="15">15 km</option>
+                                <option value="20">20 km</option>
+                                <option value="30">30 km</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="route-action-row">
+                        <button type="button" id="btnPlanRoute" class="btn btn-success">
+                            <i class="fa-solid fa-bolt mr-2"></i>Lập kế hoạch
+                        </button>
+                        <button type="button" id="btnResetRoute" class="btn btn-outline-secondary">
+                            <i class="fa-solid fa-rotate-left mr-2"></i>Làm mới
+                        </button>
+                    </div>
+
+                    <button type="button" id="btnGoNow" class="btn btn-dark route-go-now-btn">
+                        <i class="fa-solid fa-route mr-2"></i>Đi ngay bằng Google Maps
+                    </button>
+
+                    <div class="route-note" id="routeNote">
+                        Gợi ý lập kế hoạch: hệ thống ưu tiên trạm <strong>Đang hoạt động</strong>, gần tuyến và đủ để xe luôn giữ lại mức pin dự phòng bạn đã chọn.
+                    </div>
+                </div>
+
+                <div class="route-map-card">
+                    <div class="route-map-topbar">
+                        <div>
+                            <h2 class="route-card-title mb-1">Bản đồ hành trình</h2>
+                            <p id="routeMapHint">Chưa có dữ liệu hành trình.</p>
+                        </div>
+                        <div class="route-map-chip" id="routeMapChip">0 điểm dừng</div>
+                    </div>
+                    <div id="routeMap"></div>
+                </div>
+            </div>
+
+            <div class="route-overview-panel">
+                <h2 class="route-overview-title"><i class="fa-solid fa-chart-simple"></i>Tổng Quan Lộ Trình</h2>
+                <div class="route-overview-grid">
+                    <article class="route-overview-metric">
+                        <div class="route-overview-label">Tổng quãng đường</div>
+                        <div id="summaryTotalDistance" class="route-overview-value">0 km</div>
+                    </article>
+                    <article class="route-overview-metric">
+                        <div class="route-overview-label">Thời gian dự kiến</div>
+                        <div id="summaryEstimatedTime" class="route-overview-value">0 phút</div>
+                    </article>
+                    <article class="route-overview-metric">
+                        <div class="route-overview-label">Quãng đường an toàn</div>
+                        <div id="summaryFirstLeg" class="route-overview-value">0 km</div>
+                    </article>
+                    <article class="route-overview-metric">
+                        <div class="route-overview-label">Số trạm cần dùng</div>
+                        <div id="summaryStopCount" class="route-overview-value">0 trạm</div>
+                    </article>
+                    <article class="route-overview-metric">
+                        <div class="route-overview-label">Tầm xe tối đa</div>
+                        <div id="summaryVehicleRange" class="route-overview-value">0 km</div>
+                    </article>
+                    <article class="route-overview-metric">
+                        <div class="route-overview-label">Pin hiện tại</div>
+                        <div id="summaryStartBattery" class="route-overview-value">0%</div>
+                    </article>
+                    <article class="route-overview-metric">
+                        <div class="route-overview-label">Pin an toàn</div>
+                        <div id="summaryReserveBattery" class="route-overview-value">0%</div>
+                    </article>
+                    <article class="route-overview-metric">
+                        <div class="route-overview-label">Trạng thái</div>
+                        <div id="summaryStatus" class="route-overview-status is-muted"><i class="fa-solid fa-circle-info"></i>Chưa lập</div>
+                    </article>
+                </div>
+            </div>
+
+            <div class="route-timeline-panel">
+                <h2 class="route-timeline-title"><i class="fa-solid fa-route"></i>Timeline Điểm Dừng</h2>
+                <div id="routeTimelineList" class="route-timeline-list">
+                    <div class="route-empty">Lập kế hoạch để xem tuyến đi, trạm cần sạc và mức pin dự kiến theo từng điểm.</div>
+                </div>
+            </div>
+
+            <div class="route-history-shortcut">
+                <div>
+                    <h2 class="route-card-title mb-1">Lịch sử lộ trình đã lưu</h2>
+                    <p>Danh sách lịch sử, lộ trình gắn sao và link chia sẻ đã được chuyển sang trang riêng để giao diện lập lộ trình gọn hơn.</p>
+                </div>
+                <a asp-area="User" asp-controller="Home" asp-action="RouteHistory" class="btn btn-success">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    Xem lịch sử lộ trình
+                </a>
+            </div>
+
+            <div class="route-stop-card">
+                <div class="route-stop-header">
+                    <div>
+                        <h2 class="route-card-title mb-1">Danh sách trạm dừng đề xuất</h2>
+                        @* <p class="route-card-subtitle mb-0">Danh sách này xếp theo tiến độ trên hành trình, không phải chỉ theo khoảng cách thẳng.</p> *@
+                    </div>
+                    <div class="route-map-chip" id="routeResultState">Chưa lập kế hoạch</div>
+                </div>
+
+                <div class="route-stop-toolbar">
+                    <div class="route-toolbar-grid">
+                        <div class="route-toolbar-field">
+                            <label class="route-toolbar-label" for="stationFilterKeyword">Tìm theo tên hoặc địa chỉ</label>
+                            <input id="stationFilterKeyword" type="text" class="form-control" placeholder="Ví dụ: Long Biên, Metro, Vincom..." />
+                        </div>
+                        <div class="route-toolbar-field">
+                            <label class="route-toolbar-label" for="stationFilterDetour">Lọc theo độ lệch</label>
+                            <select id="stationFilterDetour" class="custom-select">
+                                <option value="all">Tất cả</option>
+                                <option value="5">≤ 5 km</option>
+                                <option value="10">≤ 10 km</option>
+                                <option value="15">≤ 15 km</option>
+                                <option value="20">≤ 20 km</option>
+                            </select>
+                        </div>
+                        <div class="route-toolbar-field">
+                            <label class="route-toolbar-label" for="stationFilterSort">Sắp xếp</label>
+                            <select id="stationFilterSort" class="custom-select">
+                                <option value="progress">Ưu tiên theo hành trình</option>
+                                <option value="detour">Lệch tuyến thấp nhất</option>
+                                <option value="rating">Đánh giá cao nhất</option>
+                                <option value="ports">Nhiều trụ hoạt động nhất</option>
+                                <option value="name">Tên A-Z</option>
+                            </select>
+                        </div>
+                        <div class="route-toolbar-field">
+                            <label class="route-toolbar-label" for="stationPageSize">Hiển thị mỗi trang</label>
+                            <select id="stationPageSize" class="custom-select">
+                                <option value="4">4 trạm</option>
+                                <option value="6" selected>6 trạm</option>
+                                <option value="8">8 trạm</option>
+                                <option value="10">10 trạm</option>
+                            </select>
+                        </div>
+                        <div class="route-toolbar-field">
+                            <label class="route-toolbar-label">Trạng thái lọc</label>
+                            <div id="routeStopToolbarState" class="route-count-badge">Chưa có dữ liệu</div>
+                        </div>
+                    </div>
+                    <div class="route-toolbar-actions">
+                        <button type="button" id="btnClearStationFilter" class="btn btn-outline-secondary">
+                            <i class="fa-solid fa-filter-circle-xmark mr-2"></i>Xóa lọc
+                        </button>
+                    </div>
+                </div>
+
+                <div id="routeStopListMeta" class="route-stop-list-meta">
+                    <div class="route-stop-list-meta-text">Nhập thông tin chuyến đi để bắt đầu lập kế hoạch.</div>
+                </div>
+
+                <div id="routeStopList" class="route-stop-list">
+                    <div class="route-empty">Nhập thông tin chuyến đi để bắt đầu lập kế hoạch.</div>
+                </div>
+
+                <div id="routeStopPagination" class="route-pagination"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+@section Scripts {
+    <script>
+        const MAP4D_API_KEY = '@(Configuration["Map4D:ApiKey"] ?? "")';
+        const DEFAULT_MAP_CENTER = { lat: 16.5, lng: 107.5 };
+        const IS_ROUTE_AUTHENTICATED = @((User.Identity?.IsAuthenticated == true).ToString().ToLowerInvariant());
+        const LOGIN_ROUTE_URL = '@Url.Action("Login", "Account", new { area = "User", returnUrl = Url.Action("Route", "Home", new { area = "User" }) })';
+
+        let currentRouteHistoryId = null;
+        let currentRouteIsFavorite = false;
+        let currentRouteShareUrl = '';
+
+        const routeHistoryState = {
+            items: [],
+            keyword: '',
+            filter: 'all',
+            page: 1,
+            pageSize: 5
+        };
+
+        let routeMap = null;
+        let mapReadyPromise = null;
+        let startMarker = null;
+        let endMarker = null;
+        let routeLine = null;
+        let corridorMarkers = [];
+        let stopMarkers = [];
+        let focusMarker = null;
+        let latestTripContext = null;
+        // Why changed: keep list filters and pagination stable after each route update.
+        const routeListState = {
+            keyword: '',
+            detourLimit: 'all',
+            sortBy: 'progress',
+            page: 1,
+            pageSize: 6
+        };
+
+        const placePickerState = {
+            start: { selected: null, debounceId: null },
+            end: { selected: null, debounceId: null }
+        };
+
+        function isVietnamCoordinate(lat, lng) {
+            const nLat = Number(lat);
+            const nLng = Number(lng);
+            return Number.isFinite(nLat) && Number.isFinite(nLng) &&
+                nLat >= 8.0 && nLat <= 23.8 &&
+                nLng >= 102.0 && nLng <= 110.5;
+        }
+
+        // Ràng buộc mềm theo hình chữ S của Việt Nam. BBox cũ vẫn chứa Lào/Campuchia,
+        // nên cần thêm lớp kiểm tra này để không nhận tuyến OSRM chạy vòng sang nước ngoài.
+        function getVietnamMinLngByLat(lat) {
+            const points = [
+                [23.4, 102.0], [22.2, 102.1], [21.0, 102.4], [20.0, 103.0],
+                [19.0, 103.8], [18.0, 104.9], [17.0, 105.7], [16.0, 106.5],
+                [15.0, 107.0], [14.0, 107.1], [13.0, 107.0], [12.0, 106.7],
+                [11.0, 106.0], [10.0, 104.6], [9.0, 104.55], [8.3, 104.5]
+            ];
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const [latA, lngA] = points[i];
+                const [latB, lngB] = points[i + 1];
+                if ((lat <= latA && lat >= latB) || (lat >= latA && lat <= latB)) {
+                    const t = (lat - latA) / (latB - latA || 1);
+                    return lngA + (lngB - lngA) * t;
+                }
+            }
+
+            return lat >= 15 ? 106.5 : 104.5;
+        }
+
+        function isLikelyInsideVietnamShape(lat, lng) {
+            const nLat = Number(lat);
+            const nLng = Number(lng);
+            if (!isVietnamCoordinate(nLat, nLng)) {
+                return false;
+            }
+
+            const minLng = getVietnamMinLngByLat(nLat) - 0.35;
+            const maxLng = nLat >= 15 ? 109.8 : 107.9;
+            return nLng >= minLng && nLng <= maxLng;
+        }
+
+        function isRouteInsideVietnam(routePath) {
+            if (!Array.isArray(routePath) || routePath.length < 2) {
+                return false;
+            }
+
+            const sampleStep = Math.max(1, Math.floor(routePath.length / 80));
+            let checked = 0;
+            let outside = 0;
+
+            for (let i = 0; i < routePath.length; i += sampleStep) {
+                const point = routePath[i];
+                checked++;
+                if (!isLikelyInsideVietnamShape(point.lat, point.lng)) {
+                    outside++;
+                }
+            }
+
+            return checked > 0 && outside / checked <= 0.08;
+        }
+
+        function getVietnamRoadSpine() {
+            return [
+                { lat: 22.8233, lng: 104.9836, name: 'Hà Giang' },
+                { lat: 21.3227, lng: 105.4020, name: 'Phú Thọ' },
+                { lat: 21.0285, lng: 105.8542, name: 'Hà Nội' },
+                { lat: 20.2506, lng: 105.9745, name: 'Ninh Bình' },
+                { lat: 19.8075, lng: 105.7767, name: 'Thanh Hóa' },
+                { lat: 18.6796, lng: 105.6813, name: 'Vinh' },
+                { lat: 17.4689, lng: 106.6223, name: 'Đồng Hới' },
+                { lat: 16.4637, lng: 107.5909, name: 'Huế' },
+                { lat: 16.0544, lng: 108.2022, name: 'Đà Nẵng' },
+                { lat: 15.1205, lng: 108.7923, name: 'Quảng Ngãi' },
+                { lat: 13.7820, lng: 109.2190, name: 'Quy Nhơn' },
+                { lat: 12.2388, lng: 109.1967, name: 'Nha Trang' },
+                { lat: 11.5643, lng: 108.9886, name: 'Phan Rang' },
+                { lat: 10.9333, lng: 108.1000, name: 'Phan Thiết' },
+                { lat: 10.8231, lng: 106.6297, name: 'TP.HCM' },
+                { lat: 10.0452, lng: 105.7469, name: 'Cần Thơ' },
+                { lat: 9.1768, lng: 105.1524, name: 'Cà Mau' }
+            ];
+        }
+
+        function buildDomesticRoutePoints(start, end) {
+            const spine = getVietnamRoadSpine();
+            const northToSouth = start.lat >= end.lat;
+            const upperLat = Math.max(start.lat, end.lat);
+            const lowerLat = Math.min(start.lat, end.lat);
+            let middle = spine.filter(point => point.lat < upperLat - 0.18 && point.lat > lowerLat + 0.18);
+
+            middle.sort((a, b) => northToSouth ? b.lat - a.lat : a.lat - b.lat);
+
+            const points = [
+                { lat: Number(start.lat), lng: Number(start.lng) },
+                ...middle.map(point => ({ lat: point.lat, lng: point.lng })),
+                { lat: Number(end.lat), lng: Number(end.lng) }
+            ];
+
+            const compact = [];
+            for (const point of points) {
+                const previous = compact[compact.length - 1];
+                if (!previous || calculateDistanceKm(previous.lat, previous.lng, point.lat, point.lng) > 12) {
+                    compact.push(point);
+                }
+            }
+
+            return compact;
+        }
+
+        function buildDomesticDrivingRouteApproximation(start, end) {
+            const controlPoints = buildDomesticRoutePoints(start, end);
+            const path = [];
+            let directDistance = 0;
+
+            for (let i = 0; i < controlPoints.length - 1; i++) {
+                const a = controlPoints[i];
+                const b = controlPoints[i + 1];
+                directDistance += calculateDistanceKm(a.lat, a.lng, b.lat, b.lng);
+                const segmentSteps = Math.max(2, Math.ceil(calculateDistanceKm(a.lat, a.lng, b.lat, b.lng) / 35));
+
+                for (let step = 0; step <= segmentSteps; step++) {
+                    if (i > 0 && step === 0) {
+                        continue;
+                    }
+
+                    const t = step / segmentSteps;
+                    path.push({
+                        lat: a.lat + (b.lat - a.lat) * t,
+                        lng: a.lng + (b.lng - a.lng) * t
+                    });
+                }
+            }
+
+            return {
+                distanceKm: directDistance * 1.16,
+                path
+            };
+        }
+
+        function showRouteLoginRequired() {
+            document.getElementById('routeLoginRequired')?.classList.add('is-visible');
+        }
+
+        function requireRouteLogin() {
+            if (IS_ROUTE_AUTHENTICATED) {
+                return true;
+            }
+
+            showRouteLoginRequired();
+            if (confirm('Bạn cần đăng nhập để lưu, yêu thích hoặc chia sẻ lộ trình. Chuyển đến trang đăng nhập?')) {
+                window.location.href = LOGIN_ROUTE_URL;
+            }
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            bindRouteEvents();
+
+            try {
+                await ensureRouteMapReady();
+            } catch (error) {
+                console.error(error);
+                showMapLoadError(error.message || 'Không tải được bản đồ Map4D.');
+            }
+        });
+
+        function bindRouteEvents() {
+            document.getElementById('btnPlanRoute')?.addEventListener('click', planTrip);
+            document.getElementById('btnResetRoute')?.addEventListener('click', resetRoutePage);
+            document.getElementById('btnGoNow')?.addEventListener('click', openPlannedTripInGoogleMaps);
+            document.getElementById('btnUseMyLocation')?.addEventListener('click', useCurrentLocationAsStart);
+
+            setupPlaceAutosuggest('start');
+            setupPlaceAutosuggest('end');
+
+            document.addEventListener('click', function (event) {
+                if (!(event.target instanceof Element)) {
+                    return;
+                }
+
+                if (!event.target.closest('.route-place-wrap')) {
+                    closeSuggestBox('start');
+                    closeSuggestBox('end');
+                }
+            });
+
+            // Why changed: allow enterprise-style filtering and pagination for the station list.
+            document.getElementById('stationFilterKeyword')?.addEventListener('input', function (event) {
+                routeListState.keyword = String(event.target.value || '').trim();
+                routeListState.page = 1;
+                rerenderRouteStopsFromContext();
+            });
+
+            document.getElementById('stationFilterDetour')?.addEventListener('change', function (event) {
+                routeListState.detourLimit = String(event.target.value || 'all');
+                routeListState.page = 1;
+                rerenderRouteStopsFromContext();
+            });
+
+            document.getElementById('stationFilterSort')?.addEventListener('change', function (event) {
+                routeListState.sortBy = String(event.target.value || 'progress');
+                routeListState.page = 1;
+                rerenderRouteStopsFromContext();
+            });
+
+            document.getElementById('stationPageSize')?.addEventListener('change', function (event) {
+                routeListState.pageSize = Math.max(1, Number(event.target.value || 6));
+                routeListState.page = 1;
+                rerenderRouteStopsFromContext();
+            });
+
+            document.getElementById('btnClearStationFilter')?.addEventListener('click', resetRouteListFilters);
+
+            document.getElementById('btnSaveCurrentRoute')?.addEventListener('click', function () {
+                saveCurrentRouteFromButton(false);
+            });
+
+            document.getElementById('btnFavoriteCurrentRoute')?.addEventListener('click', function () {
+                saveCurrentRouteFromButton(true);
+            });
+
+            document.getElementById('btnShareCurrentRoute')?.addEventListener('click', shareCurrentRoute);
+            document.getElementById('btnCopyShareRoute')?.addEventListener('click', copyCurrentShareLink);
+
+            document.getElementById('routeHistoryKeyword')?.addEventListener('input', function (event) {
+                routeHistoryState.keyword = String(event.target.value || '').trim();
+                routeHistoryState.page = 1;
+                renderRouteHistoryList();
+            });
+
+            document.getElementById('routeHistoryFilter')?.addEventListener('change', function (event) {
+                routeHistoryState.filter = String(event.target.value || 'all');
+                routeHistoryState.page = 1;
+                renderRouteHistoryList();
+            });
+
+            document.getElementById('routeHistoryPageSize')?.addEventListener('change', function (event) {
+                routeHistoryState.pageSize = Math.max(1, Number(event.target.value || 5));
+                routeHistoryState.page = 1;
+                renderRouteHistoryList();
+            });
+
+            loadRouteHistoryFromServer();
+            loadSharedRouteFromUrl();
+            loadReusableRouteFromQuery();
+            loadReusableRouteFromSession();
+        }
+
+        function ensureRouteMapReady() {
+            if (routeMap) {
+                return Promise.resolve(routeMap);
+            }
+
+            if (mapReadyPromise) {
+                return mapReadyPromise;
+            }
+
+            mapReadyPromise = new Promise((resolve, reject) => {
+                if (!MAP4D_API_KEY || MAP4D_API_KEY.includes('DAN_KEY_MAP4D_CUA_BAN_VAO_DAY')) {
+                    reject(new Error('Bạn chưa dán API key Map4D vào Route.cshtml.'));
+                    return;
+                }
+
+                if (window.map4d) {
+                    try {
+                        initRouteMap();
+                        resolve(routeMap);
+                    } catch (error) {
+                        reject(error);
+                    }
+                    return;
+                }
+
+                // Why changed: register the callback first so the SDK can initialize safely.
+                window.__map4dRouteSdkLoaded = function () {
+                    try {
+                        initRouteMap();
+                        resolve(routeMap);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+
+                const existingScript = document.getElementById('map4d-sdk-script');
+                if (existingScript) {
+                    existingScript.addEventListener('error', function () {
+                        reject(new Error('Không tải được file SDK từ Map4D.'));
+                    }, { once: true });
+                    return;
+                }
+
+                const sdkScript = document.createElement('script');
+                sdkScript.id = 'map4d-sdk-script';
+                sdkScript.defer = true;
+                sdkScript.src = `https://api.map4d.vn/sdk/map/js?version=3.0&key=${encodeURIComponent(MAP4D_API_KEY)}&callback=__map4dRouteSdkLoaded`;
+                sdkScript.onerror = function () {
+                    reject(new Error('Không tải được file SDK từ Map4D. Hãy kiểm tra lại key và kết nối mạng.'));
+                };
+
+                document.head.appendChild(sdkScript);
+            });
+
+            return mapReadyPromise;
+        }
+
+        function initRouteMap() {
+            if (routeMap) {
+                return;
+            }
+
+            const mapElement = document.getElementById('routeMap');
+            mapElement.classList.remove('route-map-failed');
+            mapElement.innerHTML = '';
+
+            routeMap = new map4d.Map(mapElement, {
+                center: DEFAULT_MAP_CENTER,
+                zoom: 6,
+                controls: true
+            });
+        }
+
+
+        function setupPlaceAutosuggest(prefix) {
+            const inputId = prefix === 'start' ? 'startPoint' : 'endPoint';
+            const input = document.getElementById(inputId);
+
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener('input', function () {
+                placePickerState[prefix].selected = null;
+                renderSelectedPlace(prefix, null);
+
+                const keyword = input.value.trim();
+                window.clearTimeout(placePickerState[prefix].debounceId);
+
+                if (keyword.length < 2) {
+                    renderSuggestItems(prefix, []);
+                    return;
+                }
+
+                placePickerState[prefix].debounceId = window.setTimeout(async function () {
+                    try {
+                        const items = await fetchPlaceSuggestions(keyword);
+                        renderSuggestItems(prefix, items);
+                    } catch (error) {
+                        console.error(error);
+                        renderSuggestItems(prefix, [], 'Không lấy được gợi ý địa điểm.');
+                    }
+                }, 280);
+            });
+
+            input.addEventListener('focus', function () {
+                const keyword = input.value.trim();
+                if (keyword.length >= 2) {
+                    window.clearTimeout(placePickerState[prefix].debounceId);
+                    placePickerState[prefix].debounceId = window.setTimeout(async function () {
+                        try {
+                            const items = await fetchPlaceSuggestions(keyword);
+                            renderSuggestItems(prefix, items);
+                        } catch (error) {
+                            console.error(error);
+                        }
+                    }, 120);
+                }
+            });
+
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') {
+                    closeSuggestBox(prefix);
+                }
+            });
+        }
+
+        async function fetchPlaceSuggestions(keyword) {
+            const response = await fetch(`/User/Home/PlaceSuggest?keyword=${encodeURIComponent(keyword)}`);
+            if (!response.ok) {
+                throw new Error('Không tải được gợi ý địa điểm.');
+            }
+
+            const data = await response.json();
+            return Array.isArray(data)
+                ? data.filter(item => !item.lat || !item.lng || isLikelyInsideVietnamShape(item.lat, item.lng))
+                : [];
+        }
+
+        async function fetchResolvedPlace(keyword, placeId) {
+            const query = new URLSearchParams();
+            query.set('keyword', keyword || '');
+            if (placeId) {
+                query.set('placeId', placeId);
+            }
+
+            const response = await fetch(`/User/Home/PlaceResolve?${query.toString()}`);
+            if (!response.ok) {
+                return null;
+            }
+
+            const data = await response.json();
+            return data && data.success && data.item ? data.item : null;
+        }
+
+        function renderSuggestItems(prefix, items, fallbackMessage) {
+            const box = document.getElementById(`${prefix}SuggestBox`);
+            if (!box) {
+                return;
+            }
+
+            const safeItems = Array.isArray(items) ? items.slice(0, 8) : [];
+
+            if (safeItems.length === 0) {
+                if ((document.getElementById(prefix === 'start' ? 'startPoint' : 'endPoint')?.value || '').trim().length < 2) {
+                    box.innerHTML = '';
+                    box.classList.remove('is-open');
+                    return;
+                }
+
+                box.innerHTML = `<div class="route-suggest-empty">${escapeHtml(fallbackMessage || 'Không tìm thấy địa điểm phù hợp.')}</div>`;
+                box.classList.add('is-open');
+                return;
+            }
+
+            box.innerHTML = safeItems.map((item, index) => `
+                <button type="button"
+                        class="route-suggest-item"
+                        onclick="selectSuggestedPlace('${prefix}', ${index})">
+                    <div class="route-suggest-title">${escapeHtml(item.displayName || item.name || 'Địa điểm')}</div>
+                    <div class="route-suggest-address">${escapeHtml(item.address || item.displayName || '')}</div>
+                </button>
+            `).join('');
+
+            placePickerState[prefix].items = safeItems;
+            box.classList.add('is-open');
+        }
+
+        function closeSuggestBox(prefix) {
+            const box = document.getElementById(`${prefix}SuggestBox`);
+            if (!box) {
+                return;
+            }
+
+            box.classList.remove('is-open');
+        }
+
+        function selectSuggestedPlace(prefix, index) {
+            const items = Array.isArray(placePickerState[prefix].items) ? placePickerState[prefix].items : [];
+            const item = items[index];
+            if (!item) {
+                return;
+            }
+
+            const input = document.getElementById(prefix === 'start' ? 'startPoint' : 'endPoint');
+            if (input) {
+                input.value = item.displayName || item.name || '';
+            }
+
+            placePickerState[prefix].selected = item;
+            renderSelectedPlace(prefix, item);
+            closeSuggestBox(prefix);
+        }
+
+        function renderSelectedPlace(prefix, item) {
+            const detailElement = document.getElementById(`${prefix}PlaceDetail`);
+            if (!detailElement) {
+                return;
+            }
+
+            if (!item) {
+                detailElement.innerHTML = '';
+                detailElement.classList.remove('is-visible');
+                return;
+            }
+
+            const title = item.name || item.displayName || 'Địa điểm đã chọn';
+            const address = item.address || item.displayName || '';
+            detailElement.innerHTML = `
+                <strong>Đã chọn:</strong> ${escapeHtml(title)}
+                ${address ? `<br /><span>${escapeHtml(address)}</span>` : ''}
+            `;
+            detailElement.classList.add('is-visible');
+        }
+
+        function getBrowserCurrentPosition() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Trình duyệt của bạn chưa hỗ trợ lấy vị trí hiện tại.'));
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 12000,
+                    maximumAge: 60000
+                });
+            });
+        }
+
+        async function useCurrentLocationAsStart() {
+            const button = document.getElementById('btnUseMyLocation');
+            const originalHtml = button ? button.innerHTML : '';
+
+            try {
+                if (button) {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Đang lấy vị trí';
+                }
+
+                const position = await getBrowserCurrentPosition();
+                const lat = Number(position.coords.latitude);
+                const lng = Number(position.coords.longitude);
+
+                if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                    throw new Error('Không đọc được tọa độ vị trí hiện tại.');
+                }
+
+                if (!isLikelyInsideVietnamShape(lat, lng)) {
+                    throw new Error('Vị trí hiện tại có vẻ nằm ngoài Việt Nam nên chưa thể dùng để lập lộ trình trong hệ thống.');
+                }
+
+                const currentPlace = {
+                    id: 'my-current-location',
+                    lat,
+                    lng,
+                    name: 'Vị trí của tôi',
+                    displayName: 'Vị trí hiện tại của tôi',
+                    address: `Tọa độ ${lat.toFixed(5)}, ${lng.toFixed(5)}`
+                };
+
+                const startInput = document.getElementById('startPoint');
+                if (startInput) {
+                    startInput.value = currentPlace.displayName;
+                }
+
+                placePickerState.start.selected = currentPlace;
+                renderSelectedPlace('start', currentPlace);
+                closeSuggestBox('start');
+
+                if (routeMap) {
+                    focusStopOnMap(lat, lng, currentPlace.displayName);
+                }
+
+                document.getElementById('routeNote').innerHTML =
+                    'Đã dùng <strong>vị trí hiện tại của bạn</strong> làm điểm đi. Hãy nhập điểm đến rồi bấm <strong>Lập kế hoạch</strong>.';
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'Không lấy được vị trí hiện tại. Hãy bật quyền vị trí cho trình duyệt rồi thử lại.');
+            } finally {
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalHtml || '<i class="fa-solid fa-location-crosshairs mr-2"></i>Vị trí của tôi';
+                }
+            }
+        }
+
+        async function resolvePlaceInput(prefix) {
+            const input = document.getElementById(prefix === 'start' ? 'startPoint' : 'endPoint');
+            const rawText = String(input?.value || '').trim();
+
+            if (!rawText) {
+                return null;
+            }
+
+            const selected = placePickerState[prefix].selected;
+            if (selected && Number.isFinite(Number(selected.lat)) && Number.isFinite(Number(selected.lng))) {
+                return {
+                    lat: Number(selected.lat),
+                    lng: Number(selected.lng),
+                    displayName: selected.displayName || selected.name || rawText,
+                    address: selected.address || selected.displayName || rawText
+                };
+            }
+
+            const resolved = await fetchResolvedPlace(rawText, selected?.id || '');
+            if (!resolved) {
+                return null;
+            }
+
+            const normalized = {
+                lat: Number(resolved.lat),
+                lng: Number(resolved.lng),
+                displayName: resolved.displayName || resolved.name || rawText,
+                address: resolved.address || resolved.displayName || rawText
+            };
+
+            placePickerState[prefix].selected = resolved;
+            renderSelectedPlace(prefix, resolved);
+
+            if (input) {
+                input.value = normalized.displayName;
+            }
+
+            return normalized;
+        }
+
+        function resetPlacePicker(prefix) {
+            placePickerState[prefix].selected = null;
+            placePickerState[prefix].items = [];
+            window.clearTimeout(placePickerState[prefix].debounceId);
+            closeSuggestBox(prefix);
+            renderSelectedPlace(prefix, null);
+        }
+
+        async function planTrip() {
+            const startText = document.getElementById('startPoint').value.trim();
+            const endText = document.getElementById('endPoint').value.trim();
+            const vehicleRangeKm = Number(document.getElementById('vehicleRangeKm').value || 0);
+            const startBattery = Number(document.getElementById('startBattery').value || 0);
+            const reserveBattery = Number(document.getElementById('reserveBattery').value || 0);
+            const maxDetourKm = Number(document.getElementById('maxDetourKm').value || 10);
+
+            if (!startText || !endText) {
+                alert('Vui lòng nhập đầy đủ điểm đi và điểm đến.');
+                return;
+            }
+
+            if (vehicleRangeKm < 100) {
+                alert('Tầm hoạt động tối đa phải từ 100 km trở lên.');
+                return;
+            }
+
+            if (startBattery <= reserveBattery) {
+                alert('Pin hiện tại phải lớn hơn pin dự phòng tối thiểu.');
+                return;
+            }
+
+            try {
+                await ensureRouteMapReady();
+                setRouteLoadingState();
+
+                const [start, end] = await Promise.all([
+                    resolvePlaceInput('start'),
+                    resolvePlaceInput('end')
+                ]);
+
+                if (!start || !end) {
+                    throw new Error('Không tìm thấy một trong hai địa điểm. Hãy chọn lại từ gợi ý chi tiết.');
+                }
+
+                if (!isLikelyInsideVietnamShape(start.lat, start.lng) || !isLikelyInsideVietnamShape(end.lat, end.lng)) {
+                    throw new Error('Hệ thống chỉ hỗ trợ lập lộ trình đường ô tô trong lãnh thổ Việt Nam.');
+                }
+
+                // Why changed: use a real road path so the map shows an actual trip, not only a straight line.
+                const routeData = await getDrivingRoute(start, end);
+                const routePath = routeData.path.length >= 2
+                    ? routeData.path
+                    : [
+                        { lat: start.lat, lng: start.lng },
+                        { lat: end.lat, lng: end.lng }
+                    ];
+
+                const totalDistanceKm = routeData.distanceKm > 0
+                    ? routeData.distanceKm
+                    : calculateDistanceKm(start.lat, start.lng, end.lat, end.lng);
+
+                const firstLegKm = vehicleRangeKm * ((startBattery - reserveBattery) / 100);
+                const fullSafeLegKm = vehicleRangeKm * ((100 - reserveBattery) / 100);
+
+                const response = await fetch('/User/api/stations');
+                if (!response.ok) {
+                    throw new Error('Không tải được danh sách trạm.');
+                }
+
+                const allStations = await response.json();
+                const activeStations = (allStations || []).filter(station =>
+                    station &&
+                    station.status === 'Đang hoạt động' &&
+                    Number.isFinite(Number(station.latitude)) &&
+                    Number.isFinite(Number(station.longitude))
+                );
+
+                // Đo trạm theo hành lang tuyến Việt Nam. Nếu bán kính người dùng quá hẹp khiến xe đi 2000km
+                // nhưng chỉ thấy 1-2 trạm, hệ thống tự mở rộng dần để vẫn đề xuất được chuỗi dừng an toàn.
+                const measuredStations = activeStations
+                    .filter(station => isLikelyInsideVietnamShape(station.latitude, station.longitude))
+                    .map(station => {
+                        const metrics = analyzeStationAgainstRoute(
+                            Number(station.latitude),
+                            Number(station.longitude),
+                            routePath
+                        );
+
+                        return {
+                            ...station,
+                            routeDistanceKm: metrics.routeDistanceKm,
+                            detourKm: metrics.routeDistanceKm,
+                            progressKm: metrics.progressKm,
+                            progressRatio: totalDistanceKm <= 0 ? 0 : metrics.progressKm / totalDistanceKm,
+                            distanceToDestinationKm: calculateDistanceKm(
+                                Number(station.latitude),
+                                Number(station.longitude),
+                                end.lat,
+                                end.lng
+                            )
+                        };
+                    })
+                    .sort((a, b) => a.progressKm - b.progressKm);
+
+                const detourCandidates = [...new Set([maxDetourKm, 10, 20, 30, 50, 80]
+                    .filter(value => Number(value) >= Number(maxDetourKm)))]
+                    .sort((a, b) => a - b);
+
+                let corridorStations = [];
+                let plan = null;
+                let appliedDetourKm = maxDetourKm;
+
+                for (const detourLimit of detourCandidates) {
+                    const candidateStations = measuredStations
+                        .filter(station => station.routeDistanceKm <= detourLimit)
+                        .sort((a, b) => a.progressKm - b.progressKm);
+                    const candidatePlan = buildRoutePlan(candidateStations, totalDistanceKm, firstLegKm, fullSafeLegKm);
+
+                    if (!plan || candidatePlan.stops.length > plan.stops.length || candidatePlan.isReachable) {
+                        plan = candidatePlan;
+                        corridorStations = candidateStations;
+                        appliedDetourKm = detourLimit;
+                    }
+
+                    if (candidatePlan.isReachable) {
+                        break;
+                    }
+                }
+
+                plan = plan || buildRoutePlan([], totalDistanceKm, firstLegKm, fullSafeLegKm);
+                const requiredStopCount = Math.max(0, Math.ceil(Math.max(totalDistanceKm - firstLegKm, 0) / Math.max(fullSafeLegKm, 1)));
+                plan.requiredStopCount = requiredStopCount;
+                plan.missingStopCount = Math.max(0, requiredStopCount - plan.stops.length);
+                plan.appliedDetourKm = appliedDetourKm;
+
+                drawRoute(start, end, routePath, corridorStations, plan.stops);
+                renderRouteSummary(totalDistanceKm, firstLegKm, corridorStations.length, Math.max(plan.stops.length, plan.requiredStopCount || 0), {
+                    vehicleRangeKm,
+                    startBattery,
+                    reserveBattery,
+                    isReachable: plan.isReachable
+                });
+                renderRouteStops(plan, totalDistanceKm, maxDetourKm, corridorStations);
+
+                document.getElementById('routeMapHint').textContent =
+                    `Đã lập kế hoạch từ ${escapeHtml(start.displayName)} đến ${escapeHtml(end.displayName)}.`;
+                document.getElementById('routeMapChip').textContent =
+                    `${plan.stops.length}/${plan.requiredStopCount} điểm dừng cần thiết · ${corridorStations.length} trạm gần tuyến`;
+                document.getElementById('routeResultState').textContent =
+                    plan.isReachable ? 'Có phương án' : 'Cần bổ sung trạm';
+                document.getElementById('routeNote').innerHTML = plan.isReachable
+                    ? `Đường đi đã hiển thị trong lãnh thổ Việt Nam. Hệ thống cần khoảng <strong>${plan.requiredStopCount}</strong> điểm dừng, đã chọn <strong>${plan.stops.length}</strong> trạm. Bán kính lệch tuyến đang dùng: <strong>${appliedDetourKm} km</strong>.`
+                    : `Tuyến này cần khoảng <strong>${plan.requiredStopCount}</strong> điểm dừng nhưng hiện mới chọn được <strong>${plan.stops.length}</strong> trạm phù hợp. Hãy tăng bán kính lệch tuyến, thêm trạm dọc tuyến hoặc kiểm tra dữ liệu trạm đang hoạt động.`;
+
+                // Why changed: keep the whole planning context so users can add or remove stops later.
+                latestTripContext = {
+                    start,
+                    end,
+                    routePath,
+                    corridorStations,
+                    totalDistanceKm,
+                    firstLegKm,
+                    vehicleRangeKm,
+                    startBattery,
+                    reserveBattery,
+                    maxDetourKm: appliedDetourKm,
+                    requestedDetourKm: maxDetourKm,
+                    requiredStopCount: plan.requiredStopCount,
+                    fullSafeLegKm,
+                    missingStopCount: plan.missingStopCount,
+                    isReachable: plan.isReachable,
+                    blockingDistanceKm: plan.blockingDistanceKm,
+                    selectedStops: sortStationsByProgress(plan.stops),
+                    stops: sortStationsByProgress(plan.stops)
+                };
+                updateRouteNoteAfterSelection();
+                renderRouteTimeline(latestTripContext);
+                updateCurrentRouteActionButtons();
+                autoSavePlannedRoute();
+                toggleGoNowButton(true);
+            } catch (error) {
+                console.error(error);
+                latestTripContext = null;
+                toggleGoNowButton(false);
+                setRouteErrorState(error.message || 'Có lỗi xảy ra khi lập kế hoạch.');
+            }
+        }
+
+        function buildRoutePlan(corridorStations, totalDistanceKm, firstLegKm, fullSafeLegKm) {
+            const safeFirstLegKm = Math.max(Number(firstLegKm) || 0, 0);
+            const safeFullLegKm = Math.max(Number(fullSafeLegKm) || 0, 0);
+            const totalKm = Math.max(Number(totalDistanceKm) || 0, 0);
+            const toleranceKm = 1;
+
+            if (safeFirstLegKm + toleranceKm >= totalKm) {
+                return {
+                    isReachable: true,
+                    stops: [],
+                    blockingDistanceKm: totalKm
+                };
+            }
+
+            const uniqueStations = new Map();
+            (Array.isArray(corridorStations) ? corridorStations : []).forEach(station => {
+                if (!station) {
+                    return;
+                }
+
+                const progressKm = Number(station.progressKm || 0);
+                if (!Number.isFinite(progressKm) || progressKm <= 3 || progressKm >= totalKm - 3) {
+                    return;
+                }
+
+                const normalizedId = normalizeStationId(station.id);
+                if (!normalizedId) {
+                    return;
+                }
+
+                const normalizedStation = {
+                    ...station,
+                    progressKm
+                };
+                const existing = uniqueStations.get(normalizedId);
+
+                if (!existing || Number(normalizedStation.routeDistanceKm || 999999) < Number(existing.routeDistanceKm || 999999)) {
+                    uniqueStations.set(normalizedId, normalizedStation);
+                }
+            });
+
+            const stations = [...uniqueStations.values()]
+                .sort((a, b) => Number(a.progressKm || 0) - Number(b.progressKm || 0));
+
+            const getTotalDetour = stops => (Array.isArray(stops) ? stops : [])
+                .reduce((sum, station) => sum + Math.max(Number(station.routeDistanceKm || station.detourKm || 0), 0), 0);
+
+            const getTotalActivePoles = stops => (Array.isArray(stops) ? stops : [])
+                .reduce((sum, station) => sum + Number(station.activePoleCount || station.availablePoleCount || 0), 0);
+
+            const isBetterCompletePath = (candidate, current) => {
+                if (!current) {
+                    return true;
+                }
+
+                if (candidate.stops.length !== current.stops.length) {
+                    return candidate.stops.length < current.stops.length;
+                }
+
+                const candidateDetour = getTotalDetour(candidate.stops);
+                const currentDetour = getTotalDetour(current.stops);
+                if (Math.abs(candidateDetour - currentDetour) > 0.01) {
+                    return candidateDetour < currentDetour;
+                }
+
+                return getTotalActivePoles(candidate.stops) > getTotalActivePoles(current.stops);
+            };
+
+            const isBetterPartialPath = (candidate, current) => {
+                if (!current) {
+                    return true;
+                }
+
+                if (Math.abs(candidate.blockingDistanceKm - current.blockingDistanceKm) > 0.5) {
+                    return candidate.blockingDistanceKm > current.blockingDistanceKm;
+                }
+
+                if (candidate.stops.length !== current.stops.length) {
+                    return candidate.stops.length < current.stops.length;
+                }
+
+                return getTotalDetour(candidate.stops) < getTotalDetour(current.stops);
+            };
+
+            const stateByIndex = new Map();
+            let bestSolution = null;
+            let bestPartial = {
+                isReachable: false,
+                stops: [],
+                blockingDistanceKm: Math.min(totalKm, safeFirstLegKm)
+            };
+
+            stations.forEach((station, index) => {
+                if (Number(station.progressKm || 0) <= safeFirstLegKm + toleranceKm) {
+                    const candidate = {
+                        isReachable: false,
+                        stops: [station],
+                        blockingDistanceKm: Math.min(totalKm, Number(station.progressKm || 0) + safeFullLegKm)
+                    };
+                    stateByIndex.set(index, candidate);
+
+                    if (isBetterPartialPath(candidate, bestPartial)) {
+                        bestPartial = candidate;
+                    }
+                }
+            });
+
+            for (let i = 0; i < stations.length; i += 1) {
+                const state = stateByIndex.get(i);
+                if (!state) {
+                    continue;
+                }
+
+                const currentStation = stations[i];
+                const currentProgressKm = Number(currentStation.progressKm || 0);
+                const reachLimitKm = currentProgressKm + safeFullLegKm + toleranceKm;
+
+                if (reachLimitKm >= totalKm) {
+                    const solution = {
+                        isReachable: true,
+                        stops: state.stops,
+                        blockingDistanceKm: totalKm
+                    };
+
+                    if (isBetterCompletePath(solution, bestSolution)) {
+                        bestSolution = solution;
+                    }
+                    continue;
+                }
+
+                for (let j = i + 1; j < stations.length; j += 1) {
+                    const nextStation = stations[j];
+                    const nextProgressKm = Number(nextStation.progressKm || 0);
+
+                    if (nextProgressKm > reachLimitKm) {
+                        break;
+                    }
+
+                    if (nextProgressKm <= currentProgressKm + 3) {
+                        continue;
+                    }
+
+                    const candidate = {
+                        isReachable: false,
+                        stops: [...state.stops, nextStation],
+                        blockingDistanceKm: Math.min(totalKm, nextProgressKm + safeFullLegKm)
+                    };
+
+                    const currentBestForNext = stateByIndex.get(j);
+                    if (!currentBestForNext || isBetterCompletePath(candidate, currentBestForNext)) {
+                        stateByIndex.set(j, candidate);
+                    }
+
+                    if (isBetterPartialPath(candidate, bestPartial)) {
+                        bestPartial = candidate;
+                    }
+                }
+            }
+
+            return bestSolution || bestPartial;
+        }
+
+        function setRouteText(id, value) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+
+        function formatDistanceValue(value, digits = 1) {
+            const number = Math.max(Number(value) || 0, 0);
+            const shouldShowDecimal = digits > 0 && Math.abs(number - Math.round(number)) > 0.05;
+            return `${number.toLocaleString('vi-VN', {
+                minimumFractionDigits: shouldShowDecimal ? digits : 0,
+                maximumFractionDigits: digits
+            })} km`;
+        }
+
+        function formatPercentValue(value) {
+            const number = Math.max(Number(value) || 0, 0);
+            return `${number.toLocaleString('vi-VN', { maximumFractionDigits: 0 })}%`;
+        }
+
+        function formatEstimatedDuration(totalDistanceKm) {
+            const totalMinutes = Math.max(0, Math.round((Math.max(Number(totalDistanceKm) || 0, 0) / 62) * 60));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            if (hours <= 0) {
+                return `${minutes} phút`;
+            }
+
+            return `${hours} giờ ${minutes.toString().padStart(2, '0')} phút`;
+        }
+
+        function getCurrentRouteBatteryConfig() {
+            return {
+                vehicleRangeKm: Number(document.getElementById('vehicleRangeKm')?.value || 0),
+                startBattery: Number(document.getElementById('startBattery')?.value || 0),
+                reserveBattery: Number(document.getElementById('reserveBattery')?.value || 0)
+            };
+        }
+
+        function getRouteStatusMeta(isReachable, hasData) {
+            if (!hasData) {
+                return { text: 'Chưa lập', icon: 'fa-circle-info', className: 'is-muted' };
+            }
+
+            return isReachable
+                ? { text: 'Khả thi', icon: 'fa-circle-check', className: '' }
+                : { text: 'Không khả thi', icon: 'fa-circle-xmark', className: 'is-danger' };
+        }
+
+        function renderRouteSummary(totalDistanceKm, firstLegKm, corridorCount, stopCount, options) {
+            const config = Object.assign({}, getCurrentRouteBatteryConfig(), options || {});
+            const hasData = Math.max(Number(totalDistanceKm) || 0, 0) > 0;
+            const status = getRouteStatusMeta(!!config.isReachable, hasData);
+            const statusElement = document.getElementById('summaryStatus');
+
+            setRouteText('summaryTotalDistance', formatDistanceValue(totalDistanceKm, 1));
+            setRouteText('summaryEstimatedTime', formatEstimatedDuration(totalDistanceKm));
+            setRouteText('summaryFirstLeg', formatDistanceValue(firstLegKm, 1));
+            setRouteText('summaryStopCount', `${Math.max(Number(stopCount) || 0, 0)} trạm`);
+            setRouteText('summaryCorridorCount', String(corridorCount ?? 0));
+            setRouteText('summaryVehicleRange', formatDistanceValue(config.vehicleRangeKm, 0));
+            setRouteText('summaryStartBattery', formatPercentValue(config.startBattery));
+            setRouteText('summaryReserveBattery', formatPercentValue(config.reserveBattery));
+
+            if (statusElement) {
+                statusElement.className = `route-overview-status ${status.className}`.trim();
+                statusElement.innerHTML = `<i class="fa-solid ${status.icon}"></i>${status.text}`;
+            }
+        }
+
+        function renderRouteTimeline(context) {
+            const container = document.getElementById('routeTimelineList');
+            if (!container) {
+                return;
+            }
+
+            if (!context || !context.start || !context.end || !Number(context.totalDistanceKm)) {
+                container.classList.remove('has-items');
+                container.innerHTML = '<div class="route-empty">Lập kế hoạch để xem tuyến đi, trạm cần sạc và mức pin dự kiến theo từng điểm.</div>';
+                return;
+            }
+
+            const stops = sortStationsByProgress(context.selectedStops || context.stops || []);
+            const items = [];
+            items.push(buildTimelineStartHtml(context.start, context));
+            stops.forEach((station, index) => {
+                items.push(buildTimelineStationHtml(station, index, stops, context));
+            });
+            items.push(buildTimelineEndHtml(context.end, stops, context));
+
+            container.classList.add('has-items');
+            container.innerHTML = items.join('');
+        }
+
+        function buildTimelineStartHtml(start, context) {
+            const startName = escapeHtml(start.displayName || start.name || 'Vị trí hiện tại của tôi');
+            const address = escapeHtml(start.address || `Tọa độ ${Number(start.lat || 0).toFixed(5)}, ${Number(start.lng || 0).toFixed(5)}`);
+            return `
+                <article class="route-timeline-row">
+                    <div class="route-timeline-number">1</div>
+                    <div class="route-timeline-card">
+                        <div class="route-timeline-head">
+                            <h3 class="route-timeline-name">${startName}</h3>
+                        </div>
+                        <div class="route-timeline-address">${address}</div>
+                        <div class="route-timeline-pills">
+                            <span class="route-timeline-pill">Pin lúc xuất phát ${formatPercentValue(context.startBattery)}</span>
+                            <span class="route-timeline-pill">Đi an toàn ${formatDistanceValue(context.firstLegKm, 1)}</span>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        function buildTimelineStationHtml(station, index, stops, context) {
+            const stationName = escapeHtml(station.name || 'Trạm sạc');
+            const stationAddress = escapeHtml(station.address || '-');
+            const stationLatitude = Number(station.latitude);
+            const stationLongitude = Number(station.longitude);
+            const stationId = escapeHtml(station.id);
+            const availablePoleCount = Number(station.activePoleCount || station.availablePoleCount || 0);
+            const totalPoleCount = Number(station.totalPoleCount || 0);
+            const progressKm = Math.max(Number(station.progressKm || 0), 0);
+            const previousProgressKm = index === 0 ? 0 : Math.max(Number(stops[index - 1]?.progressKm || 0), 0);
+            const gapKm = Math.max(progressKm - previousProgressKm, 0);
+            const arrivalBattery = estimateArrivalBattery(gapKm, index === 0 ? context.startBattery : 100, context.vehicleRangeKm);
+            const nextProgressKm = index < stops.length - 1
+                ? Math.max(Number(stops[index + 1]?.progressKm || 0), progressKm)
+                : Math.max(Number(context.totalDistanceKm || 0), progressKm);
+            const nextGapKm = Math.max(nextProgressKm - progressKm, 0);
+            const chargeMinutes = estimateChargeMinutes(arrivalBattery, nextGapKm, context.vehicleRangeKm, context.reserveBattery);
+            const chargerType = escapeHtml(station.chargerType || station.ChargerType || 'Loại sạc đang cập nhật');
+            const status = escapeHtml(station.status || 'Đang hoạt động');
+            const displayIndex = index + 2;
+
+            return `
+                <article class="route-timeline-row">
+                    <div class="route-timeline-number">${displayIndex}</div>
+                    <div class="route-timeline-card is-station">
+                        <div class="route-timeline-head">
+                            <div>
+                                <h3 class="route-timeline-name">${stationName}</h3>
+                                <div class="route-timeline-address">${stationAddress}</div>
+                            </div>
+                            <span class="route-timeline-status-chip">${status}</span>
+                        </div>
+                        <div class="route-timeline-pills">
+                            <span class="route-timeline-pill">Cách điểm trước ${formatDistanceValue(gapKm, 1)}</span>
+                            <span class="route-timeline-pill">Pin dự kiến khi đến ${formatPercentValue(arrivalBattery)}</span>
+                            <span class="route-timeline-pill">Sạc đề xuất khoảng ${chargeMinutes} phút</span>
+                            <span class="route-timeline-pill">${chargerType}</span>
+                            <span class="route-timeline-pill">Trụ khả dụng ${availablePoleCount}/${totalPoleCount}</span>
+                        </div>
+                        <div class="route-timeline-actions">
+                            <a href="/User/Station/Details/${station.id}" class="btn btn-outline-secondary">
+                                <i class="fa-solid fa-circle-info mr-1"></i>Xem chi tiết
+                            </a>
+                            <button type="button"
+                                    class="btn btn-success"
+                                    onclick="focusStopOnMapFromButton(this)"
+                                    data-lat="${stationLatitude}"
+                                    data-lng="${stationLongitude}"
+                                    data-name="${stationName}">
+                                <i class="fa-solid fa-map-location-dot mr-1"></i>Xem trên bản đồ
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-dark"
+                                    onclick="openSingleStationDirection(this)"
+                                    data-lat="${stationLatitude}"
+                                    data-lng="${stationLongitude}">
+                                <i class="fa-solid fa-location-arrow mr-1"></i>Dẫn đường
+                            </button>
+                            <button type="button"
+                                    class="btn btn-outline-danger"
+                                    onclick="removeStationFromRouteFromButton(this)"
+                                    data-station-id="${stationId}">
+                                <i class="fa-solid fa-xmark mr-1"></i>Bỏ
+                            </button>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        function buildTimelineEndHtml(end, stops, context) {
+            const endName = escapeHtml(end.displayName || end.name || 'Điểm đến');
+            const address = escapeHtml(end.address || `Tọa độ ${Number(end.lat || 0).toFixed(5)}, ${Number(end.lng || 0).toFixed(5)}`);
+            const lastStop = stops.length > 0 ? stops[stops.length - 1] : null;
+            const previousProgressKm = lastStop ? Math.max(Number(lastStop.progressKm || 0), 0) : 0;
+            const gapKm = Math.max(Number(context.totalDistanceKm || 0) - previousProgressKm, 0);
+            const arrivalBattery = estimateArrivalBattery(gapKm, lastStop ? 100 : context.startBattery, context.vehicleRangeKm);
+            const displayIndex = stops.length + 2;
+
+            return `
+                <article class="route-timeline-row">
+                    <div class="route-timeline-number">${displayIndex}</div>
+                    <div class="route-timeline-card is-end">
+                        <div class="route-timeline-head">
+                            <h3 class="route-timeline-name">${endName}</h3>
+                            <span class="route-timeline-status-chip">Điểm đến</span>
+                        </div>
+                        <div class="route-timeline-address">${address}</div>
+                        <div class="route-timeline-pills">
+                            <span class="route-timeline-pill">Cách điểm trước ${formatDistanceValue(gapKm, 1)}</span>
+                            <span class="route-timeline-pill">Pin dự kiến khi đến ${formatPercentValue(arrivalBattery)}</span>
+                            <span class="route-timeline-pill">Tổng tuyến ${formatDistanceValue(context.totalDistanceKm, 1)}</span>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        function estimateArrivalBattery(distanceKm, departureBattery, vehicleRangeKm) {
+            const rangeKm = Math.max(Number(vehicleRangeKm) || 0, 1);
+            const usedPercent = (Math.max(Number(distanceKm) || 0, 0) / rangeKm) * 100;
+            return Math.max(0, Math.min(100, Math.round((Number(departureBattery) || 0) - usedPercent)));
+        }
+
+        function estimateChargeMinutes(arrivalBattery, nextGapKm, vehicleRangeKm, reserveBattery) {
+            const rangeKm = Math.max(Number(vehicleRangeKm) || 0, 1);
+            const neededDepartureBattery = Math.min(95, Math.max(Number(reserveBattery) || 0, 0) + (Math.max(Number(nextGapKm) || 0, 0) / rangeKm) * 100);
+            const percentToCharge = Math.max(0, neededDepartureBattery - Math.max(Number(arrivalBattery) || 0, 0));
+
+            if (percentToCharge <= 3) {
+                return 15;
+            }
+
+            return Math.max(18, Math.min(55, Math.round(percentToCharge * 0.9)));
+        }
+
+        function resetRouteListFilters() {
+            routeListState.keyword = '';
+            routeListState.detourLimit = 'all';
+            routeListState.sortBy = 'progress';
+            routeListState.page = 1;
+            routeListState.pageSize = 6;
+
+            const keywordInput = document.getElementById('stationFilterKeyword');
+            const detourSelect = document.getElementById('stationFilterDetour');
+            const sortSelect = document.getElementById('stationFilterSort');
+            const pageSizeSelect = document.getElementById('stationPageSize');
+
+            if (keywordInput) keywordInput.value = '';
+            if (detourSelect) detourSelect.value = 'all';
+            if (sortSelect) sortSelect.value = 'progress';
+            if (pageSizeSelect) pageSizeSelect.value = '6';
+
+            rerenderRouteStopsFromContext();
+        }
+
+        function rerenderRouteStopsFromContext() {
+            if (!latestTripContext) {
+                updateRouteStopToolbarState(0, 0, false);
+                updateRouteStopMeta('Nhập thông tin chuyến đi để bắt đầu lập kế hoạch.');
+                document.getElementById('routeStopList').innerHTML = '<div class="route-empty">Nhập thông tin chuyến đi để bắt đầu lập kế hoạch.</div>';
+                document.getElementById('routeStopPagination').innerHTML = '';
+                return;
+            }
+
+            renderRouteStops(
+                {
+                    isReachable: latestTripContext.isReachable,
+                    stops: latestTripContext.selectedStops,
+                    blockingDistanceKm: latestTripContext.blockingDistanceKm
+                },
+                latestTripContext.totalDistanceKm,
+                latestTripContext.maxDetourKm,
+                latestTripContext.corridorStations
+            );
+        }
+
+        function updateRouteStopToolbarState(filteredCount, totalCount, isReady) {
+            const element = document.getElementById('routeStopToolbarState');
+            if (!element) {
+                return;
+            }
+
+            element.textContent = !isReady
+                ? 'Chưa có dữ liệu'
+                : `${filteredCount}/${totalCount} trạm phù hợp`;
+        }
+
+        function updateRouteStopMeta(message) {
+            const meta = document.getElementById('routeStopListMeta');
+            if (!meta) {
+                return;
+            }
+
+            meta.innerHTML = `<div class="route-stop-list-meta-text">${message}</div>`;
+        }
+
+        function getFilteredNearbyStations(stations) {
+            const keyword = String(routeListState.keyword || '').trim().toLowerCase();
+            const detourLimit = routeListState.detourLimit;
+            const sortBy = routeListState.sortBy;
+
+            let result = [...(Array.isArray(stations) ? stations : [])];
+
+            if (keyword) {
+                result = result.filter(station => {
+                    const haystack = `${station?.name || ''} ${station?.address || ''}`.toLowerCase();
+                    return haystack.includes(keyword);
+                });
+            }
+
+            if (detourLimit !== 'all') {
+                const maxDetour = Number(detourLimit);
+                result = result.filter(station => Number(station?.routeDistanceKm || station?.detourKm || 0) <= maxDetour);
+            }
+
+            result.sort((a, b) => {
+                if (sortBy === 'detour') {
+                    return Number(a?.routeDistanceKm || a?.detourKm || 0) - Number(b?.routeDistanceKm || b?.detourKm || 0);
+                }
+
+                if (sortBy === 'rating') {
+                    return Number(b?.averageRating || 0) - Number(a?.averageRating || 0);
+                }
+
+                if (sortBy === 'ports') {
+                    return Number(b?.activePoleCount || b?.availablePoleCount || 0) - Number(a?.activePoleCount || a?.availablePoleCount || 0);
+                }
+
+                if (sortBy === 'name') {
+                    return String(a?.name || '').localeCompare(String(b?.name || ''), 'vi');
+                }
+
+                return Number(a?.progressKm || 0) - Number(b?.progressKm || 0);
+            });
+
+            return result;
+        }
+
+        function buildPaginationHtml(page, totalPages) {
+            if (totalPages <= 1) {
+                return '';
+            }
+
+            const buttons = [];
+            buttons.push(`
+                <button type="button" class="btn btn-outline-secondary" onclick="goToRoutePage(${Math.max(1, page - 1)})" ${page <= 1 ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+            `);
+
+            const startPage = Math.max(1, page - 1);
+            const endPage = Math.min(totalPages, startPage + 2);
+            const realStart = Math.max(1, endPage - 2);
+
+            for (let current = realStart; current <= endPage; current++) {
+                buttons.push(`
+                    <button type="button" class="btn ${current === page ? 'btn-success' : 'btn-outline-secondary'}" onclick="goToRoutePage(${current})">${current}</button>
+                `);
+            }
+
+            buttons.push(`<span class="route-pagination-status">Trang ${page}/${totalPages}</span>`);
+            buttons.push(`
+                <button type="button" class="btn btn-outline-secondary" onclick="goToRoutePage(${Math.min(totalPages, page + 1)})" ${page >= totalPages ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            `);
+
+            return buttons.join('');
+        }
+
+        function goToRoutePage(page) {
+            routeListState.page = Math.max(1, Number(page || 1));
+            rerenderRouteStopsFromContext();
+        }
+
+        function normalizeStationId(id) {
+            return String(id ?? '');
+        }
+
+        function sortStationsByProgress(stations) {
+            return [...(Array.isArray(stations) ? stations : [])]
+                .sort((a, b) => Number(a?.progressKm || 0) - Number(b?.progressKm || 0));
+        }
+
+        function evaluateStopCoverage(stops, totalDistanceKm, firstLegKm, fullSafeLegKm) {
+            const sortedStops = sortStationsByProgress(stops)
+                .filter(station => station && Number.isFinite(Number(station.progressKm)));
+            const totalKm = Math.max(Number(totalDistanceKm) || 0, 0);
+            const safeFullLegKm = Math.max(Number(fullSafeLegKm) || 0, 0);
+            let allowedKm = Math.max(Number(firstLegKm) || 0, 0);
+            let previousProgressKm = 0;
+            let previousName = 'Điểm xuất phát';
+            const legs = [];
+
+            for (const station of sortedStops) {
+                const progressKm = Math.max(Number(station.progressKm || 0), 0);
+                const gapKm = Math.max(progressKm - previousProgressKm, 0);
+                const leg = {
+                    fromName: previousName,
+                    toName: station.name || 'Trạm sạc',
+                    gapKm,
+                    allowedKm
+                };
+                legs.push(leg);
+
+                if (gapKm > allowedKm + 1) {
+                    return {
+                        isReachable: false,
+                        legs,
+                        firstFailedLeg: leg,
+                        blockingDistanceKm: previousProgressKm + allowedKm
+                    };
+                }
+
+                previousProgressKm = progressKm;
+                previousName = station.name || 'Trạm sạc';
+                allowedKm = safeFullLegKm;
+            }
+
+            const finalGapKm = Math.max(totalKm - previousProgressKm, 0);
+            const finalLeg = {
+                fromName: previousName,
+                toName: 'Điểm đến',
+                gapKm: finalGapKm,
+                allowedKm
+            };
+            legs.push(finalLeg);
+
+            if (finalGapKm > allowedKm + 1) {
+                return {
+                    isReachable: false,
+                    legs,
+                    firstFailedLeg: finalLeg,
+                    blockingDistanceKm: previousProgressKm + allowedKm
+                };
+            }
+
+            return {
+                isReachable: true,
+                legs,
+                firstFailedLeg: null,
+                blockingDistanceKm: totalKm
+            };
+        }
+
+        function updateRouteNoteAfterSelection() {
+            if (!latestTripContext) {
+                return;
+            }
+
+            const noteEl = document.getElementById('routeNote');
+            if (!noteEl) {
+                return;
+            }
+
+            const stopCount = Array.isArray(latestTripContext.selectedStops)
+                ? latestTripContext.selectedStops.length
+                : 0;
+            const coverage = evaluateStopCoverage(
+                latestTripContext.selectedStops,
+                latestTripContext.totalDistanceKm,
+                latestTripContext.firstLegKm,
+                latestTripContext.fullSafeLegKm || (Number(document.getElementById('vehicleRangeKm')?.value || 0) * ((100 - Number(document.getElementById('reserveBattery')?.value || 0)) / 100))
+            );
+
+            latestTripContext.isReachable = coverage.isReachable;
+            latestTripContext.blockingDistanceKm = coverage.blockingDistanceKm;
+
+            if (coverage.isReachable) {
+                noteEl.innerHTML =
+                    `Lộ trình hiện đã đủ an toàn theo ngưỡng pin dự phòng. Bạn có thể <strong>thêm/bớt trạm</strong> rồi bấm <strong>Đi ngay bằng Google Maps</strong>, hiện tại là <strong>${stopCount} điểm dừng</strong>.`;
+                return;
+            }
+
+            const failedLeg = coverage.firstFailedLeg;
+            const fromName = failedLeg ? escapeHtml(failedLeg.fromName) : 'điểm trước đó';
+            const toName = failedLeg ? escapeHtml(failedLeg.toName) : 'điểm tiếp theo';
+            const gapKm = failedLeg ? failedLeg.gapKm.toFixed(0) : '0';
+            const allowedKm = failedLeg ? failedLeg.allowedKm.toFixed(0) : '0';
+
+            noteEl.innerHTML =
+                `Lộ trình hiện <strong>chưa đủ trạm sạc an toàn</strong>. Đoạn <strong>${fromName} → ${toName}</strong> dài khoảng <strong>${gapKm} km</strong>, trong khi xe chỉ nên đi khoảng <strong>${allowedKm} km</strong> theo mức pin dự phòng. Nguyên nhân thường là dữ liệu trạm hoạt động gần tuyến ở đoạn này còn ít, hãy thêm trạm vào dữ liệu hoặc tăng bán kính lệch tuyến.`;
+        }
+
+        function syncRouteFromCurrentSelection(focusStationId) {
+            if (!latestTripContext) {
+                return;
+            }
+
+            latestTripContext.selectedStops = sortStationsByProgress(latestTripContext.selectedStops);
+            latestTripContext.stops = [...latestTripContext.selectedStops];
+
+            drawRoute(
+                latestTripContext.start,
+                latestTripContext.end,
+                latestTripContext.routePath,
+                latestTripContext.corridorStations,
+                latestTripContext.selectedStops
+            );
+
+            const coverage = evaluateStopCoverage(
+                latestTripContext.selectedStops,
+                latestTripContext.totalDistanceKm,
+                latestTripContext.firstLegKm,
+                latestTripContext.fullSafeLegKm || (Number(document.getElementById('vehicleRangeKm')?.value || 0) * ((100 - Number(document.getElementById('reserveBattery')?.value || 0)) / 100))
+            );
+            latestTripContext.isReachable = coverage.isReachable;
+            latestTripContext.blockingDistanceKm = coverage.blockingDistanceKm;
+
+            renderRouteSummary(
+                latestTripContext.totalDistanceKm,
+                latestTripContext.firstLegKm,
+                latestTripContext.corridorStations.length,
+                Math.max(latestTripContext.selectedStops.length, latestTripContext.requiredStopCount || 0),
+                {
+                    vehicleRangeKm: latestTripContext.vehicleRangeKm,
+                    startBattery: latestTripContext.startBattery,
+                    reserveBattery: latestTripContext.reserveBattery,
+                    isReachable: coverage.isReachable
+                }
+            );
+
+            renderRouteStops(
+                {
+                    isReachable: coverage.isReachable,
+                    stops: latestTripContext.selectedStops,
+                    blockingDistanceKm: coverage.blockingDistanceKm,
+                    requiredStopCount: latestTripContext.requiredStopCount || latestTripContext.selectedStops.length,
+                    missingStopCount: coverage.isReachable ? 0 : Math.max((latestTripContext.requiredStopCount || 0) - latestTripContext.selectedStops.length, 0)
+                },
+                latestTripContext.totalDistanceKm,
+                latestTripContext.maxDetourKm,
+                latestTripContext.corridorStations
+            );
+            renderRouteTimeline(latestTripContext);
+
+            document.getElementById('routeMapChip').textContent = coverage.isReachable
+                ? `${latestTripContext.selectedStops.length} điểm dừng / ${latestTripContext.corridorStations.length} trạm gần tuyến`
+                : `${latestTripContext.selectedStops.length}/${latestTripContext.requiredStopCount || '?'} điểm dừng · còn thiếu trạm an toàn`;
+            document.getElementById('routeResultState').textContent = coverage.isReachable
+                ? 'Đủ trạm an toàn'
+                : 'Cần bổ sung trạm';
+
+            updateRouteNoteAfterSelection();
+            toggleGoNowButton(true);
+
+            if (focusStationId) {
+                const station = latestTripContext.corridorStations.find(item =>
+                    normalizeStationId(item.id) === normalizeStationId(focusStationId)
+                );
+
+                if (station) {
+                    focusStopOnMap(
+                        Number(station.latitude),
+                        Number(station.longitude),
+                        station.name || 'Trạm sạc'
+                    );
+                }
+            }
+        }
+
+        function addStationToRouteById(stationId) {
+            if (!latestTripContext || !Array.isArray(latestTripContext.corridorStations)) {
+                return;
+            }
+
+            const normalizedId = normalizeStationId(stationId);
+            const station = latestTripContext.corridorStations.find(item =>
+                normalizeStationId(item.id) === normalizedId
+            );
+
+            if (!station) {
+                return;
+            }
+
+            const existed = latestTripContext.selectedStops.some(item =>
+                normalizeStationId(item.id) === normalizedId
+            );
+
+            if (!existed) {
+                // Why changed: allow users to pin extra stations into the trip and reuse them in Google Maps.
+                latestTripContext.selectedStops = [...latestTripContext.selectedStops, station];
+            }
+
+            syncRouteFromCurrentSelection(normalizedId);
+        }
+
+        function removeStationFromRouteById(stationId) {
+            if (!latestTripContext) {
+                return;
+            }
+
+            const normalizedId = normalizeStationId(stationId);
+            latestTripContext.selectedStops = latestTripContext.selectedStops.filter(item =>
+                normalizeStationId(item.id) !== normalizedId
+            );
+
+            syncRouteFromCurrentSelection();
+        }
+
+        function addStationToRouteFromButton(button) {
+            if (!button) {
+                return;
+            }
+
+            addStationToRouteById(button.getAttribute('data-station-id'));
+        }
+
+        function removeStationFromRouteFromButton(button) {
+            if (!button) {
+                return;
+            }
+
+            removeStationFromRouteById(button.getAttribute('data-station-id'));
+        }
+
+        function renderRouteStops(plan, totalDistanceKm, maxDetourKm, corridorStations) {
+            const container = document.getElementById('routeStopList');
+            const pagination = document.getElementById('routeStopPagination');
+            const selectedStops = Array.isArray(plan?.stops) ? plan.stops : [];
+            const safeCorridorStations = Array.isArray(corridorStations) ? corridorStations : [];
+            const selectedIdSet = new Set(selectedStops.map(item => normalizeStationId(item.id)));
+
+            if (!plan.isReachable && selectedStops.length === 0 && safeCorridorStations.length === 0) {
+                updateRouteStopToolbarState(0, 0, true);
+                updateRouteStopMeta(`Không tìm được trạm hoạt động nào nằm trong hành lang ${maxDetourKm} km của tuyến.`);
+                pagination.innerHTML = '';
+                container.innerHTML = `
+                    <div class="route-error">
+                        Đã vẽ đường đi nhưng không tìm được trạm hoạt động nào nằm trong hành lang ${maxDetourKm} km của tuyến.
+                    </div>
+                `;
+                return;
+            }
+
+            const summaryBox = !plan.isReachable
+                ? `
+                    <div class="route-error">
+                        Hệ thống mới đi được khoảng <strong>${plan.blockingDistanceKm.toFixed(0)} km</strong> trước khi chạm ngưỡng pin dự phòng. Bạn vẫn có thể thêm trạm thủ công vào lộ trình để mở Google Maps theo các điểm này.
+                    </div>
+                `
+                : '';
+
+            // Timeline phía trên đã thể hiện các điểm dừng trong lộ trình, vì vậy khu vực dưới chỉ còn danh sách trạm sạc.
+            const nearbyStations = safeCorridorStations;
+            const filteredNearbyStations = getFilteredNearbyStations(nearbyStations);
+            const totalFiltered = filteredNearbyStations.length;
+            const pageSize = Math.max(1, Number(routeListState.pageSize || 6));
+            const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+            routeListState.page = Math.min(Math.max(1, Number(routeListState.page || 1)), totalPages);
+            const startIndex = (routeListState.page - 1) * pageSize;
+            const pagedNearbyStations = filteredNearbyStations.slice(startIndex, startIndex + pageSize);
+
+            updateRouteStopToolbarState(totalFiltered, nearbyStations.length, true);
+            updateRouteStopMeta(
+                totalFiltered > 0
+                    ? `Đang hiển thị <strong>${startIndex + 1}-${Math.min(startIndex + pagedNearbyStations.length, totalFiltered)}</strong> trên tổng <strong>${totalFiltered}</strong> trạm phù hợp. Danh sách trạm sạc được trình bày gọn để dễ theo dõi và lựa chọn.`
+                    : 'Không có trạm nào phù hợp với bộ lọc hiện tại. Hãy nới điều kiện lọc hoặc xóa lọc.'
+            );
+
+            const nearbySection = totalFiltered > 0
+                ? `
+                    <div class="route-station-compact-list">
+                        ${pagedNearbyStations.map(station => buildNearbyStationCompactHtml(station, totalDistanceKm, selectedIdSet.has(normalizeStationId(station.id)))).join('')}
+                    </div>
+                `
+                : `
+                    <div class="route-empty">
+                        Không có trạm gần tuyến nào phù hợp với bộ lọc hiện tại.
+                    </div>
+                `;
+
+            container.innerHTML = summaryBox + nearbySection;
+            pagination.innerHTML = buildPaginationHtml(routeListState.page, totalPages);
+        }
+
+        function buildSelectedStopHtml(station, index, totalDistanceKm) {
+            const stationName = escapeHtml(station.name || 'Trạm sạc');
+            const stationAddress = escapeHtml(station.address || '-');
+            const stationLatitude = Number(station.latitude);
+            const stationLongitude = Number(station.longitude);
+            const stationDetour = Number(station.routeDistanceKm || station.detourKm || 0);
+            const stationProgress = Number(station.progressKm || 0);
+            const availablePoleCount = Number(station.activePoleCount || station.availablePoleCount || 0);
+            const totalPoleCount = Number(station.totalPoleCount || 0);
+            const averageRating = Number(station.averageRating || 0);
+            const stationId = escapeHtml(station.id);
+
+            return `
+                <article class="route-stop-item">
+                    <div class="route-stop-row">
+                        <div class="route-stop-index">${index + 1}</div>
+                        <div class="flex-grow-1">
+                            <div class="route-station-compact-head">
+                                <div class="route-station-main">
+                                    <h3 class="route-stop-title mb-1">${stationName}</h3>
+                                    <div class="route-stop-address">${stationAddress}</div>
+                                </div>
+                                <span class="route-selected-badge">Đang trong lộ trình</span>
+                            </div>
+
+                            <div class="route-stop-meta">
+                                <span class="route-stop-pill">Tiến độ ${stationProgress.toFixed(0)}/${Math.max(totalDistanceKm, 0).toFixed(0)} km</span>
+                                <span class="route-stop-pill">Lệch tuyến ${stationDetour.toFixed(1)} km</span>
+                                <span class="route-stop-pill">Trụ hoạt động ${availablePoleCount}/${totalPoleCount}</span>
+                                <span class="route-stop-pill">⭐ ${averageRating.toFixed(1)}</span>
+                            </div>
+
+                            <div class="route-stop-actions">
+                                <a href="/User/Station/Details/${station.id}" class="btn btn-outline-secondary">Chi tiết</a>
+                                <button type="button"
+                                        class="btn btn-success"
+                                        onclick="focusStopOnMapFromButton(this)"
+                                        data-lat="${stationLatitude}"
+                                        data-lng="${stationLongitude}"
+                                        data-name="${stationName}">
+                                    Xem trên bản đồ
+                                </button>
+                                <button type="button"
+                                        class="btn btn-outline-dark"
+                                        onclick="openSingleStationDirection(this)"
+                                        data-lat="${stationLatitude}"
+                                        data-lng="${stationLongitude}">
+                                    Chỉ đường trạm này
+                                </button>
+                                <button type="button"
+                                        class="btn btn-outline-danger"
+                                        onclick="removeStationFromRouteFromButton(this)"
+                                        data-station-id="${stationId}">
+                                    Bỏ khỏi lộ trình
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            `;
+        }
+
+        function buildNearbyStationCompactHtml(station, totalDistanceKm, isSelected) {
+            const stationName = escapeHtml(station.name || 'Trạm sạc');
+            const stationAddress = escapeHtml(station.address || '-');
+            const stationLatitude = Number(station.latitude);
+            const stationLongitude = Number(station.longitude);
+            const stationDetour = Number(station.routeDistanceKm || station.detourKm || 0);
+            const stationProgress = Number(station.progressKm || 0);
+            const availablePoleCount = Number(station.activePoleCount || station.availablePoleCount || 0);
+            const totalPoleCount = Number(station.totalPoleCount || 0);
+            const averageRating = Number(station.averageRating || 0);
+            const stationId = escapeHtml(station.id);
+            const selectedBadge = isSelected
+                ? '<span class="route-selected-badge">Đang trong timeline</span>'
+                : '<span class="route-stop-pill">Gần tuyến</span>';
+            const routeActionButton = isSelected
+                ? `<button type="button" class="btn btn-outline-secondary" disabled>Đã có trong lộ trình</button>`
+                : `<button type="button"
+                           class="btn btn-success"
+                           onclick="addStationToRouteFromButton(this)"
+                           data-station-id="${stationId}">
+                       Thêm vào lộ trình
+                   </button>`;
+
+            return `
+                <article class="route-station-compact-item">
+                    <div class="route-station-compact-head">
+                        <div class="route-station-main">
+                            <div class="route-station-compact-title">${stationName}</div>
+                            <div class="route-station-compact-address">${stationAddress}</div>
+                        </div>
+                        ${selectedBadge}
+                    </div>
+
+                    <div class="route-station-compact-meta">
+                        <span class="route-stop-pill">Tiến độ ${stationProgress.toFixed(0)}/${Math.max(totalDistanceKm, 0).toFixed(0)} km</span>
+                        <span class="route-stop-pill">Lệch ${stationDetour.toFixed(1)} km</span>
+                        <span class="route-stop-pill">Trụ ${availablePoleCount}/${totalPoleCount}</span>
+                        <span class="route-stop-pill">⭐ ${averageRating.toFixed(1)}</span>
+                    </div>
+
+                    <div class="route-station-compact-actions">
+                        <a href="/User/Station/Details/${station.id}" class="btn btn-outline-secondary">Chi tiết</a>
+                        <button type="button"
+                                class="btn btn-outline-success"
+                                onclick="focusStopOnMapFromButton(this)"
+                                data-lat="${stationLatitude}"
+                                data-lng="${stationLongitude}"
+                                data-name="${stationName}">
+                            Xem trên bản đồ
+                        </button>
+                        ${routeActionButton}
+                    </div>
+                </article>
+            `;
+        }
+
+        function drawRoute(start, end, routePath, corridorStations, recommendedStops) {
+            clearRouteVisuals();
+
+            const startPosition = { lat: start.lat, lng: start.lng };
+            const endPosition = { lat: end.lat, lng: end.lng };
+            const stopIdSet = new Set((recommendedStops || []).map(stop => stop.id));
+
+            startMarker = createMapMarker(startPosition, `Điểm đi: ${start.displayName}`, {
+                icon: buildSvgMarker('#2563eb', 'S'),
+                zIndex: 3000
+            });
+
+            endMarker = createMapMarker(endPosition, `Điểm đến: ${end.displayName}`, {
+                icon: buildSvgMarker('#dc2626', 'Đ'),
+                zIndex: 3001
+            });
+
+            routeLine = createPolyline(routePath);
+
+            corridorMarkers = corridorStations
+                .map(station => createMapMarker(
+                    { lat: Number(station.latitude), lng: Number(station.longitude) },
+                    `${stopIdSet.has(station.id) ? 'Điểm dừng gợi ý' : 'Trạm gần tuyến'}: ${station.name || 'Trạm sạc'}`,
+                    {
+                        icon: stopIdSet.has(station.id)
+                            ? buildSvgMarker('#16a34a', '⚡')
+                            : buildSvgMarker('#6b7280', 'T'),
+                        zIndex: stopIdSet.has(station.id) ? 2000 : 1000
+                    }
+                ))
+                .filter(Boolean);
+
+            stopMarkers = recommendedStops
+                .map((station, index) => createMapMarker(
+                    { lat: Number(station.latitude), lng: Number(station.longitude) },
+                    `Điểm dừng ${index + 1}: ${station.name || 'Trạm sạc'}`,
+                    {
+                        icon: buildSvgMarker('#15803d', String(index + 1)),
+                        zIndex: 2500 + index
+                    }
+                ))
+                .filter(Boolean);
+
+            focusMapToPoints([
+                startPosition,
+                ...sampleRoutePoints(routePath, 16),
+                ...recommendedStops.map(stop => ({ lat: Number(stop.latitude), lng: Number(stop.longitude) })),
+                endPosition
+            ]);
+        }
+
+        function createMapMarker(position, title, extraOptions) {
+            if (!window.map4d || !routeMap || !position) {
+                return null;
+            }
+
+            try {
+                // Why changed: Map4D Web SDK creates the marker first, then attaches it to the map with setMap().
+                const options = Object.assign({
+                    position,
+                    title: title || ''
+                }, extraOptions || {});
+
+                const marker = new map4d.Marker(options);
+                marker.setMap(routeMap);
+                return marker;
+            } catch (error) {
+                console.error('Map4D marker error:', error);
+                return null;
+            }
+        }
+
+        function createPolyline(path) {
+            if (!window.map4d || !routeMap || !Array.isArray(path) || path.length < 2) {
+                return null;
+            }
+
+            try {
+                // Why changed: Polyline also needs setMap(routeMap), otherwise the route line is created but not rendered.
+                const polyline = new map4d.Polyline({
+                    path: path.map(point => ({ lat: point.lat, lng: point.lng })),
+                    strokeColor: '#177b46',
+                    strokeWidth: 6,
+                    strokeOpacity: 0.92,
+                    zIndex: 999
+                });
+
+                polyline.setMap(routeMap);
+                return polyline;
+            } catch (error) {
+                console.error('Map4D polyline error:', error);
+                return null;
+            }
+        }
+
+        async function geocodeAddress(query) {
+            const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=vn&q=${encodeURIComponent(query)}`;
+            const response = await fetch(url, {
+                headers: {
+                    'Accept-Language': 'vi'
+                }
+            });
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const data = await response.json();
+            if (!data || data.length === 0) {
+                return null;
+            }
+
+            const lat = parseFloat(data[0].lat);
+            const lng = parseFloat(data[0].lon);
+            if (!isLikelyInsideVietnamShape(lat, lng)) {
+                return null;
+            }
+
+            return {
+                lat,
+                lng,
+                displayName: data[0].display_name
+            };
+        }
+
+        async function getDrivingRoute(start, end) {
+            const domesticFallback = buildDomesticDrivingRouteApproximation(start, end);
+
+            try {
+                const url = `https://router.project-osrm.org/route/v1/driving/${start.lng},${start.lat};${end.lng},${end.lat}?overview=full&geometries=geojson&steps=false`;
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    return domesticFallback;
+                }
+
+                const data = await response.json();
+                const route = Array.isArray(data?.routes) ? data.routes[0] : null;
+                const coordinates = Array.isArray(route?.geometry?.coordinates) ? route.geometry.coordinates : null;
+
+                if (!route || !coordinates || coordinates.length < 2) {
+                    return domesticFallback;
+                }
+
+                const path = coordinates.map(item => ({
+                    lng: Number(item[0]),
+                    lat: Number(item[1])
+                }));
+
+                // OSRM public đôi khi tối ưu đường vòng sang Lào/Campuchia. Không dùng tuyến đó.
+                if (!isRouteInsideVietnam(path)) {
+                    return domesticFallback;
+                }
+
+                return {
+                    distanceKm: Number(route.distance || 0) / 1000,
+                    path
+                };
+            } catch (error) {
+                console.error('Route service error:', error);
+                return domesticFallback;
+            }
+        }
+
+        function analyzeStationAgainstRoute(lat, lng, routePath) {
+            if (!Array.isArray(routePath) || routePath.length < 2) {
+                return {
+                    routeDistanceKm: Infinity,
+                    progressKm: 0
+                };
+            }
+
+            let bestDistanceKm = Infinity;
+            let bestProgressKm = 0;
+            let travelledKm = 0;
+
+            for (let index = 0; index < routePath.length - 1; index++) {
+                const start = routePath[index];
+                const end = routePath[index + 1];
+                const segmentLengthKm = calculateDistanceKm(start.lat, start.lng, end.lat, end.lng);
+                const projection = projectPointToSegment(lat, lng, start.lat, start.lng, end.lat, end.lng);
+                const progressKm = travelledKm + (segmentLengthKm * projection.ratio);
+
+                if (projection.distanceKm < bestDistanceKm) {
+                    bestDistanceKm = projection.distanceKm;
+                    bestProgressKm = progressKm;
+                }
+
+                travelledKm += segmentLengthKm;
+            }
+
+            return {
+                routeDistanceKm: bestDistanceKm,
+                progressKm: bestProgressKm
+            };
+        }
+
+        function projectPointToSegment(lat, lng, lat1, lng1, lat2, lng2) {
+            const meanLat = ((lat1 + lat2 + lat) / 3) * Math.PI / 180;
+            const kmPerDegLat = 111.32;
+            const kmPerDegLng = 111.32 * Math.cos(meanLat);
+
+            const p = { x: lng * kmPerDegLng, y: lat * kmPerDegLat };
+            const a = { x: lng1 * kmPerDegLng, y: lat1 * kmPerDegLat };
+            const b = { x: lng2 * kmPerDegLng, y: lat2 * kmPerDegLat };
+
+            const abx = b.x - a.x;
+            const aby = b.y - a.y;
+            const apx = p.x - a.x;
+            const apy = p.y - a.y;
+            const ab2 = abx * abx + aby * aby;
+
+            if (ab2 === 0) {
+                return {
+                    ratio: 0,
+                    distanceKm: Math.sqrt(apx * apx + apy * apy)
+                };
+            }
+
+            let ratio = (apx * abx + apy * aby) / ab2;
+            ratio = Math.max(0, Math.min(1, ratio));
+
+            const closest = {
+                x: a.x + abx * ratio,
+                y: a.y + aby * ratio
+            };
+
+            const dx = p.x - closest.x;
+            const dy = p.y - closest.y;
+
+            return {
+                ratio,
+                distanceKm: Math.sqrt(dx * dx + dy * dy)
+            };
+        }
+
+        function sampleRoutePoints(routePath, step) {
+            if (!Array.isArray(routePath) || routePath.length === 0) {
+                return [];
+            }
+
+            const result = [];
+            for (let index = 0; index < routePath.length; index += step) {
+                result.push(routePath[index]);
+            }
+
+            const lastPoint = routePath[routePath.length - 1];
+            if (result.length === 0 || result[result.length - 1] !== lastPoint) {
+                result.push(lastPoint);
+            }
+
+            return result;
+        }
+
+        function focusMapToPoints(points) {
+            if (!routeMap || !window.map4d || !Array.isArray(points) || points.length === 0) {
+                return;
+            }
+
+            const validPoints = points.filter(point =>
+                point &&
+                Number.isFinite(Number(point.lat)) &&
+                Number.isFinite(Number(point.lng))
+            );
+
+            if (validPoints.length === 0) {
+                return;
+            }
+
+            try {
+                if (typeof map4d.LatLngBounds === 'function') {
+                    const bounds = new map4d.LatLngBounds();
+                    validPoints.forEach(point => bounds.extend({ lat: Number(point.lat), lng: Number(point.lng) }));
+                    routeMap.fitBounds(bounds);
+                    return;
+                }
+            } catch (error) {
+                console.error('Map4D fitBounds error:', error);
+            }
+
+            if (typeof routeMap.setCenter === 'function') {
+                routeMap.setCenter(validPoints[0]);
+            }
+
+            if (typeof routeMap.setZoom === 'function') {
+                routeMap.setZoom(validPoints.length > 1 ? 8 : 15);
+            }
+        }
+
+        function focusStopOnMap(lat, lng, stationName) {
+            if (!routeMap || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+                return;
+            }
+
+            const focusPoint = { lat, lng };
+
+            if (typeof routeMap.setCenter === 'function') {
+                routeMap.setCenter(focusPoint);
+            }
+
+            if (typeof routeMap.setZoom === 'function') {
+                routeMap.setZoom(15);
+            }
+
+            clearMapObject(focusMarker);
+            focusMarker = createMapMarker(focusPoint, `Đang xem: ${stationName}`, {
+                icon: buildSvgMarker('#f59e0b', 'X'),
+                zIndex: 3500
+            });
+        }
+
+        function focusStopOnMapFromButton(button) {
+            if (!button) {
+                return;
+            }
+
+            const lat = Number(button.getAttribute('data-lat'));
+            const lng = Number(button.getAttribute('data-lng'));
+            const name = button.getAttribute('data-name') || 'Trạm sạc';
+            focusStopOnMap(lat, lng, name);
+        }
+
+        function openSingleStationDirection(button) {
+            if (!button) {
+                return;
+            }
+
+            const lat = Number(button.getAttribute('data-lat'));
+            const lng = Number(button.getAttribute('data-lng'));
+
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                return;
+            }
+
+            const destination = `${lat},${lng}`;
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+            window.open(url, '_blank', 'noopener');
+        }
+
+        function openPlannedTripInGoogleMaps() {
+            if (!latestTripContext || !latestTripContext.start || !latestTripContext.end) {
+                alert('Bạn cần lập kế hoạch trước khi đi ngay.');
+                return;
+            }
+
+            const origin = `${latestTripContext.start.lat},${latestTripContext.start.lng}`;
+            const destination = `${latestTripContext.end.lat},${latestTripContext.end.lng}`;
+            const waypointStrings = (latestTripContext.selectedStops || latestTripContext.stops || [])
+                .filter(stop =>
+                    Number.isFinite(Number(stop.latitude)) &&
+                    Number.isFinite(Number(stop.longitude))
+                )
+                .map(stop => `${Number(stop.latitude)},${Number(stop.longitude)}`);
+
+            let googleMapsUrl =
+                `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&travelmode=driving`;
+
+            // Why changed: always use the current selected stop list so Google Maps follows the updated route.
+            if (waypointStrings.length > 0) {
+                googleMapsUrl += `&waypoints=${encodeURIComponent(waypointStrings.join('|'))}`;
+            }
+
+            if (currentRouteHistoryId) {
+                markRouteHistoryUsed(currentRouteHistoryId);
+            }
+
+            window.open(googleMapsUrl, '_blank', 'noopener');
+        }
+
+
+        function getAntiForgeryToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        }
+
+        async function routeApiFetch(url, options) {
+            const headers = Object.assign({
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': getAntiForgeryToken()
+            }, options?.headers || {});
+
+            const response = await fetch(url, Object.assign({}, options || {}, { headers }));
+
+            if (response.status === 401) {
+                throw new Error('Bạn cần đăng nhập để dùng chức năng lịch sử lộ trình.');
+            }
+
+            const data = await response.json().catch(() => null);
+            if (!response.ok || (data && data.success === false)) {
+                throw new Error(data?.message || 'Thao tác lộ trình không thành công.');
+            }
+
+            return data;
+        }
+
+        function updateRouteHistoryStatus(message) {
+            const element = document.getElementById('routeHistoryStatus');
+            if (element) {
+                element.textContent = message;
+            }
+        }
+
+        async function loadRouteHistoryFromServer() {
+            const container = document.getElementById('routeHistoryList');
+            if (!container) return;
+
+            if (!IS_ROUTE_AUTHENTICATED) {
+                routeHistoryState.items = [];
+                updateRouteHistoryStatus('Cần đăng nhập');
+                container.innerHTML = '<div class="route-empty">Bạn cần đăng nhập để hệ thống lưu lịch sử, gắn sao và chia sẻ lộ trình.</div>';
+                document.getElementById('routeHistoryPagination').innerHTML = '';
+                return;
+            }
+
+            try {
+                updateRouteHistoryStatus('Đang tải lịch sử...');
+                const response = await fetch('/User/api/routes/my?take=80');
+
+                if (response.status === 401) {
+                    throw new Error('Bạn cần đăng nhập để xem lịch sử lộ trình.');
+                }
+
+                const result = await response.json();
+                routeHistoryState.items = Array.isArray(result.items) ? result.items : [];
+                updateRouteHistoryStatus(`${routeHistoryState.items.length} lộ trình đã lưu`);
+                renderRouteHistoryList();
+            } catch (error) {
+                console.error(error);
+                updateRouteHistoryStatus('Không tải được');
+                container.innerHTML = `<div class="route-error">${escapeHtml(error.message || 'Không tải được lịch sử lộ trình.')}</div>`;
+            }
+        }
+
+        function getFilteredRouteHistoryItems() {
+            const keyword = String(routeHistoryState.keyword || '').trim().toLowerCase();
+            let items = [...routeHistoryState.items];
+
+            if (routeHistoryState.filter === 'favorite') {
+                items = items.filter(item => item.isFavorite);
+            }
+
+            if (routeHistoryState.filter === 'recent') {
+                items.sort((a, b) => new Date(b.lastUsedAt || b.updatedAt || b.createdAt) - new Date(a.lastUsedAt || a.updatedAt || a.createdAt));
+            } else {
+                items.sort((a, b) => {
+                    if (Number(b.isFavorite) !== Number(a.isFavorite)) {
+                        return Number(b.isFavorite) - Number(a.isFavorite);
+                    }
+                    return new Date(b.lastUsedAt || b.updatedAt || b.createdAt) - new Date(a.lastUsedAt || a.updatedAt || a.createdAt);
+                });
+            }
+
+            if (keyword) {
+                items = items.filter(item => {
+                    const text = `${item.routeName || ''} ${item.start?.displayName || ''} ${item.end?.displayName || ''} ${item.start?.address || ''} ${item.end?.address || ''}`.toLowerCase();
+                    return text.includes(keyword);
+                });
+            }
+
+            return items;
+        }
+
+        function renderRouteHistoryList() {
+            const container = document.getElementById('routeHistoryList');
+            const pagination = document.getElementById('routeHistoryPagination');
+            if (!container || !pagination) return;
+
+            const items = getFilteredRouteHistoryItems();
+            const total = items.length;
+            const pageSize = Math.max(1, Number(routeHistoryState.pageSize || 5));
+            const totalPages = Math.max(1, Math.ceil(total / pageSize));
+            routeHistoryState.page = Math.min(Math.max(1, Number(routeHistoryState.page || 1)), totalPages);
+            const startIndex = (routeHistoryState.page - 1) * pageSize;
+            const pagedItems = items.slice(startIndex, startIndex + pageSize);
+
+            updateRouteHistoryStatus(total > 0 ? `${total}/${routeHistoryState.items.length} lộ trình phù hợp` : `${routeHistoryState.items.length} lộ trình đã lưu`);
+
+            if (routeHistoryState.items.length === 0) {
+                container.innerHTML = '<div class="route-empty">Chưa có lịch sử lộ trình. Sau khi bạn lập kế hoạch, hệ thống sẽ tự lưu vào danh sách này.</div>';
+                pagination.innerHTML = '';
+                return;
+            }
+
+            if (pagedItems.length === 0) {
+                container.innerHTML = '<div class="route-empty">Không có lộ trình nào khớp bộ lọc hiện tại.</div>';
+                pagination.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = pagedItems.map(buildRouteHistoryItemHtml).join('');
+            pagination.innerHTML = buildRouteHistoryPaginationHtml(routeHistoryState.page, totalPages);
+        }
+
+        function buildRouteHistoryPaginationHtml(page, totalPages) {
+            if (totalPages <= 1) return '';
+
+            const buttons = [];
+            buttons.push(`
+                <button type="button" class="btn btn-outline-secondary" onclick="goToRouteHistoryPage(${Math.max(1, page - 1)})" ${page <= 1 ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+            `);
+
+            const startPage = Math.max(1, page - 1);
+            const endPage = Math.min(totalPages, startPage + 2);
+            const realStart = Math.max(1, endPage - 2);
+
+            for (let current = realStart; current <= endPage; current++) {
+                buttons.push(`<button type="button" class="btn ${current === page ? 'btn-success' : 'btn-outline-secondary'}" onclick="goToRouteHistoryPage(${current})">${current}</button>`);
+            }
+
+            buttons.push(`<span class="route-pagination-status">Trang ${page}/${totalPages}</span>`);
+            buttons.push(`
+                <button type="button" class="btn btn-outline-secondary" onclick="goToRouteHistoryPage(${Math.min(totalPages, page + 1)})" ${page >= totalPages ? 'disabled' : ''}>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            `);
+
+            return buttons.join('');
+        }
+
+        function goToRouteHistoryPage(page) {
+            routeHistoryState.page = Math.max(1, Number(page || 1));
+            renderRouteHistoryList();
+        }
+
+        function buildRouteHistoryItemHtml(item) {
+            const id = Number(item.id || 0);
+            const routeName = escapeHtml(item.routeName || 'Lộ trình đã lưu');
+            const startName = escapeHtml(item.start?.displayName || 'Điểm đi');
+            const endName = escapeHtml(item.end?.displayName || 'Điểm đến');
+            const totalDistance = Number(item.totalDistanceKm || 0).toFixed(0);
+            const stopCount = Number(item.stopCount || (item.stops || []).length || 0);
+            const usedAt = formatRouteDate(item.lastUsedAt || item.updatedAt || item.createdAt);
+            const starClass = item.isFavorite ? 'route-star-btn is-active' : 'route-star-btn';
+            const starIcon = item.isFavorite ? 'fa-solid fa-star' : 'fa-regular fa-star';
+
+            return `
+                <article class="route-history-item">
+                    <div>
+                        <div class="route-history-title-row">
+                            <button type="button" class="${starClass}" title="Gắn sao lộ trình" onclick="toggleRouteHistoryFavorite(${id})">
+                                <i class="${starIcon}"></i>
+                            </button>
+                            <h3 class="route-history-title">${routeName}</h3>
+                        </div>
+                        <div class="route-history-path">${startName} <i class="fa-solid fa-arrow-right mx-1"></i> ${endName}</div>
+                        <div class="route-history-meta">
+                            <span class="route-stop-pill">${totalDistance} km</span>
+                            <span class="route-stop-pill">${stopCount} điểm dừng</span>
+                            <span class="route-stop-pill">Pin ${Number(item.startBattery || 0)}%</span>
+                            <span class="route-stop-pill">Dự phòng ${Number(item.reserveBattery || 0)}%</span>
+                            <span class="route-stop-pill">Dùng gần nhất: ${escapeHtml(usedAt)}</span>
+                        </div>
+                    </div>
+                    <div class="route-history-actions">
+                        <button type="button" class="btn btn-success" onclick="reuseRouteHistory(${id})">
+                            <i class="fa-solid fa-rotate-right mr-1"></i>Dùng lại
+                        </button>
+                        <button type="button" class="btn btn-outline-dark" onclick="shareRouteHistory(${id})">
+                            <i class="fa-solid fa-share-nodes mr-1"></i>Chia sẻ
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" onclick="deleteRouteHistory(${id})">
+                            <i class="fa-solid fa-trash mr-1"></i>Xóa
+                        </button>
+                    </div>
+                </article>
+            `;
+        }
+
+        function formatRouteDate(value) {
+            if (!value) return 'Chưa dùng';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return 'Không rõ';
+            return date.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function buildCurrentRoutePayload(markFavorite) {
+            if (!latestTripContext || !latestTripContext.start || !latestTripContext.end) {
+                return null;
+            }
+
+            const startName = latestTripContext.start.displayName || 'Điểm đi';
+            const endName = latestTripContext.end.displayName || 'Điểm đến';
+            const selectedStops = Array.isArray(latestTripContext.selectedStops) ? latestTripContext.selectedStops : [];
+            const routeName = `${startName} → ${endName}`;
+
+            return {
+                id: currentRouteHistoryId,
+                routeName,
+                start: latestTripContext.start,
+                end: latestTripContext.end,
+                totalDistanceKm: Number(latestTripContext.totalDistanceKm || 0),
+                firstLegKm: Number(latestTripContext.firstLegKm || 0),
+                vehicleRangeKm: Number(document.getElementById('vehicleRangeKm')?.value || 0),
+                startBattery: Number(document.getElementById('startBattery')?.value || 0),
+                reserveBattery: Number(document.getElementById('reserveBattery')?.value || 0),
+                maxDetourKm: Number(document.getElementById('maxDetourKm')?.value || 0),
+                isFavorite: markFavorite ? true : currentRouteIsFavorite,
+                routePath: compactRoutePathForSave(latestTripContext.routePath),
+                stops: selectedStops.map(normalizeStopForSave)
+            };
+        }
+
+        function compactRoutePathForSave(routePath) {
+            const validPath = (Array.isArray(routePath) ? routePath : [])
+                .filter(point => Number.isFinite(Number(point.lat)) && Number.isFinite(Number(point.lng)))
+                .map(point => ({ lat: Number(point.lat), lng: Number(point.lng) }));
+
+            if (validPath.length <= 180) return validPath;
+
+            const result = [];
+            const step = Math.ceil(validPath.length / 180);
+            for (let index = 0; index < validPath.length; index += step) {
+                result.push(validPath[index]);
+            }
+
+            const last = validPath[validPath.length - 1];
+            if (result.length === 0 || result[result.length - 1] !== last) {
+                result.push(last);
+            }
+
+            return result;
+        }
+
+        function normalizeStopForSave(station) {
+            return {
+                id: Number(station.id || 0),
+                name: station.name || 'Trạm sạc',
+                address: station.address || '',
+                latitude: Number(station.latitude),
+                longitude: Number(station.longitude),
+                progressKm: Number(station.progressKm || 0),
+                routeDistanceKm: Number(station.routeDistanceKm || station.detourKm || 0),
+                detourKm: Number(station.detourKm || station.routeDistanceKm || 0),
+                activePoleCount: Number(station.activePoleCount || station.availablePoleCount || 0),
+                availablePoleCount: Number(station.availablePoleCount || station.activePoleCount || 0),
+                totalPoleCount: Number(station.totalPoleCount || 0),
+                averageRating: Number(station.averageRating || 0),
+                chargerType: station.chargerType || station.ChargerType || '',
+                status: station.status || 'Đang hoạt động'
+            };
+        }
+
+        async function autoSavePlannedRoute() {
+            if (!IS_ROUTE_AUTHENTICATED) {
+                updateRouteHistoryStatus('Đăng nhập để lưu lịch sử');
+                return;
+            }
+
+            try {
+                await saveCurrentRoute(false, true);
+            } catch (error) {
+                console.warn('Không tự lưu được lộ trình:', error.message || error);
+                updateRouteHistoryStatus('Chưa tự lưu được');
+            }
+        }
+
+        async function saveCurrentRouteFromButton(markFavorite) {
+            if (!requireRouteLogin()) {
+                return;
+            }
+
+            try {
+                const result = await saveCurrentRoute(markFavorite, false);
+                alert(result?.message || 'Đã lưu lộ trình.');
+            } catch (error) {
+                alert(error.message || 'Không lưu được lộ trình.');
+            }
+        }
+
+        async function saveCurrentRoute(markFavorite, silent) {
+            if (!IS_ROUTE_AUTHENTICATED) {
+                throw new Error('Bạn cần đăng nhập để lưu lộ trình.');
+            }
+
+            const payload = buildCurrentRoutePayload(markFavorite);
+            if (!payload) {
+                throw new Error('Bạn cần lập kế hoạch trước khi lưu lộ trình.');
+            }
+
+            const result = await routeApiFetch('/User/api/routes', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            if (result?.item) {
+                currentRouteHistoryId = result.item.id;
+                currentRouteIsFavorite = !!result.item.isFavorite;
+                currentRouteShareUrl = result.item.shareUrl || currentRouteShareUrl || '';
+                upsertRouteHistoryItem(result.item);
+                updateCurrentRouteActionButtons();
+                renderRouteHistoryList();
+                updateRouteHistoryStatus('Đã lưu lộ trình mới nhất');
+            }
+
+            return result;
+        }
+
+        function upsertRouteHistoryItem(item) {
+            if (!item || !item.id) return;
+            const index = routeHistoryState.items.findIndex(x => Number(x.id) === Number(item.id));
+            if (index >= 0) {
+                routeHistoryState.items[index] = item;
+            } else {
+                routeHistoryState.items.unshift(item);
+            }
+        }
+
+        function updateCurrentRouteActionButtons() {
+            const hasRoute = !!latestTripContext;
+            const canUseHistory = hasRoute && IS_ROUTE_AUTHENTICATED;
+            const saveButton = document.getElementById('btnSaveCurrentRoute');
+            const favoriteButton = document.getElementById('btnFavoriteCurrentRoute');
+            const shareButton = document.getElementById('btnShareCurrentRoute');
+
+            if (saveButton) {
+                saveButton.disabled = !canUseHistory;
+                saveButton.title = IS_ROUTE_AUTHENTICATED ? '' : 'Đăng nhập để lưu lộ trình';
+            }
+            if (favoriteButton) {
+                favoriteButton.disabled = !canUseHistory;
+                favoriteButton.title = IS_ROUTE_AUTHENTICATED ? '' : 'Đăng nhập để yêu thích lộ trình';
+                favoriteButton.innerHTML = currentRouteIsFavorite
+                    ? '<i class="fa-solid fa-star mr-2"></i>Đã yêu thích'
+                    : '<i class="fa-regular fa-star mr-2"></i>Yêu thích';
+            }
+            if (shareButton) {
+                shareButton.disabled = !canUseHistory;
+                shareButton.title = IS_ROUTE_AUTHENTICATED ? '' : 'Đăng nhập để chia sẻ lộ trình';
+            }
+
+            if (hasRoute && !IS_ROUTE_AUTHENTICATED) {
+                showRouteLoginRequired();
+            }
+        }
+
+        async function toggleRouteHistoryFavorite(id) {
+            try {
+                const result = await routeApiFetch(`/User/api/routes/${id}/favorite`, { method: 'POST' });
+                if (result?.item) {
+                    upsertRouteHistoryItem(result.item);
+                    if (Number(currentRouteHistoryId) === Number(id)) {
+                        currentRouteIsFavorite = !!result.item.isFavorite;
+                        updateCurrentRouteActionButtons();
+                    }
+                    renderRouteHistoryList();
+                }
+            } catch (error) {
+                alert(error.message || 'Không cập nhật được yêu thích.');
+            }
+        }
+
+        async function shareCurrentRoute() {
+            if (!requireRouteLogin()) {
+                return;
+            }
+
+            try {
+                if (!currentRouteHistoryId) {
+                    await saveCurrentRoute(false, true);
+                }
+
+                if (!currentRouteHistoryId) {
+                    throw new Error('Chưa có lộ trình để chia sẻ.');
+                }
+
+                await shareRouteHistory(currentRouteHistoryId, true);
+            } catch (error) {
+                alert(error.message || 'Không chia sẻ được lộ trình.');
+            }
+        }
+
+        async function shareRouteHistory(id, showOnlyBox) {
+            try {
+                const result = await routeApiFetch(`/User/api/routes/${id}/share`, { method: 'POST' });
+                const shareUrl = result?.shareUrl || result?.item?.shareUrl || '';
+
+                if (result?.item) {
+                    upsertRouteHistoryItem(result.item);
+                    renderRouteHistoryList();
+                }
+
+                if (Number(currentRouteHistoryId) === Number(id) || showOnlyBox) {
+                    currentRouteShareUrl = shareUrl;
+                    showRouteShareBox(shareUrl);
+                }
+
+                if (!showOnlyBox) {
+                    showRouteShareBox(shareUrl);
+                }
+
+                if (shareUrl && navigator.clipboard?.writeText) {
+                    await navigator.clipboard.writeText(shareUrl).catch(() => null);
+                }
+
+                if (!showOnlyBox) {
+                    alert('Đã tạo link chia sẻ. Link đã được copy nếu trình duyệt cho phép.');
+                }
+
+                return shareUrl;
+            } catch (error) {
+                alert(error.message || 'Không chia sẻ được lộ trình.');
+                return '';
+            }
+        }
+
+        function showRouteShareBox(url) {
+            const box = document.getElementById('routeShareBox');
+            const input = document.getElementById('routeShareInput');
+            if (!box || !input) return;
+
+            input.value = url || '';
+            box.classList.add('is-visible');
+        }
+
+        function hideRouteShareBox() {
+            const box = document.getElementById('routeShareBox');
+            const input = document.getElementById('routeShareInput');
+            if (input) input.value = '';
+            if (box) box.classList.remove('is-visible');
+        }
+
+        async function copyCurrentShareLink() {
+            const input = document.getElementById('routeShareInput');
+            const button = document.getElementById('btnCopyShareRoute');
+            const value = input?.value || currentRouteShareUrl || '';
+            if (!value) {
+                alert('Chưa có liên kết để copy.');
+                return;
+            }
+
+            const originalHtml = button?.innerHTML || '<i class="fa-regular fa-copy mr-2"></i>Copy link';
+
+            try {
+                await copyTextSafely(value);
+
+                if (input) {
+                    input.blur();
+                }
+
+                window.getSelection?.().removeAllRanges?.();
+
+                if (button) {
+                    button.disabled = true;
+                    button.classList.add('is-copied');
+                    button.innerHTML = '<i class="fa-solid fa-check mr-2"></i>Đã copy';
+
+                    window.setTimeout(function () {
+                        button.disabled = false;
+                        button.classList.remove('is-copied');
+                        button.innerHTML = originalHtml;
+                    }, 1400);
+                }
+            } catch {
+                alert('Không copy tự động được. Bạn hãy bôi đen link và copy thủ công.');
+            }
+        }
+
+        async function copyTextSafely(value) {
+            if (navigator.clipboard?.writeText && window.isSecureContext) {
+                await navigator.clipboard.writeText(value);
+                return;
+            }
+
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = value;
+            tempTextArea.setAttribute('readonly', 'readonly');
+            tempTextArea.style.position = 'fixed';
+            tempTextArea.style.top = '-9999px';
+            tempTextArea.style.left = '-9999px';
+            tempTextArea.style.opacity = '0';
+            document.body.appendChild(tempTextArea);
+            tempTextArea.focus();
+            tempTextArea.select();
+
+            const copied = document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            if (!copied) {
+                throw new Error('Không copy được liên kết.');
+            }
+        }
+
+        async function reuseRouteHistory(id) {
+            const item = routeHistoryState.items.find(x => Number(x.id) === Number(id));
+            if (!item) return;
+
+            applySavedRouteToPage(item, false);
+
+            try {
+                await routeApiFetch(`/User/api/routes/${id}/used`, { method: 'POST' });
+                item.lastUsedAt = new Date().toISOString();
+                renderRouteHistoryList();
+            } catch (error) {
+                console.warn(error);
+            }
+        }
+
+        function applySavedRouteToPage(item, isSharedRoute) {
+            if (!item || !item.start || !item.end) {
+                alert('Lộ trình này không đủ dữ liệu để mở lại.');
+                return;
+            }
+
+            currentRouteHistoryId = isSharedRoute ? null : item.id;
+            currentRouteIsFavorite = !isSharedRoute && !!item.isFavorite;
+            currentRouteShareUrl = !isSharedRoute ? (item.shareUrl || '') : '';
+            hideRouteShareBox();
+
+            const startInput = document.getElementById('startPoint');
+            const endInput = document.getElementById('endPoint');
+            if (startInput) startInput.value = item.start.displayName || '';
+            if (endInput) endInput.value = item.end.displayName || '';
+
+            document.getElementById('vehicleRangeKm').value = String(item.vehicleRangeKm || 400);
+            document.getElementById('startBattery').value = String(item.startBattery || 80);
+            document.getElementById('reserveBattery').value = String(item.reserveBattery || 20);
+            document.getElementById('maxDetourKm').value = String(item.maxDetourKm || 10);
+
+            placePickerState.start.selected = item.start;
+            placePickerState.end.selected = item.end;
+            renderSelectedPlace('start', item.start);
+            renderSelectedPlace('end', item.end);
+
+            const routePath = Array.isArray(item.routePath) && item.routePath.length >= 2
+                ? item.routePath.map(point => ({ lat: Number(point.lat), lng: Number(point.lng) }))
+                : [
+                    { lat: Number(item.start.lat), lng: Number(item.start.lng) },
+                    { lat: Number(item.end.lat), lng: Number(item.end.lng) }
+                ];
+
+            const savedStops = (Array.isArray(item.stops) ? item.stops : [])
+                .filter(stop => Number.isFinite(Number(stop.latitude)) && Number.isFinite(Number(stop.longitude)))
+                .map(stop => ({
+                    id: stop.id,
+                    name: stop.name,
+                    address: stop.address,
+                    latitude: Number(stop.latitude),
+                    longitude: Number(stop.longitude),
+                    progressKm: Number(stop.progressKm || 0),
+                    routeDistanceKm: Number(stop.routeDistanceKm || stop.detourKm || 0),
+                    detourKm: Number(stop.detourKm || stop.routeDistanceKm || 0),
+                    activePoleCount: Number(stop.activePoleCount || stop.availablePoleCount || 0),
+                    availablePoleCount: Number(stop.availablePoleCount || stop.activePoleCount || 0),
+                    totalPoleCount: Number(stop.totalPoleCount || 0),
+                    averageRating: Number(stop.averageRating || 0),
+                    chargerType: stop.chargerType || stop.ChargerType || '',
+                    status: stop.status || 'Đang hoạt động'
+                }));
+
+            const savedVehicleRangeKm = Number(item.vehicleRangeKm || 400);
+            const savedStartBattery = Number(item.startBattery || 80);
+            const savedReserveBattery = Number(item.reserveBattery || 20);
+            const savedFirstLegKm = Number(item.firstLegKm || (savedVehicleRangeKm * ((savedStartBattery - savedReserveBattery) / 100)));
+            const savedFullSafeLegKm = savedVehicleRangeKm * ((100 - savedReserveBattery) / 100);
+            const savedCoverage = evaluateStopCoverage(
+                savedStops,
+                Number(item.totalDistanceKm || 0),
+                savedFirstLegKm,
+                savedFullSafeLegKm
+            );
+
+            latestTripContext = {
+                start: item.start,
+                end: item.end,
+                routePath,
+                corridorStations: savedStops,
+                totalDistanceKm: Number(item.totalDistanceKm || 0),
+                firstLegKm: savedFirstLegKm,
+                vehicleRangeKm: savedVehicleRangeKm,
+                startBattery: savedStartBattery,
+                reserveBattery: savedReserveBattery,
+                fullSafeLegKm: savedFullSafeLegKm,
+                maxDetourKm: Number(item.maxDetourKm || 10),
+                requiredStopCount: Number(item.stopCount || savedStops.length || 0),
+                isReachable: savedCoverage.isReachable,
+                blockingDistanceKm: savedCoverage.blockingDistanceKm,
+                selectedStops: sortStationsByProgress(savedStops),
+                stops: sortStationsByProgress(savedStops)
+            };
+
+            drawRoute(item.start, item.end, routePath, savedStops, savedStops);
+            renderRouteSummary(latestTripContext.totalDistanceKm, latestTripContext.firstLegKm, savedStops.length, savedStops.length, {
+                vehicleRangeKm: savedVehicleRangeKm,
+                startBattery: savedStartBattery,
+                reserveBattery: savedReserveBattery,
+                isReachable: savedCoverage.isReachable
+            });
+            renderRouteStops({ isReachable: savedCoverage.isReachable, stops: savedStops, blockingDistanceKm: savedCoverage.blockingDistanceKm }, latestTripContext.totalDistanceKm, latestTripContext.maxDetourKm, savedStops);
+            renderRouteTimeline(latestTripContext);
+
+            document.getElementById('routeMapHint').textContent = isSharedRoute
+                ? 'Đang xem lộ trình được chia sẻ.'
+                : 'Đã mở lại lộ trình từ lịch sử.';
+            document.getElementById('routeMapChip').textContent = `${savedStops.length} điểm dừng đã lưu`;
+            document.getElementById('routeResultState').textContent = isSharedRoute ? 'Lộ trình chia sẻ' : 'Lộ trình đã lưu';
+            document.getElementById('routeNote').innerHTML = isSharedRoute
+                ? 'Bạn đang xem lộ trình người khác chia sẻ. Có thể bấm <strong>Đi ngay bằng Google Maps</strong> để sử dụng.'
+                : 'Đã mở lại lộ trình cũ. Bạn có thể chỉnh điểm dừng, lưu lại, gắn sao hoặc chia sẻ cho người khác.';
+
+            updateCurrentRouteActionButtons();
+            toggleGoNowButton(true);
+
+            document.getElementById('routeMap')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        async function deleteRouteHistory(id) {
+            if (!confirm('Bạn có chắc muốn xóa lộ trình này khỏi lịch sử?')) {
+                return;
+            }
+
+            try {
+                await routeApiFetch(`/User/api/routes/${id}`, { method: 'DELETE' });
+                routeHistoryState.items = routeHistoryState.items.filter(item => Number(item.id) !== Number(id));
+
+                if (Number(currentRouteHistoryId) === Number(id)) {
+                    currentRouteHistoryId = null;
+                    currentRouteIsFavorite = false;
+                    currentRouteShareUrl = '';
+                    hideRouteShareBox();
+                    updateCurrentRouteActionButtons();
+                }
+
+                renderRouteHistoryList();
+            } catch (error) {
+                alert(error.message || 'Không xóa được lộ trình.');
+            }
+        }
+
+        async function markRouteHistoryUsed(id) {
+            if (!id || !IS_ROUTE_AUTHENTICATED) return;
+
+            try {
+                await routeApiFetch(`/User/api/routes/${id}/used`, { method: 'POST' });
+            } catch (error) {
+                console.warn(error);
+            }
+        }
+
+        async function loadSharedRouteFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('share');
+            if (!token) return;
+
+            try {
+                const response = await fetch(`/User/api/routes/shared/${encodeURIComponent(token)}`);
+                const result = await response.json();
+                if (!response.ok || !result.success || !result.item) {
+                    throw new Error(result.message || 'Không mở được lộ trình chia sẻ.');
+                }
+
+                await ensureRouteMapReady();
+                applySavedRouteToPage(result.item, true);
+            } catch (error) {
+                alert(error.message || 'Không mở được lộ trình chia sẻ.');
+            }
+        }
+
+        async function loadReusableRouteFromQuery() {
+            const params = new URLSearchParams(window.location.search);
+            const reuseId = Number(params.get('reuseId') || 0);
+            if (!reuseId || !IS_ROUTE_AUTHENTICATED) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/User/api/routes/my?take=120');
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    return;
+                }
+
+                const item = (result.items || []).find(x => Number(x.id) === reuseId);
+                if (item) {
+                    await ensureRouteMapReady();
+                    applySavedRouteToPage(item, false);
+                    await routeApiFetch(`/User/api/routes/${reuseId}/used`, { method: 'POST' }).catch(() => null);
+                }
+            } catch (error) {
+                console.warn(error);
+            }
+        }
+
+        async function loadReusableRouteFromSession() {
+            const raw = sessionStorage.getItem('tramSacRouteReuse');
+            if (!raw) return;
+
+            try {
+                const item = JSON.parse(raw);
+                sessionStorage.removeItem('tramSacRouteReuse');
+
+                if (item && item.start && item.end) {
+                    await ensureRouteMapReady();
+                    applySavedRouteToPage(item, false);
+                }
+            } catch (error) {
+                console.warn(error);
+                sessionStorage.removeItem('tramSacRouteReuse');
+            }
+        }
+
+        function toggleGoNowButton(isVisible) {
+            const button = document.getElementById('btnGoNow');
+            if (!button) {
+                return;
+            }
+
+            button.classList.toggle('is-visible', !!isVisible);
+            button.disabled = !isVisible;
+        }
+
+        function clearRouteVisuals() {
+            clearMapObject(startMarker);
+            clearMapObject(endMarker);
+            clearMapObject(routeLine);
+            clearMapObject(focusMarker);
+
+            startMarker = null;
+            endMarker = null;
+            routeLine = null;
+            focusMarker = null;
+
+            corridorMarkers.forEach(clearMapObject);
+            stopMarkers.forEach(clearMapObject);
+
+            corridorMarkers = [];
+            stopMarkers = [];
+        }
+
+        function clearMapObject(mapObject) {
+            if (!mapObject || typeof mapObject.setMap !== 'function') {
+                return;
+            }
+
+            try {
+                mapObject.setMap(null);
+            } catch (error) {
+                console.error('Map4D clear object error:', error);
+            }
+        }
+
+        function resetRoutePage() {
+            resetRouteListFilters();
+            resetPlacePicker('start');
+            resetPlacePicker('end');
+            document.getElementById('startPoint').value = '';
+            document.getElementById('endPoint').value = '';
+            document.getElementById('vehicleRangeKm').value = '400';
+            document.getElementById('startBattery').value = '80';
+            document.getElementById('reserveBattery').value = '20';
+            document.getElementById('maxDetourKm').value = '10';
+            renderRouteSummary(0, 0, 0, 0, { vehicleRangeKm: 400, startBattery: 80, reserveBattery: 20, isReachable: false });
+            renderRouteTimeline(null);
+            document.getElementById('routeMapHint').textContent = 'Chưa có dữ liệu hành trình.';
+            document.getElementById('routeMapChip').textContent = '0 điểm dừng';
+            document.getElementById('routeResultState').textContent = 'Chưa lập kế hoạch';
+            document.getElementById('routeNote').innerHTML = 'Gợi ý lập kế hoạch: hệ thống ưu tiên trạm <strong>Đang hoạt động</strong>, gần tuyến và đủ để xe luôn giữ lại mức pin dự phòng bạn đã chọn.';
+            document.getElementById('routeStopList').innerHTML = '<div class="route-empty">Nhập thông tin chuyến đi để bắt đầu lập kế hoạch.</div>';
+            document.getElementById('routeStopPagination').innerHTML = '';
+            updateRouteStopToolbarState(0, 0, false);
+            updateRouteStopMeta('Nhập thông tin chuyến đi để bắt đầu lập kế hoạch.');
+
+            latestTripContext = null;
+            currentRouteHistoryId = null;
+            currentRouteIsFavorite = false;
+            currentRouteShareUrl = '';
+            hideRouteShareBox();
+            updateCurrentRouteActionButtons();
+            toggleGoNowButton(false);
+            clearRouteVisuals();
+
+            if (routeMap) {
+                try {
+                    if (typeof routeMap.setCenter === 'function') {
+                        routeMap.setCenter(DEFAULT_MAP_CENTER);
+                    }
+
+                    if (typeof routeMap.setZoom === 'function') {
+                        routeMap.setZoom(6);
+                    }
+                } catch (error) {
+                    console.error('Map4D reset camera error:', error);
+                }
+            }
+        }
+
+        function setRouteLoadingState() {
+            document.getElementById('routeStopList').innerHTML =
+                '<div class="route-loading">Đang tính toán hành trình và tìm trạm gần tuyến...</div>';
+            document.getElementById('routeStopPagination').innerHTML = '';
+            updateRouteStopToolbarState(0, 0, false);
+            updateRouteStopMeta('Đang tính toán hành trình và làm mới danh sách trạm...');
+            document.getElementById('routeResultState').textContent = 'Đang xử lý';
+            const statusElement = document.getElementById('summaryStatus');
+            if (statusElement) {
+                statusElement.className = 'route-overview-status is-warning';
+                statusElement.innerHTML = '<i class="fa-solid fa-spinner"></i>Đang xử lý';
+            }
+            const timeline = document.getElementById('routeTimelineList');
+            if (timeline) {
+                timeline.classList.remove('has-items');
+                timeline.innerHTML = '<div class="route-loading">Đang dựng timeline điểm dừng...</div>';
+            }
+        }
+
+        function setRouteErrorState(message) {
+            document.getElementById('routeStopList').innerHTML =
+                `<div class="route-error">${escapeHtml(message)}</div>`;
+            document.getElementById('routeStopPagination').innerHTML = '';
+            updateRouteStopToolbarState(0, 0, false);
+            updateRouteStopMeta(escapeHtml(message));
+            document.getElementById('routeResultState').textContent = 'Có lỗi';
+            const statusElement = document.getElementById('summaryStatus');
+            if (statusElement) {
+                statusElement.className = 'route-overview-status is-danger';
+                statusElement.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>Có lỗi';
+            }
+            const timeline = document.getElementById('routeTimelineList');
+            if (timeline) {
+                timeline.classList.remove('has-items');
+                timeline.innerHTML = `<div class="route-error">${escapeHtml(message)}</div>`;
+            }
+            toggleGoNowButton(false);
+        }
+
+        function showMapLoadError(message) {
+            const mapElement = document.getElementById('routeMap');
+            if (!mapElement) {
+                return;
+            }
+
+            mapElement.classList.add('route-map-failed');
+            mapElement.innerHTML = `<div class="route-map-message">${escapeHtml(message)}</div>`;
+            document.getElementById('routeMapHint').textContent = 'Bản đồ chưa sẵn sàng.';
+        }
+
+        function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+            const radiusKm = 6371;
+            const dLat = degreesToRadians(lat2 - lat1);
+            const dLon = degreesToRadians(lon2 - lon1);
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(degreesToRadians(lat1)) * Math.cos(degreesToRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return radiusKm * c;
+        }
+
+        function degreesToRadians(deg) {
+            return deg * (Math.PI / 180);
+        }
+
+        function buildSvgMarker(color, text) {
+            const markerText = String(text || '').substring(0, 2);
+            const markerColor = String(color || '#177b46');
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="42" height="52" viewBox="0 0 42 52">
+                    <path d="M21 0C11.61 0 4 7.61 4 17c0 12.37 17 35 17 35s17-22.63 17-35C38 7.61 30.39 0 21 0z" fill="${markerColor}" />
+                    <circle cx="21" cy="17" r="11" fill="white" />
+                    <text x="21" y="21" text-anchor="middle" font-size="11" font-family="Arial" font-weight="700" fill="${markerColor}">${markerText}</text>
+                </svg>`;
+
+            return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+        }
+
+        function escapeHtml(text) {
+            return String(text || '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+    </script>
+}
